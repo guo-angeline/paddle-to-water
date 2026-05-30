@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 
@@ -24,6 +25,14 @@ function Tag({ label }: { label: string }) {
 }
 
 export default function SpotDrawer({ spot, onClose }: Props) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   if (!spot) return null;
 
   const diff = DIFF_STYLES[spot.difficulty] ?? DIFF_STYLES.unknown;
@@ -109,9 +118,9 @@ export default function SpotDrawer({ spot, onClose }: Props) {
 
           {/* Notes */}
           {spot.notes && (
-            <div className="text-sm text-gray-700 leading-relaxed mb-5 bg-[--bg] rounded-xl p-3.5">
+            <p className="text-sm text-gray-600 leading-relaxed mb-5 pl-3 border-l-2 border-gray-200">
               {spot.notes}
-            </div>
+            </p>
           )}
 
           {/* Actions */}
@@ -119,7 +128,8 @@ export default function SpotDrawer({ spot, onClose }: Props) {
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[--accent] text-white text-sm font-semibold hover:bg-[--dark] transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+            style={{ background: "var(--accent)", color: "#fff" }}
           >
             Get Directions
           </a>

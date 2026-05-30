@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, useMap } from "react-leaflet";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_COLOR } from "@/lib/types";
 import "leaflet/dist/leaflet.css";
 
-const BAY_CENTER: [number, number] = [37.8, -122.15];
+const BAY_CENTER: [number, number] = [37.55, -122.25];
 
 function FlyTo({ spot }: { spot: Spot | null }) {
   const map = useMap();
   useEffect(() => {
-    if (spot) map.flyTo([spot.lat, spot.lng], 13, { duration: 0.8 });
+    if (spot) map.flyTo([spot.lat, spot.lng], 13, { duration: 0.4 });
   }, [spot, map]);
   return null;
 }
@@ -53,13 +53,7 @@ export default function MapView({ spots, selected, onSelect }: Props) {
               weight: isSelected ? 2.5 : 1.5,
             }}
             eventHandlers={{ click: () => onSelect(spot) }}
-          >
-            <Popup>
-              <strong>{spot.water}</strong>
-              <br />
-              <span style={{ color: "#6B7280", fontSize: 12 }}>{spot.city}</span>
-            </Popup>
-          </CircleMarker>
+          />
         );
       })}
     </MapContainer>

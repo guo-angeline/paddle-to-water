@@ -15,6 +15,12 @@ interface Props {
   filtered: number;
 }
 
+const EMPTY_FILTERS: Filters = { region: "", difficulty: "", freeOnly: false };
+
+function hasActiveFilters(f: Filters) {
+  return f.region !== "" || f.difficulty !== "" || f.freeOnly;
+}
+
 export default function FilterBar({ filters, onChange, total, filtered }: Props) {
   const pill =
     "px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer whitespace-nowrap";
@@ -68,9 +74,19 @@ export default function FilterBar({ filters, onChange, total, filtered }: Props)
           Free only
         </button>
 
-        <span className="ml-auto text-sm text-[--muted] whitespace-nowrap">
-          {filtered === total ? `${total} spots` : `${filtered} of ${total}`}
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          {hasActiveFilters(filters) && (
+            <button
+              onClick={() => onChange(EMPTY_FILTERS)}
+              className="text-xs text-[--muted] underline underline-offset-2 hover:text-[--dark] transition-colors whitespace-nowrap"
+            >
+              Clear all
+            </button>
+          )}
+          <span className="text-sm text-[--muted] whitespace-nowrap">
+            {filtered === total ? `${total} spots` : `${filtered} of ${total}`}
+          </span>
+        </div>
       </div>
     </div>
   );

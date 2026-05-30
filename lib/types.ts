@@ -46,3 +46,9 @@ export const DIFFICULTY_COLOR: Record<Difficulty, string> = {
   river:     "#B45309",
   unknown:   "#6B7280",
 };
+
+export const DIFFICULTY_LEGEND = [
+  { color: DIFFICULTY_COLOR.flatwater, label: DIFFICULTY_LABEL.flatwater },
+  { color: DIFFICULTY_COLOR.bay,       label: DIFFICULTY_LABEL.bay },
+  { color: DIFFICULTY_COLOR.river,     label: DIFFICULTY_LABEL.river },
+] as const;

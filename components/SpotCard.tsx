@@ -16,23 +16,15 @@ const DIFF_STYLES: Record<string, string> = {
   unknown:   "bg-stone-100 text-stone-500",
 };
 
-function FeeTag({ spot }: { spot: Spot }) {
-  if (spot.has_fee === true && spot.fee_amount)
-    return <span className="text-xs text-gray-500">${spot.fee_amount} launch</span>;
-  if (spot.has_fee === false)
-    return <span className="text-xs text-[--accent] font-medium">Free</span>;
-  return null;
-}
-
 function Icons({ spot }: { spot: Spot }) {
   const icons = [];
-  if (spot.dog_friendly)       icons.push({ emoji: "🐕", label: "Dog friendly" });
-  if (spot.tide_sensitive)     icons.push({ emoji: "🌊", label: "Tide sensitive" });
-  if (spot.rentals_available)  icons.push({ emoji: "🚣", label: "Rentals available" });
+  if (spot.dog_friendly)          icons.push({ emoji: "🐕", label: "Dog friendly" });
+  if (spot.tide_sensitive)        icons.push({ emoji: "🌊", label: "Tide sensitive" });
+  if (spot.rentals_available)     icons.push({ emoji: "🚣", label: "Rentals available" });
   if (spot.power_boats === false) icons.push({ emoji: "⛵", label: "No power boats" });
   if (!icons.length) return null;
   return (
-    <div className="flex gap-2 mt-1">
+    <div className="flex gap-2 mt-1.5">
       {icons.map(({ emoji, label }) => (
         <span key={label} title={label} className="text-base leading-none">{emoji}</span>
       ))}
@@ -57,10 +49,7 @@ export default function SpotCard({ spot, selected, onClick }: Props) {
           {DIFFICULTY_LABEL[spot.difficulty]}
         </span>
       </div>
-      <div className="flex items-center gap-3 mt-1.5">
-        <FeeTag spot={spot} />
-        <Icons spot={spot} />
-      </div>
+      <Icons spot={spot} />
     </button>
   );
 }
