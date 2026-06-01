@@ -6,7 +6,6 @@ export interface Filters {
   region: string;
   difficulty: string;
   freeOnly: boolean;
-  search: string;
 }
 
 interface Props {
@@ -16,10 +15,10 @@ interface Props {
   filtered: number;
 }
 
-const EMPTY_FILTERS: Filters = { region: "", difficulty: "", freeOnly: false, search: "" };
+const EMPTY_FILTERS: Filters = { region: "", difficulty: "", freeOnly: false };
 
 function hasActiveFilters(f: Filters) {
-  return f.region !== "" || f.difficulty !== "" || f.freeOnly || f.search !== "";
+  return f.region !== "" || f.difficulty !== "" || f.freeOnly;
 }
 
 const ACTIVE_STYLE = { background: "var(--accent)", color: "#fff", border: "none" };
@@ -31,15 +30,6 @@ export default function FilterBar({ filters, onChange, total, filtered }: Props)
 
   return (
     <div className="sticky top-0 z-10 bg-[--bg] border-b border-gray-200 px-4 py-3 space-y-2">
-      {/* Search */}
-      <input
-        type="search"
-        placeholder="Search spots..."
-        value={filters.search}
-        onChange={(e) => onChange({ ...filters, search: e.target.value })}
-        className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-[--dark] placeholder:text-[--muted] focus:outline-none focus:border-[--accent]"
-      />
-
       {/* Region row */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {["All", ...REGIONS].map((r) => {
@@ -49,7 +39,7 @@ export default function FilterBar({ filters, onChange, total, filtered }: Props)
               key={r}
               className={pill}
               style={isActive ? ACTIVE_STYLE : INACTIVE_STYLE}
-              onClick={() => onChange({ ...filters, region: r === "All" ? "" : r })}
+              onClick={() => onChange({ ...filters, region: (r === "All" || filters.region === r) ? "" : r })}
             >
               {r}
             </button>

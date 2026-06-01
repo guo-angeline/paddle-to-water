@@ -15,12 +15,10 @@ const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 const ALL_SPOTS = spotsData as Spot[];
 
 function applyFilters(spots: Spot[], filters: Filters): Spot[] {
-  const q = filters.search.trim().toLowerCase();
   return spots.filter((s) => {
     if (filters.region && s.region !== filters.region) return false;
     if (filters.difficulty && s.difficulty !== filters.difficulty) return false;
     if (filters.freeOnly && s.has_fee !== false) return false;
-    if (q && !s.water.toLowerCase().includes(q) && !(s.city ?? "").toLowerCase().includes(q)) return false;
     return true;
   });
 }
@@ -30,7 +28,7 @@ interface Props {
 }
 
 export default function HomeClient({ initialSpotId }: Props = {}) {
-  const [filters, setFilters] = useState<Filters>({ region: "", difficulty: "", freeOnly: false, search: "" });
+  const [filters, setFilters] = useState<Filters>({ region: "", difficulty: "", freeOnly: false });
   const [selected, setSelected] = useState<Spot | null>(null);
   const [activeTab, setActiveTab] = useState<"map" | "list">("map");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -121,7 +119,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             spots={filtered}
             selected={selected}
             onSelect={handleSelect}
-            onClearFilters={() => handleFilterChange({ region: "", difficulty: "", freeOnly: false, search: "" })}
+            onClearFilters={() => handleFilterChange({ region: "", difficulty: "", freeOnly: false })}
           />
         </div>
 
