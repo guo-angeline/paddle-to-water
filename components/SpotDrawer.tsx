@@ -37,6 +37,7 @@ export default function SpotDrawer({ spot, onClose }: Props) {
 
   const diff = DIFF_STYLES[spot.difficulty] ?? DIFF_STYLES.unknown;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
+  const photosUrl = `https://www.google.com/maps/search/${encodeURIComponent(`${spot.water} ${spot.city ?? ""} California`)}/`;
 
   const tags: string[] = [];
   if (spot.dog_friendly)        tags.push("Dog friendly");
@@ -124,15 +125,26 @@ export default function SpotDrawer({ spot, onClose }: Props) {
           )}
 
           {/* Actions */}
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-            style={{ background: "var(--accent)", color: "#fff" }}
-          >
-            Get Directions
-          </a>
+          <div className="flex flex-col gap-2">
+            <a
+              href={photosUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+            >
+              See Photos on Google Maps
+            </a>
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+              style={{ background: "var(--accent)", color: "#fff" }}
+            >
+              Get Directions
+            </a>
+          </div>
         </div>
       </div>
     </>

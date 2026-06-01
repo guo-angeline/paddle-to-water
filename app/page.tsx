@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LEGEND } from "@/lib/types";
 import spotsData from "@/data/spots.json";
@@ -15,19 +15,37 @@ const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 const ALL_SPOTS = spotsData as Spot[];
 
 function applyFilters(spots: Spot[], filters: Filters): Spot[] {
+  const q = filters.search.trim().toLowerCase();
   return spots.filter((s) => {
     if (filters.region && s.region !== filters.region) return false;
     if (filters.difficulty && s.difficulty !== filters.difficulty) return false;
     if (filters.freeOnly && s.has_fee !== false) return false;
+    if (q && !s.water.toLowerCase().includes(q) && !(s.city ?? "").toLowerCase().includes(q)) return false;
     return true;
   });
 }
 
 export default function Home() {
-  const [filters, setFilters] = useState<Filters>({ region: "", difficulty: "", freeOnly: false });
+  const [filters, setFilters] = useState<Filters>({ region: "", difficulty: "", freeOnly: false, search: "" });
   const [selected, setSelected] = useState<Spot | null>(null);
   const [activeTab, setActiveTab] = useState<"map" | "list">("map");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  // Read ?spot=<id> on mount and sync URL on select/deselect
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("spot");
+    if (id) {
+      const found = ALL_SPOTS.find((s) => s.id === Number(id));
+      if (found) setSelected(found);
+    }
+  }, []);
+
+  useEffect(() => {
+    const url = selected
+      ? `?spot=${selected.id}`
+      : window.location.pathname;
+    window.history.replaceState(null, "", url);
+  }, [selected]);
 
   const filtered = useMemo(() => applyFilters(ALL_SPOTS, filters), [filters]);
 
@@ -92,7 +110,7 @@ export default function Home() {
           className={`flex flex-col w-full md:w-80 md:shrink-0 bg-[--bg] border-r border-gray-200 border-l-4 border-l-[--accent] md:flex
             ${activeTab === "list" ? "flex" : "hidden md:flex"}`}
         >
-          <SpotList spots={filtered} selected={selected} onSelect={handleSelect} onClearFilters={() => handleFilterChange({ region: "", difficulty: "", freeOnly: false })} />
+          <SpotList spots={filtered} selected={selected} onSelect={handleSelect} onClearFilters={() => handleFilterChange({ region: "", difficulty: "", freeOnly: false, search: "" })} />
         </div>
 
         {/* Map panel */}
