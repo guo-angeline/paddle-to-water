@@ -81,7 +81,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     }
     if (!navigator.geolocation) {
       setGeoError(true);
-      setTimeout(() => setGeoError(false), 2500);
+      setTimeout(() => setGeoError(false), 4000);
       return;
     }
     setLocating(true);
@@ -94,7 +94,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       () => {
         setLocating(false);
         setGeoError(true);
-        setTimeout(() => setGeoError(false), 2500);
+        setTimeout(() => setGeoError(false), 4000);
       },
       { timeout: 8000 }
     );

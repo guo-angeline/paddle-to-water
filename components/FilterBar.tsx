@@ -118,6 +118,7 @@ export default function FilterBar({
             style={nearMeStyle()}
             onClick={onToggleNearMe}
             disabled={locating}
+            title={geoError ? "Location access was denied. Check your browser or device settings to enable it for this site." : undefined}
           >
             {nearMeLabel()}
           </button>
