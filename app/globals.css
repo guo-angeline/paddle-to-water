@@ -1,11 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Nunito:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg:     #EDEAE3;
-  --accent: #3730A3;
-  --dark:   #1C1917;
-  --muted:  #78716C;
+  --bg:           #EEF3F5;
+  --white:        #FFFFFF;
+  --dark:         #1A2C36;
+  --muted:        #5B7A87;
+  --accent:       #2D6A8F;
+  --accent-light: #E3EFF7;
+  --border:       #D0E3EE;
 }
 
 * {
@@ -18,7 +21,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   background: var(--bg);
   color: var(--dark);
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   margin: 0;
 }
 
@@ -34,7 +37,7 @@ header {
 .leaflet-container { height: 100%; width: 100%; }
 .leaflet-popup-content-wrapper {
   border-radius: 10px;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Outfit', system-ui, sans-serif;
   font-size: 13px;
 }
 .leaflet-popup-content { margin: 10px 14px; }

@@ -99,7 +99,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>
-              <h2 className="font-['Libre_Baskerville'] text-xl font-bold text-[--dark] leading-tight">
+              <h2 className="font-['Fraunces'] text-xl font-bold text-[--dark] leading-tight">
                 {spot.water}
               </h2>
               <p className="text-sm text-[--muted] mt-1">{spot.city} &middot; {spot.region}</p>
