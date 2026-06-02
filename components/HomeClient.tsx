@@ -153,6 +153,21 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       </div>
 
       {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
+
+      <footer
+        className="shrink-0 border-t border-gray-200 bg-[--bg] px-4 py-2 flex items-center justify-between gap-3"
+        style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+      >
+        <p className="text-xs text-[--muted] leading-snug">
+          Spot info may be inaccurate or outdated. Water activities carry inherent risk.
+        </p>
+        <a
+          href="/disclaimer"
+          className="text-xs text-[--muted] underline underline-offset-2 hover:text-[--dark] transition-colors whitespace-nowrap shrink-0"
+        >
+          Disclaimer
+        </a>
+      </footer>
     </div>
   );
 }
