@@ -66,7 +66,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
           url,
         });
       } catch { /* user cancelled */ }
-    } else {
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
