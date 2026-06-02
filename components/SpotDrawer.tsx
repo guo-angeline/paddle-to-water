@@ -28,9 +28,12 @@ function Tag({ label }: { label: string }) {
   );
 }
 
+const NOTES_TRUNCATE = 150;
+
 export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props) {
   const [copied, setCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [notesExpanded, setNotesExpanded] = useState(false);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -145,16 +148,33 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
             </div>
           )}
 
-          {/* Notes */}
+          {/* Notes — truncated on mobile, full on desktop */}
           {spot.notes && (
-            <p className="text-sm text-gray-600 leading-relaxed mb-5 pl-3 border-l-2 border-gray-200">
-              {spot.notes}
-            </p>
+            <div className="mb-4 pl-3 border-l-2 border-gray-200">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {/* Mobile: truncate unless expanded */}
+                <span className="md:hidden">
+                  {notesExpanded || spot.notes.length <= NOTES_TRUNCATE
+                    ? spot.notes
+                    : spot.notes.slice(0, NOTES_TRUNCATE).trimEnd() + "…"}
+                </span>
+                {/* Desktop: always full */}
+                <span className="hidden md:inline">{spot.notes}</span>
+              </p>
+              {spot.notes.length > NOTES_TRUNCATE && (
+                <button
+                  onClick={() => setNotesExpanded((v) => !v)}
+                  className="md:hidden mt-1 text-sm font-medium text-[--accent] hover:opacity-80 transition-opacity"
+                >
+                  {notesExpanded ? "Read less" : "Read more"}
+                </button>
+              )}
+            </div>
           )}
 
-          {/* Nearby spots */}
+          {/* Nearby spots — desktop sidebar only; map handles discovery on mobile */}
           {nearby.length > 0 && (
-            <div className="mb-5">
+            <div className="hidden md:block mb-5">
               <p className="text-xs font-semibold text-[--muted] uppercase tracking-wide mb-2">Nearby</p>
               <div className="space-y-0.5">
                 {nearby.map(({ spot: s, miles }) => (
@@ -179,29 +199,31 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions — Share + Photos side-by-side, Get Directions full-width below */}
           <div className="flex flex-col gap-2">
-            <button
-              onClick={handleShare}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-              style={{ borderColor: "#e5e7eb", color: "var(--dark)" }}
-            >
-              {copied ? "Link copied!" : "Share Spot"}
-            </button>
-            <a
-              href={photosUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
-            >
-              See Photos on Google Maps
-            </a>
+            <div className="flex gap-2">
+              <button
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+                style={{ borderColor: "#e5e7eb", color: "var(--dark)" }}
+              >
+                {copied ? "Copied!" : "Share"}
+              </button>
+              <a
+                href={photosUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+                style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+              >
+                Photos
+              </a>
+            </div>
             <a
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+              className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
               style={{ background: "var(--accent)", color: "#fff" }}
             >
               Get Directions
