@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import InstallPrompt from "@/components/InstallPrompt";
+import PostHogProvider from "@/components/PostHogProvider";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <InstallPrompt />
         <Analytics />
+        <PostHogProvider />
       </body>
     </html>
   );

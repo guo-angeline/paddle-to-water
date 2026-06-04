@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { track, setPersona } from "@/lib/analytics";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -36,10 +37,17 @@ export default function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isInStandaloneMode()) return;
+    if (isInStandaloneMode()) {
+      // Persona: user launched the installed PWA, strongest retention signal.
+      setPersona({ installed_pwa: true });
+      return;
+    }
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
 
     if (isIOS()) {
+      // Client-only: platform is detected from the user agent, so this must
+      // run in an effect rather than during render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlatform("ios");
       const timer = setTimeout(() => setVisible(true), 3000);
       return () => clearTimeout(timer);
@@ -61,6 +69,10 @@ export default function InstallPrompt() {
     };
   }, []);
 
+  useEffect(() => {
+    if (visible && platform) track("pwa_prompt_shown", { platform });
+  }, [visible, platform]);
+
   function handleDismiss() {
     setVisible(false);
     sessionStorage.setItem(STORAGE_KEY, "1");
@@ -70,7 +82,11 @@ export default function InstallPrompt() {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") setVisible(false);
+    track("pwa_installed", { platform, outcome });
+    if (outcome === "accepted") {
+      setPersona({ installed_pwa: true });
+      setVisible(false);
+    }
     setDeferredPrompt(null);
   }
 

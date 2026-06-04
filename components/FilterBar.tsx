@@ -49,7 +49,6 @@ export default function FilterBar({
   nearMe, locating, geoError, onToggleNearMe, onClearAll,
 }: Props) {
   const pillLg = "px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer whitespace-nowrap";
-  const pillSm = "px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap";
 
   function nearMeStyle(): React.CSSProperties {
     if (geoError) return NEAR_ERROR;

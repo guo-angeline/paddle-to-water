@@ -10,6 +10,7 @@ import SpotList from "@/components/SpotList";
 import SpotDrawer from "@/components/SpotDrawer";
 import FeedbackModal from "@/components/FeedbackModal";
 import { distanceMiles } from "@/lib/distance";
+import { track, setPersona } from "@/lib/analytics";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
@@ -49,7 +50,20 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     const id = initialSpotId ?? Number(new URLSearchParams(window.location.search).get("spot") || 0);
     if (id) {
       const found = ALL_SPOTS.find((s) => s.id === id);
-      if (found) setSelected(found);
+      if (found) {
+        // Deferred to an effect on purpose: the spot id comes from window /
+        // the URL, so resolving it during render would break SSR hydration.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelected(found);
+        track("spot_viewed", {
+          spot_id: found.id,
+          spot_name: found.water,
+          region: found.region,
+          difficulty: found.difficulty,
+          has_fee: found.has_fee,
+          source: "deeplink",
+        });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -73,7 +87,18 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function toggleFavorite(id: number) {
     setFavorites((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      const adding = !next.has(id);
+      if (adding) next.add(id); else next.delete(id);
+      const spot = ALL_SPOTS.find((s) => s.id === id);
+      track("favorite_toggled", {
+        spot_id: id,
+        spot_name: spot?.water,
+        region: spot?.region,
+        action: adding ? "add" : "remove",
+        total_favorites: next.size,
+      });
+      // Persona: anyone who saves a spot is an engaged, returning-intent user.
+      setPersona({ saves_spots: true, favorite_count: next.size });
       return next;
     });
   }
@@ -102,11 +127,13 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function handleNearMe() {
     if (userLocation) {
       setUserLocation(null);
+      track("near_me_toggled", { enabled: false });
       return;
     }
     if (!navigator.geolocation) {
       setGeoError(true);
       setTimeout(() => setGeoError(false), 4000);
+      track("near_me_toggled", { enabled: true, outcome: "unsupported" });
       return;
     }
     setLocating(true);
@@ -115,11 +142,15 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
         setActiveTab("list");
+        track("near_me_toggled", { enabled: true, outcome: "granted" });
+        // Persona: local user paddling near home vs. someone trip-planning.
+        setPersona({ uses_geolocation: true });
       },
       () => {
         setLocating(false);
         setGeoError(true);
         setTimeout(() => setGeoError(false), 4000);
+        track("near_me_toggled", { enabled: true, outcome: "denied" });
       },
       { timeout: 8000 }
     );
@@ -127,17 +158,36 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
   function handleSelect(spot: Spot) {
     setSelected(spot);
+    track("spot_viewed", {
+      spot_id: spot.id,
+      spot_name: spot.water,
+      region: spot.region,
+      difficulty: spot.difficulty,
+      has_fee: spot.has_fee,
+    });
   }
 
   function handleFilterChange(f: Filters) {
     setFilters(f);
     setSelected(null);
+    track("filter_changed", {
+      region: f.region || null,
+      difficulty: f.difficulty || null,
+      free_only: f.freeOnly,
+    });
+    // Persona / segmentation: budget-conscious paddlers and region affinity.
+    setPersona({
+      ...(f.freeOnly ? { prefers_free: true } : {}),
+      ...(f.region ? { preferred_region: f.region } : {}),
+      ...(f.difficulty ? { preferred_difficulty: f.difficulty } : {}),
+    });
   }
 
   function handleClearAll() {
     setFilters({ region: "", difficulty: "", freeOnly: false });
     setUserLocation(null);
     setSelected(null);
+    track("filter_changed", { cleared: true });
   }
 
   return (
@@ -150,7 +200,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline text-xs text-[--muted]">Paddleboard &amp; kayak spots across the Bay Area</span>
           <button
-            onClick={() => setFeedbackOpen(true)}
+            onClick={() => { setFeedbackOpen(true); track("feedback_opened"); }}
             className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[--accent] text-[--accent] hover:bg-[--accent] hover:text-white transition-colors"
           >
             Feedback
@@ -181,7 +231,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
                 ? "text-[--accent] border-b-2 border-[--accent]"
                 : "text-[--muted]"
             }`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); track("view_switched", { view: tab }); }}
           >
             {tab === "map" ? `Map (${sortedFiltered.length})` : `List`}
           </button>
@@ -212,7 +262,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           className={`flex-1 relative min-h-0
             ${activeTab === "map" ? "flex" : "hidden md:flex"}`}
         >
-          <MapView spots={sortedFiltered} selected={selected} onSelect={setSelected} userLocation={userLocation} />
+          <MapView spots={sortedFiltered} selected={selected} onSelect={handleSelect} userLocation={userLocation} />
 
           {/* Legend */}
           <div className="absolute bottom-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow text-xs space-y-1">
