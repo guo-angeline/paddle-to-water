@@ -43,9 +43,20 @@ function formatDistance(miles: number): string {
 
 export default function SpotCard({ spot, selected, onClick, distance, isFavorite, onToggleFavorite }: Props) {
   return (
-    <button
+    // role="button" rather than a real <button>: this card contains the
+    // favorite-toggle button, and a <button> nested in a <button> is invalid
+    // HTML that breaks hydration (the parser auto-closes the outer button).
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 border-b border-gray-100 transition-colors hover:bg-white ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={`w-full cursor-pointer text-left px-4 py-3.5 border-b border-gray-100 transition-colors hover:bg-white ${
         selected ? "bg-white border-l-4 border-l-[--accent] pl-3" : ""
       }`}
     >
@@ -76,6 +87,6 @@ export default function SpotCard({ spot, selected, onClick, distance, isFavorite
         </div>
       </div>
       <Icons spot={spot} />
-    </button>
+    </div>
   );
 }
