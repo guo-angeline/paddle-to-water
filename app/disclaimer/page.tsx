@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Disclaimer | Paddle to Water",
@@ -20,7 +21,7 @@ export default function DisclaimerPage() {
       <div style={{ maxWidth: "672px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
 
         {/* Back link */}
-        <a
+        <Link
           href="/"
           style={{
             display: "inline-flex",
@@ -33,7 +34,7 @@ export default function DisclaimerPage() {
           }}
         >
           ← Back to map
-        </a>
+        </Link>
 
         {/* Heading */}
         <h1
@@ -116,7 +117,7 @@ export default function DisclaimerPage() {
             <p style={pStyle}>
               If you find inaccurate or outdated information, please use the{" "}
               <strong>Feedback</strong> button on the{" "}
-              <a href="/" style={linkStyle}>main page</a>{" "}
+              <Link href="/" style={linkStyle}>main page</Link>{" "}
               or the <strong>Report an issue</strong> link inside any spot&rsquo;s detail
               view. Community reports help keep this resource accurate for everyone.
             </p>

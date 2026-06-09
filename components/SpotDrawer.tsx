@@ -11,6 +11,8 @@ interface Props {
   onClose: () => void;
   onSelect: (spot: Spot) => void;
   allSpots: Spot[];
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: number) => void;
 }
 
 const DIFF_STYLES: Record<string, { bg: string; text: string }> = {
@@ -28,9 +30,12 @@ function Tag({ label }: { label: string }) {
   );
 }
 
-const NOTES_TRUNCATE = 150;
+// Notes carry the launch/put-in detail a paddler actually needs. 150 clipped it
+// mid-sentence on nearly every spot, forcing a "Read more" tap each time; 220
+// fits the key access info before the fold.
+const NOTES_TRUNCATE = 220;
 
-export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props) {
+export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
@@ -65,7 +70,6 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
       try {
         await navigator.share({
           title: spot!.water,
-          text: spot!.notes?.slice(0, 100),
           url,
         });
       } catch { /* user cancelled */ }
@@ -87,7 +91,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
 
       {/* Drawer panel */}
       <div
-        className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[70vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
+        className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[58vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
         style={{ zIndex: 1200 }}
       >
         {/* Handle (mobile) */}
@@ -209,6 +213,20 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots }: Props)
               >
                 {copied ? "Copied!" : "Share"}
               </button>
+              {onToggleFavorite && (
+                <button
+                  onClick={() => onToggleFavorite(spot!.id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+                  style={isFavorite
+                    ? { borderColor: "#fecdd3", color: "#e11d48", background: "#fff1f2" }
+                    : { borderColor: "#e5e7eb", color: "var(--muted)" }
+                  }
+                  aria-label={isFavorite ? "Remove from saved spots" : "Save this spot"}
+                >
+                  <span className="text-base leading-none">{isFavorite ? "♥" : "♡"}</span>
+                  <span>{isFavorite ? "Saved" : "Save"}</span>
+                </button>
+              )}
               <a
                 href={photosUrl}
                 target="_blank"

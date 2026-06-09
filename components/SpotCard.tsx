@@ -8,6 +8,8 @@ interface Props {
   selected: boolean;
   onClick: () => void;
   distance?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: number) => void;
 }
 
 const DIFF_STYLES: Record<string, string> = {
@@ -39,11 +41,22 @@ function formatDistance(miles: number): string {
     : `${miles.toFixed(1)} mi`;
 }
 
-export default function SpotCard({ spot, selected, onClick, distance }: Props) {
+export default function SpotCard({ spot, selected, onClick, distance, isFavorite, onToggleFavorite }: Props) {
   return (
-    <button
+    // role="button" rather than a real <button>: this card contains the
+    // favorite-toggle button, and a <button> nested in a <button> is invalid
+    // HTML that breaks hydration (the parser auto-closes the outer button).
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className={`w-full text-left px-4 py-3.5 border-b border-gray-100 transition-colors hover:bg-white ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={`w-full cursor-pointer text-left px-4 py-3.5 border-b border-gray-100 transition-colors hover:bg-white ${
         selected ? "bg-white border-l-4 border-l-[--accent] pl-3" : ""
       }`}
     >
@@ -57,11 +70,27 @@ export default function SpotCard({ spot, selected, onClick, distance }: Props) {
               : <> &middot; {spot.region}</>}
           </p>
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${DIFF_STYLES[spot.difficulty]}`}>
-          {DIFFICULTY_LABEL[spot.difficulty]}
-        </span>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFF_STYLES[spot.difficulty]}`}>
+            {DIFFICULTY_LABEL[spot.difficulty]}
+          </span>
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(spot.id); }}
+              aria-label={isFavorite ? "Remove from saved" : "Save spot"}
+              aria-pressed={isFavorite}
+              // 40px touch target (was a ~16px glyph nobody could hit or notice);
+              // negative margin keeps the row height. Full opacity so it reads as
+              // a real save control, not decoration.
+              className="-my-2 -mr-1.5 flex h-10 w-10 items-center justify-center text-xl leading-none transition-transform hover:scale-110"
+              style={{ color: isFavorite ? "#e11d48" : "var(--muted)" }}
+            >
+              {isFavorite ? "♥" : "♡"}
+            </button>
+          )}
+        </div>
       </div>
       <Icons spot={spot} />
-    </button>
+    </div>
   );
 }
