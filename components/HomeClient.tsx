@@ -42,13 +42,23 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(false);
-  const [favorites, setFavorites] = useState<Set<number>>(() => {
-    if (typeof window === "undefined") return new Set();
+  // Start empty so the first client render matches the static server HTML, then
+  // hydrate from localStorage in an effect. Reading storage in the initializer
+  // rendered the "Your saved spots" section the server never had → React #418
+  // hydration mismatch (a flash) for exactly the returning savers we care about.
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+
+  useEffect(() => {
+    // Loading persisted state from an external store (localStorage) on mount is a
+    // legitimate effect-driven setState, same pattern as the deep-link effect below.
     try {
       const raw = localStorage.getItem("ptw-favorites");
-      return new Set(raw ? (JSON.parse(raw) as number[]) : []);
-    } catch { return new Set(); }
-  });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (raw) setFavorites(new Set(JSON.parse(raw) as number[]));
+    } catch { /* private mode / bad JSON */ }
+    setFavoritesLoaded(true);
+  }, []);
 
   // Pre-select from prop (spot pages) or ?spot= URL param (home page)
   useEffect(() => {
@@ -85,9 +95,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   }, [selected]);
 
   useEffect(() => {
+    // Don't write until we've loaded, or the empty initial set would clobber
+    // saved favorites on first mount before the load effect runs.
+    if (!favoritesLoaded) return;
     try { localStorage.setItem("ptw-favorites", JSON.stringify([...favorites])); }
     catch { /* storage full / private mode */ }
-  }, [favorites]);
+  }, [favorites, favoritesLoaded]);
 
   function toggleFavorite(id: number) {
     setFavorites((prev) => {
@@ -107,6 +120,17 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       return next;
     });
   }
+
+  // Signal drawer state to the install banner (rendered in the root layout) so it
+  // can hide while a spot is open instead of covering Get Directions.
+  useEffect(() => {
+    document.body.dataset.drawerOpen = selected ? "true" : "false";
+    window.dispatchEvent(new Event("ptw:drawerchange"));
+  }, [selected]);
+
+  // Only fit the map to the visible spots once the user has narrowed them. On the
+  // full set, fitting all 140 spans the whole state; keep the Bay default instead.
+  const isFiltered = !!(filters.region || filters.difficulty || filters.freeOnly || filters.search.trim());
 
   const filtered = useMemo(() => applyFilters(ALL_SPOTS, filters), [filters]);
 
@@ -351,7 +375,22 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           className={`flex-1 relative min-h-0
             ${activeTab === "map" ? "flex" : "hidden md:flex"}`}
         >
-          <MapView spots={sortedFiltered} selected={selected} onSelect={handleSelect} userLocation={userLocation} />
+          <MapView spots={sortedFiltered} selected={selected} onSelect={handleSelect} userLocation={userLocation} fitToSpots={isFiltered} />
+
+          {/* Empty state — the List has one, but the map is the default mobile tab,
+              so an over-filtered user would otherwise just see a blank map. */}
+          {sortedFiltered.length === 0 && (
+            <div className="absolute inset-0 z-[400] flex flex-col items-center justify-center bg-[--bg]/80 backdrop-blur-sm text-center px-4">
+              <p className="text-3xl mb-3">🏄</p>
+              <p className="text-[--dark] font-semibold">No spots match your filters</p>
+              <button
+                onClick={handleClearAll}
+                className="mt-3 px-4 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-[--muted] hover:border-[--accent] hover:text-[--dark] transition-colors bg-white"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="absolute bottom-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow text-xs space-y-1">

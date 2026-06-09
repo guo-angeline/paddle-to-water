@@ -78,8 +78,12 @@ export default function SpotCard({ spot, selected, onClick, distance, isFavorite
             <button
               onClick={(e) => { e.stopPropagation(); onToggleFavorite(spot.id); }}
               aria-label={isFavorite ? "Remove from saved" : "Save spot"}
-              className="text-base leading-none transition-opacity hover:opacity-70"
-              style={{ color: isFavorite ? "#e11d48" : "var(--muted)", opacity: isFavorite ? 1 : 0.4 }}
+              aria-pressed={isFavorite}
+              // 40px touch target (was a ~16px glyph nobody could hit or notice);
+              // negative margin keeps the row height. Full opacity so it reads as
+              // a real save control, not decoration.
+              className="-my-2 -mr-1.5 flex h-10 w-10 items-center justify-center text-xl leading-none transition-transform hover:scale-110"
+              style={{ color: isFavorite ? "#e11d48" : "var(--muted)" }}
             >
               {isFavorite ? "♥" : "♡"}
             </button>

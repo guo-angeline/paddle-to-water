@@ -47,6 +47,14 @@ export default function SpotList({
 
   return (
     <div className="overflow-y-auto flex-1">
+      {/* First-run nudge: the save feature was invisible (0 saves in week 1), so
+          tell people it exists. Drops away the moment they save anything. */}
+      {savedSpots.length === 0 && onToggleFavorite && mainSpots.length > 0 && (
+        <p className="px-4 pt-2.5 pb-1 text-[11px] text-[--muted]">
+          Tap <span style={{ color: "#e11d48" }}>♥</span> to save spots for later.
+        </p>
+      )}
+
       {/* Saved spots section — pinned at top regardless of filters */}
       {savedSpots.length > 0 && (
         <div>

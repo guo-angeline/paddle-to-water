@@ -30,7 +30,10 @@ function Tag({ label }: { label: string }) {
   );
 }
 
-const NOTES_TRUNCATE = 150;
+// Notes carry the launch/put-in detail a paddler actually needs. 150 clipped it
+// mid-sentence on nearly every spot, forcing a "Read more" tap each time; 220
+// fits the key access info before the fold.
+const NOTES_TRUNCATE = 220;
 
 export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false);
@@ -88,7 +91,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
 
       {/* Drawer panel */}
       <div
-        className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[70vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
+        className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[58vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
         style={{ zIndex: 1200 }}
       >
         {/* Handle (mobile) */}

@@ -35,6 +35,18 @@ export default function InstallPrompt() {
   const [platform, setPlatform] = useState<Platform>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Hide while a spot drawer is open. The banner is fixed at z-1500, above the
+  // drawer (z-1200), and was covering the primary "Get Directions" button — the
+  // single action people came for. HomeClient signals drawer state via a body
+  // attribute + event so this can stay mounted in the root layout.
+  useEffect(() => {
+    const sync = () => setDrawerOpen(document.body.dataset.drawerOpen === "true");
+    sync();
+    window.addEventListener("ptw:drawerchange", sync);
+    return () => window.removeEventListener("ptw:drawerchange", sync);
+  }, []);
 
   useEffect(() => {
     if (isInStandaloneMode()) {
@@ -42,7 +54,10 @@ export default function InstallPrompt() {
       setPersona({ installed_pwa: true });
       return;
     }
-    if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
+    // Persisted in localStorage, not sessionStorage: "not now" should mean not
+    // every single visit. We were re-prompting iOS users every session (33 shows,
+    // 0 installs), which is pure annoyance since iOS can't auto-install anyway.
+    if (localStorage.getItem(STORAGE_KEY) === "1") return;
 
     if (isIOS()) {
       // Client-only: platform is detected from the user agent, so this must
@@ -75,7 +90,7 @@ export default function InstallPrompt() {
 
   function handleDismiss() {
     setVisible(false);
-    sessionStorage.setItem(STORAGE_KEY, "1");
+    localStorage.setItem(STORAGE_KEY, "1");
   }
 
   async function handleInstall() {
@@ -90,7 +105,7 @@ export default function InstallPrompt() {
     setDeferredPrompt(null);
   }
 
-  if (!visible || !platform) return null;
+  if (!visible || !platform || drawerOpen) return null;
 
   return (
     <div
@@ -131,7 +146,7 @@ export default function InstallPrompt() {
           </p>
           {platform === "ios" ? (
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.4 }}>
-              Tap{" "}
+              <span>Tap the Share icon</span>{" "}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="13"
@@ -147,8 +162,8 @@ export default function InstallPrompt() {
                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                 <polyline points="16 6 12 2 8 6" />
                 <line x1="12" y1="2" x2="12" y2="15" />
-              </svg>{" "}
-              <strong>Share</strong> then &ldquo;Add to Home Screen&rdquo;
+              </svg>
+              <span>, then pick &ldquo;Add to Home Screen.&rdquo;</span>
             </p>
           ) : (
             <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(255,255,255,0.72)" }}>

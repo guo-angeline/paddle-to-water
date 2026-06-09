@@ -83,9 +83,14 @@ function bestWeight(f: ReturnType<typeof buildFields>, token: string): number {
   if (fieldHas(f.name, token)) return W.name;
   if (fieldHas(f.city, token)) return W.city;
   if (fieldHas(f.region, token)) return W.region;
+  // Short tokens (1-2 chars) only match the spot/city/region name. A 2-char prefix
+  // like "Co" otherwise hits ubiquitous words in the geocode string ("County") and
+  // the notes (Cove, Coast, conditions…) and returns ~all spots, which reads as a
+  // broken search. The fuller fields kick in once the query is specific enough.
+  if (token.length < 3) return 0;
+  if (fieldHas(f.place, token)) return W.place;
   if (fieldHas(f.type, token)) return W.type;
   if (fieldHas(f.tag, token)) return W.tag;
-  if (fieldHas(f.place, token)) return W.place;
   if (fieldHas(f.notes, token)) return W.notes;
   return 0;
 }
