@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL, DIFFICULTY_COLOR } from "@/lib/types";
 import { nearbySpots } from "@/lib/distance";
@@ -35,10 +35,57 @@ function Tag({ label }: { label: string }) {
 // fits the key access info before the fold.
 const NOTES_TRUNCATE = 220;
 
+// Mobile bottom-sheet snap points, as a fraction of viewport height.
+const PEEK = 0.58; // default resting height
+const FULL = 0.92; // dragged-up / expanded height
+
 export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
+
+  // Draggable mobile sheet. The handle (not the content) is the drag surface, so
+  // dragging the grabber moves the sheet while the body still scrolls on its own.
+  const [isMobile, setIsMobile] = useState(false);
+  const [sheetH, setSheetH] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const drag = useRef<{ startY: number; startH: number } | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => {
+      setIsMobile(mq.matches);
+      if (mq.matches) setSheetH((h) => h ?? Math.round(window.innerHeight * PEEK));
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  function onHandleStart(e: ReactTouchEvent) {
+    drag.current = {
+      startY: e.touches[0].clientY,
+      startH: sheetH ?? window.innerHeight * PEEK,
+    };
+    setDragging(true);
+  }
+  function onHandleMove(e: ReactTouchEvent) {
+    if (!drag.current) return;
+    const dh = drag.current.startY - e.touches[0].clientY; // up = taller
+    const max = window.innerHeight * FULL;
+    setSheetH(Math.min(max, Math.max(120, drag.current.startH + dh)));
+  }
+  function onHandleEnd() {
+    if (!drag.current) return;
+    drag.current = null;
+    setDragging(false);
+    const peek = window.innerHeight * PEEK;
+    const full = window.innerHeight * FULL;
+    const h = sheetH ?? peek;
+    // Dragged well below the peek height -> dismiss; else snap to nearer point.
+    if (h < peek * 0.6) { onClose(); return; }
+    setSheetH(h > (peek + full) / 2 ? full : peek);
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -92,11 +139,33 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
       {/* Drawer panel */}
       <div
         className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[58vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
-        style={{ zIndex: 1200 }}
+        style={{
+          zIndex: 1200,
+          ...(isMobile && sheetH != null
+            ? {
+                height: sheetH,
+                maxHeight: "none",
+                transition: dragging ? "none" : "height 0.28s cubic-bezier(0.32, 0.72, 0, 1)",
+              }
+            : {}),
+        }}
       >
-        {/* Handle (mobile) */}
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        {/* Handle (mobile) — drag to expand to full screen, down to peek/dismiss.
+            Sticky so it stays grabbable when the body scrolls; touch-action none so
+            the gesture drags the sheet instead of scrolling. */}
+        <div
+          className="sticky top-0 z-10 bg-white flex justify-center pt-3 pb-2.5 cursor-grab active:cursor-grabbing md:hidden"
+          style={{ touchAction: "none" }}
+          onTouchStart={onHandleStart}
+          onTouchMove={onHandleMove}
+          onTouchEnd={onHandleEnd}
+          role="slider"
+          aria-label="Resize panel: drag up to expand, down to dismiss"
+          aria-valuenow={sheetH != null && typeof window !== "undefined" ? Math.round((sheetH / window.innerHeight) * 100) : 58}
+          aria-valuemin={0}
+          aria-valuemax={92}
+        >
+          <div className="w-10 h-1.5 bg-gray-300 rounded-full" />
         </div>
 
         <div
