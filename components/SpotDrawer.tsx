@@ -6,6 +6,7 @@ import { DIFFICULTY_LABEL, DIFFICULTY_COLOR } from "@/lib/types";
 import { nearbySpots } from "@/lib/distance";
 import { track } from "@/lib/analytics";
 import FeedbackModal from "@/components/FeedbackModal";
+import ConditionsPanel from "@/components/ConditionsPanel";
 
 interface Props {
   spot: Spot | null;
@@ -266,6 +267,9 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
               )}
             </div>
           )}
+
+          {/* Live tide + wind — the reason to come back. */}
+          <ConditionsPanel spot={spot} />
 
           {/* Nearby spots — desktop sidebar only; map handles discovery on mobile */}
           {nearby.length > 0 && (

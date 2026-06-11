@@ -27,7 +27,11 @@ type EventName =
   // Mobile bottom-sheet drag: did people discover expand-to-full, and how do
   // they close the sheet (drag vs button)?
   | "spot_sheet_resized"
-  | "spot_sheet_dismissed";
+  | "spot_sheet_dismissed"
+  // Live tide/wind conditions loaded for a spot. The return hook: fires once per
+  // spot open after the fetch settles, with the paddle-ability read attached so
+  // we can tell if people check before going out.
+  | "conditions_viewed";
 
 function ready(): boolean {
   return typeof window !== "undefined" && posthog.__loaded === true;
