@@ -118,6 +118,11 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       });
       // Persona: anyone who saves a spot is an engaged, returning-intent user.
       setPersona({ saves_spots: true, favorite_count: next.size });
+      if (adding) {
+        window.dispatchEvent(
+          new CustomEvent("ptw:spotsaved", { detail: { spotName: spot?.water ?? "this spot" } })
+        );
+      }
       return next;
     });
   }
