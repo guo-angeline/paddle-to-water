@@ -1,5 +1,5 @@
 import type { Spot } from "@/lib/types";
-import type { Paddleability } from "@/lib/conditions";
+import type { Conditions, Paddleability } from "@/lib/conditions";
 
 /** UI state for a saved spot's conditions: a resolved read, or still loading. */
 export type SavedConditionState = Paddleability | "loading";
@@ -30,4 +30,35 @@ export function rankSavedSpotsByConditions(
       paddleabilityRank(condBySpot[a.id] ?? "loading") -
       paddleabilityRank(condBySpot[b.id] ?? "loading")
   );
+}
+
+export type ConditionsGetter = (
+  spotId: number,
+  lat: number,
+  lng: number,
+  tideSensitive: boolean
+) => Promise<Conditions>;
+
+/**
+ * Fetch paddle-ability for every saved spot, in parallel. The getter is injected
+ * so tests can run without the network; production passes lib/conditions
+ * getConditions, which caches + dedupes per spot id. Resolves to a complete map;
+ * any failure or missing wind degrades that spot to "unknown" rather than
+ * rejecting the whole batch.
+ */
+export async function fetchSavedConditions(
+  spots: Spot[],
+  get: ConditionsGetter
+): Promise<Record<number, Paddleability>> {
+  const entries = await Promise.all(
+    spots.map(async (s): Promise<[number, Paddleability]> => {
+      try {
+        const c = await get(s.id, s.lat, s.lng, s.tide_sensitive);
+        return [s.id, c.wind?.paddleability ?? "unknown"];
+      } catch {
+        return [s.id, "unknown"];
+      }
+    })
+  );
+  return Object.fromEntries(entries);
 }
