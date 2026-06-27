@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { track, setPersona } from "@/lib/analytics";
 import { enablePushAlerts, readStashedSubscription, type OptInResult } from "@/lib/push";
 
@@ -92,8 +92,13 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("ptw:spotsaved", onSaved);
   }, []);
 
+  const shownRef = useRef(false);
   useEffect(() => {
-    if (visible && platform) track("alert_optin_shown", { platform });
+    if (!visible) { shownRef.current = false; return; }
+    if (platform && !shownRef.current) {
+      track("alert_optin_shown", { platform });
+      shownRef.current = true;
+    }
   }, [visible, platform]);
 
   function handleDismiss() {
@@ -125,7 +130,7 @@ export default function InstallPrompt() {
     }
   }
 
-  if (!visible || drawerOpen) return null;
+  if (!visible || !platform || drawerOpen) return null;
 
   const card: React.CSSProperties = {
     background: "#1A2C36",
