@@ -77,7 +77,11 @@ export async function enablePushAlerts(watchedSpotIds: number[]): Promise<OptInR
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return "denied";
 
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<ServiceWorkerRegistration | null>((resolve) => setTimeout(() => resolve(null), 8000)),
+  ]);
+  if (!reg) return "unsupported";
   const existing = await reg.pushManager.getSubscription();
   const sub =
     existing ??

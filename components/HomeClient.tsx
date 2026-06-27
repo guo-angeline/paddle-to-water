@@ -104,11 +104,11 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   }, [favorites, favoritesLoaded]);
 
   function toggleFavorite(id: number) {
+    const adding = !favorites.has(id);
+    const spot = ALL_SPOTS.find((s) => s.id === id);
     setFavorites((prev) => {
       const next = new Set(prev);
-      const adding = !next.has(id);
       if (adding) next.add(id); else next.delete(id);
-      const spot = ALL_SPOTS.find((s) => s.id === id);
       track("favorite_toggled", {
         spot_id: id,
         spot_name: spot?.water,
@@ -118,13 +118,13 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       });
       // Persona: anyone who saves a spot is an engaged, returning-intent user.
       setPersona({ saves_spots: true, favorite_count: next.size });
-      if (adding) {
-        window.dispatchEvent(
-          new CustomEvent("ptw:spotsaved", { detail: { spotName: spot?.water ?? "this spot" } })
-        );
-      }
       return next;
     });
+    if (adding) {
+      window.dispatchEvent(
+        new CustomEvent("ptw:spotsaved", { detail: { spotName: spot?.water ?? "this spot" } })
+      );
+    }
   }
 
   // Signal drawer state to the install banner (rendered in the root layout) so it
