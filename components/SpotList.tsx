@@ -3,6 +3,8 @@
 import { useRef, useEffect } from "react";
 import type { Spot } from "@/lib/types";
 import SpotCard from "./SpotCard";
+import { rankSavedSpotsByConditions, type SavedConditionState } from "@/lib/savedConditions";
+import ConditionsBadge from "./ConditionsBadge";
 
 interface Props {
   spots: Spot[];
@@ -13,11 +15,12 @@ interface Props {
   savedSpots?: Spot[];
   favorites?: Set<number>;
   onToggleFavorite?: (id: number) => void;
+  condBySpot?: Record<number, SavedConditionState>;
 }
 
 export default function SpotList({
   spots, selected, onSelect, onClearFilters, distanceMap,
-  savedSpots = [], favorites = new Set(), onToggleFavorite,
+  savedSpots = [], favorites = new Set(), onToggleFavorite, condBySpot = {},
 }: Props) {
   const selectedRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +65,7 @@ export default function SpotList({
             <span className="text-[11px] font-semibold text-[--muted] uppercase tracking-wider">Your saved spots</span>
             <span className="text-[11px] text-[--muted] opacity-60">({savedSpots.length})</span>
           </div>
-          {savedSpots.map((spot) => (
+          {rankSavedSpotsByConditions(savedSpots, condBySpot).map((spot) => (
             <div key={spot.id} ref={selected?.id === spot.id ? selectedRef : null}>
               <SpotCard
                 spot={spot}
@@ -71,6 +74,7 @@ export default function SpotList({
                 distance={distanceMap?.[spot.id]}
                 isFavorite={true}
                 onToggleFavorite={onToggleFavorite}
+                conditionsBadge={<ConditionsBadge state={condBySpot[spot.id] ?? "loading"} />}
               />
             </div>
           ))}

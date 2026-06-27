@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LEGEND } from "@/lib/types";
 import spotsData from "@/data/spots.json";
@@ -12,6 +12,7 @@ import FeedbackModal from "@/components/FeedbackModal";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
 import { track, setPersona } from "@/lib/analytics";
+import { useSavedConditions } from "@/components/useSavedConditions";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
@@ -157,6 +158,18 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     () => ALL_SPOTS.filter((s) => favorites.has(s.id)),
     [favorites]
   );
+
+  const { condBySpot, loading: conditionsLoading } = useSavedConditions(savedSpots);
+
+  // Fire once per session, after the first saved-conditions batch resolves.
+  const loggedSavedConditions = useRef(false);
+  useEffect(() => {
+    if (loggedSavedConditions.current) return;
+    if (savedSpots.length === 0 || conditionsLoading) return;
+    loggedSavedConditions.current = true;
+    const calm = Object.values(condBySpot).filter((p) => p === "calm").length;
+    track("saved_conditions_viewed", { count: savedSpots.length, calm_count: calm });
+  }, [savedSpots.length, conditionsLoading, condBySpot]);
 
   const distanceMap = useMemo<Record<number, number> | undefined>(() => {
     if (!userLocation) return undefined;
@@ -367,6 +380,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             savedSpots={savedSpots}
             favorites={favorites}
             onToggleFavorite={toggleFavorite}
+            condBySpot={condBySpot}
           />
         </div>
 

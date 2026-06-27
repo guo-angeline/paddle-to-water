@@ -20,6 +20,10 @@ type EventName =
   | "spot_search"
   | "near_me_toggled"
   | "favorite_toggled"
+  // Saved-spot conditions surfaced in the "Your Spots" list. Fired once per
+  // session after the first batch resolves, to measure whether ranking saved
+  // spots by paddle-ability is what brings people back.
+  | "saved_conditions_viewed"
   | "feedback_opened"
   | "view_switched"
   | "pwa_prompt_shown"

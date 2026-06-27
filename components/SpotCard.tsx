@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 
@@ -10,6 +11,7 @@ interface Props {
   distance?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (id: number) => void;
+  conditionsBadge?: ReactNode;
 }
 
 const DIFF_STYLES: Record<string, string> = {
@@ -41,7 +43,7 @@ function formatDistance(miles: number): string {
     : `${miles.toFixed(1)} mi`;
 }
 
-export default function SpotCard({ spot, selected, onClick, distance, isFavorite, onToggleFavorite }: Props) {
+export default function SpotCard({ spot, selected, onClick, distance, isFavorite, onToggleFavorite, conditionsBadge }: Props) {
   return (
     // role="button" rather than a real <button>: this card contains the
     // favorite-toggle button, and a <button> nested in a <button> is invalid
@@ -69,6 +71,7 @@ export default function SpotCard({ spot, selected, onClick, distance, isFavorite
               ? <> &middot; <span className="font-medium text-[--accent]">{formatDistance(distance)}</span></>
               : <> &middot; {spot.region}</>}
           </p>
+          {conditionsBadge && <div className="mt-1.5">{conditionsBadge}</div>}
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFF_STYLES[spot.difficulty]}`}>
