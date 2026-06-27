@@ -73,6 +73,10 @@ How to do it:
 
 `track()` and `setPersona()` no-op when PostHog isn't initialized, so they're safe to call unconditionally. Confirm a new event by checking its string lands in the built bundle: `grep -rho "<event>" .next/static`.
 
+### Analytics reports
+
+When you produce an analytics report (user counts, retention, funnels, adoption), begin the message with the line `<!-- analytics-report -->`. A project Stop hook (`scripts/save-analytics-report.py`, wired in `.claude/settings.json`) archives any message containing that marker to `reports/analytics-<date>.md`. No marker, no archive. Reading PostHog data needs a Personal API key (`phx_…`) + project id `458289` (US); the app only ships the write-only ingestion key.
+
 ## Deployment
 
 Vercel project is linked via `.vercel/project.json` (gitignored). Run `vercel --prod --yes` from the project root. The app builds as fully static (`○` in the build output) — no server functions.
@@ -87,5 +91,4 @@ When user feedback comes in as a question or personal comment (e.g. "I didn't kn
 
 ## Planned next phases
 
-- **V1**: Supabase auth (Google OAuth) + ratings + trip reports + photo uploads
-- **V2**: Community spot submissions with admin approval, tide/wind API overlay
+See `ROADMAP.md` for the current, data-driven priority order (source of truth). In short: the Jun 2026 analytics showed retention is the bottleneck (78% one-and-done) and conditions is the loved feature, so the roadmap now leads with the **conditions-alert retention loop** (save -> install -> anonymous web push when a spot is good; Stage A shipped) ahead of ratings/trip-reports/photos. The UGC content flywheel and a PaddlePass premium tier come after retention is proven.
