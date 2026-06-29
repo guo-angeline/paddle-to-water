@@ -41,4 +41,14 @@ describe("composeAlert", () => {
     ]);
     expect(body).toBe("Saturday looks calm at Foster City Lagoons +1 more.");
   });
+
+  it("throws when given no spots", () => {
+    expect(() => composeAlert([])).toThrow();
+  });
+});
+
+describe("sentKey", () => {
+  it("formats the dedup key as spotId:windowKey", () => {
+    expect(sentKey(2, "2026-07-04")).toBe("2:2026-07-04");
+  });
 });

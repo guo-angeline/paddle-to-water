@@ -33,6 +33,7 @@ export function selectAlertSpots(
 
 /** One batched push for a device's good spots. No em dashes in copy. */
 export function composeAlert(spots: SpotWindow[]): { title: string; body: string; url: string } {
+  if (spots.length === 0) throw new Error("composeAlert requires at least one spot");
   const first = spots[0];
   const extra = spots.length - 1;
   const tail = extra > 0 ? ` +${extra} more` : "";
