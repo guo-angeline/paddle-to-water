@@ -23,24 +23,19 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 - **Retention epic: conditions alerts (Stages A to D), shipped + live 2026-06-29.** Save a spot, install the app, get a capped daily web push when a watched spot has a calm window in the next 1 to 3 days. Stage A (Your Spots ranked by conditions), B (install/opt-in + service worker + push subscription), C (Supabase store + `/api/alerts/subscribe`), D (Vercel Cron watcher that sends). Spec: `docs/superpowers/specs/2026-06-27-retention-hook-design.md`; plans under `docs/superpowers/plans/2026-06-27-retention-hook-stage-{a,b,c,d}.md`.
   - **Unproven, watch the data before building more retention/premium:** opt-in grant rate (`alert_optin_result`), `alert_clicked`, and whether alerted users beat the 13 to 17% W1 baseline. As of ship date there are 0 real subscriptions.
   - **Real-device test still owed:** install the PWA, enable alerts, trigger the cron, confirm the push lands and deep-links to the spot.
+- **Instrumentation pass, shipped + live 2026-06-29.** `spot_viewed` now carries `source: "list" | "map" | "deeplink" | "alert" | "related"` (canonical `SpotViewedSource` in `lib/analytics.ts`), and `alert_clicked` fires when the app opens from a push (the service worker tags the deep link `from=alert`). Outbound on Get Directions / Share was deferred (the `spot_action` click already captures intent; true "the link left" detection is fuzzy and low value).
 
 ---
 
-## 1. Instrumentation pass (IN PROGRESS, do first, it measures everything else)
-
-- `spot_viewed` fires from list and map with no `source` prop. Add `source: "list" | "map" | "deeplink" | "alert"` so we can tell which surface drives opens.
-- **`alert_clicked`:** the alert engine shipped but nothing measures whether a push drives a return. The service worker opens the spot deep link; tag it (`from=alert`) so the app fires `alert_clicked` on open. This is the missing measurement for the loop we just built.
-- Outbound on Get Directions / Share is deferred: `spot_action` already logs the click/intent, and true "the link left the app" detection is fuzzy and low value.
-
-## 2. Fix the 58% landing bounce
+## 1. Fix the 58% landing bounce
 
 142 of 247 visitors never open a single spot. On mobile (77% of users), surface value on load instead of a bare map: auto-open or prompt the nearest spot, or a "good to paddle near you today" view. Near-me works when asked, but nobody asks (10 users). Pairs naturally with the conditions data Stage A already fetches.
 
-## 3. Make "Get Directions" convert
+## 2. Make "Get Directions" convert
 
 The true conversion, clicked by 5 users in 20 days. Either the button is buried in the drawer or wind is deterring trips. Test placement, and cross-tab directions clicks against calm-vs-breezy conditions to learn whether wind suppresses intent.
 
-## 4. SEO: monitor, do not build yet
+## 3. SEO: monitor, do not build yet
 
 Organic is 10 users; expected this soon after the 140 spot pages went live. Recheck organic traffic in 4 to 6 weeks. If still flat, the spot pages are not indexing and that becomes a real work item. No build now.
 
