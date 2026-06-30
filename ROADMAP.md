@@ -16,21 +16,21 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Business model:** freemium "PaddlePass". Free = discovery + check conditions. Paid = conditions alerts for your spots + multi-day forecast windows + (later) offline. Conditions alerts are the natural paywall: high value, recurring, uniquely water.
 
-**Reprioritization:** lead with the conditions-alert retention loop, not ratings/trip-reports/photos. The data says people return for conditions, not journaling, so the UGC content flywheel comes after retention is proven.
+---
+
+## Shipped
+
+- **Retention epic: conditions alerts (Stages A to D), shipped + live 2026-06-29.** Save a spot, install the app, get a capped daily web push when a watched spot has a calm window in the next 1 to 3 days. Stage A (Your Spots ranked by conditions), B (install/opt-in + service worker + push subscription), C (Supabase store + `/api/alerts/subscribe`), D (Vercel Cron watcher that sends). Spec: `docs/superpowers/specs/2026-06-27-retention-hook-design.md`; plans under `docs/superpowers/plans/2026-06-27-retention-hook-stage-{a,b,c,d}.md`.
+  - **Unproven, watch the data before building more retention/premium:** opt-in grant rate (`alert_optin_result`), `alert_clicked`, and whether alerted users beat the 13 to 17% W1 baseline. As of ship date there are 0 real subscriptions.
+  - **Real-device test still owed:** install the PWA, enable alerts, trigger the cron, confirm the push lands and deep-links to the spot.
 
 ---
 
-## 1. Retention epic: conditions alerts (PRIMARY)
+## 1. Instrumentation pass (IN PROGRESS, do first, it measures everything else)
 
-The one loop: save a spot, install the app, get a capped daily push when one of your spots has a good paddle window. Fuses the two dead features (favorites, install) into the loved one (conditions). Full design in `docs/superpowers/specs/2026-06-27-retention-hook-design.md`.
-
-- **Stage A: "Your Spots by conditions" (SHIPPED 2026-06-27).** Saved spots ranked calm-first with a live paddle-ability badge, client-only. The experiment that proves whether conditions-as-habit retains. Plan: `docs/superpowers/plans/2026-06-27-retention-hook-stage-a.md`.
-  - **Watch before building Stage B:** do `saved_conditions_viewed` users and favorite counts climb, and does the alerted-intent cohort beat the 13 to 17% W1 baseline? If Stage A's signal is flat, rethink before adding backend.
-- **Stage B: install overhaul + service-worker push plumbing.** Web-push-only, so install is in-scope: prompt only after the first save, framed as "install to get alerts when [spot] is good", with the iOS Add-to-Home-Screen steps. Register the service worker + push subscription.
-- **Stage C: backend (Supabase Postgres).** Store `anon_id -> push subscription + watched spots` (anonymous, no login). Add the `POST /api/alerts/subscribe` route.
-- **Stage D: the watcher.** Vercel Cron hits a Next.js route that reuses `lib/conditions` in Node, checks each unique watched spot once, and sends a capped (1/day) web push when a good window is 1 to 3 days out. Dedupe by `window_key`.
-
-Stages B to D each get their own spec/plan when Stage A's signal justifies them.
+- `spot_viewed` fires from list and map with no `source` prop. Add `source: "list" | "map" | "deeplink" | "alert"` so we can tell which surface drives opens.
+- **`alert_clicked`:** the alert engine shipped but nothing measures whether a push drives a return. The service worker opens the spot deep link; tag it (`from=alert`) so the app fires `alert_clicked` on open. This is the missing measurement for the loop we just built.
+- Outbound on Get Directions / Share is deferred: `spot_action` already logs the click/intent, and true "the link left the app" detection is fuzzy and low value.
 
 ## 2. Fix the 58% landing bounce
 
@@ -38,23 +38,27 @@ Stages B to D each get their own spec/plan when Stage A's signal justifies them.
 
 ## 3. Make "Get Directions" convert
 
-The true conversion, clicked by 5 users in 20 days. Either the button is buried in the drawer or wind is deterring trips. Test placement, and cross-tab directions clicks against calm-vs-breezy conditions to learn whether wind suppresses intent. Add an outbound event when the directions link actually leaves the app (current `spot_action` only logs the click).
+The true conversion, clicked by 5 users in 20 days. Either the button is buried in the drawer or wind is deterring trips. Test placement, and cross-tab directions clicks against calm-vs-breezy conditions to learn whether wind suppresses intent.
 
-## 4. Instrumentation gaps
-
-- `spot_viewed` fires from two surfaces (list vs map pin) with no `source` prop. Add `source: "list" | "map" | "url"` so we can tell which surface drives opens.
-- No outbound event when a directions/share click leaves the app (see item 3).
-
-## 5. SEO: monitor, do not build yet
+## 4. SEO: monitor, do not build yet
 
 Organic is 10 users; expected this soon after the 140 spot pages went live. Recheck organic traffic in 4 to 6 weeks. If still flat, the spot pages are not indexing and that becomes a real work item. No build now.
+
+---
+
+## Tech follow-ups (from building the retention engine)
+
+- **Bounded-concurrency NWS fetch** in the cron (`app/api/cron/check-conditions`): it does 2 serial NWS calls per unique watched spot, which approaches the 60s function limit as the watched set grows. Batch with bounded concurrency + cache the `/points -> forecast URL` resolution. Do before many spots are watched.
+- **`npm audit fix`**: 4 moderate prod advisories (dompurify, postcss) pulled in transitively; the critical/high are dev-only.
+- **UNIQUE `alert_sends` dedupe index + `ON CONFLICT`** for DB-level dedup (currently app-enforced via `sentKeys`).
+- Restrict the cron's unique-spot fetch to spots reachable from an enabled subscription; sort the alert headline by soonest window.
 
 ---
 
 ## Later (after retention is proven)
 
 - **UGC content flywheel:** ratings, photos, trip logs, user conditions reports. The long-term moat and SEO-acquisition engine, but it needs retained users to generate content first.
-- **Optional Google sign-in** to sync push subscriptions and saved spots across devices (Stage C ships anonymous; this is the upgrade path).
+- **Optional Google sign-in** to sync push subscriptions and saved spots across devices (the engine ships anonymous; this is the upgrade path).
 - **PaddlePass premium tier:** alerts + multi-day forecast windows + offline, as the freemium paywall.
 - **Community spot submissions** with admin approval.
-- **Tide-window refinement** in the "good window" evaluator (Stage D ships wind-only).
+- **Tide-window refinement** in the cron's "good window" evaluator (it ships wind-only).
