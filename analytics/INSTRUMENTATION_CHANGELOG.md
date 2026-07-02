@@ -93,3 +93,15 @@ Fires when the POST persisting a push subscription to `/api/alerts/subscribe`
 fails (`status` prop; null = network error). Success stays silent. Before
 this, a granted opt-in that never reached the backend was indistinguishable
 from a working subscription.
+
+**All events — semantics-changed (pre-init drop fixed, same day).**
+Events fired before PostHog finished initializing were silently dropped.
+React runs effects child-first, so anything emitted in a component's mount
+effect (e.g. `pwa_installed` `detected_standalone`, mount-time `setPersona`)
+lost this race every time; events that fire after a fetch settles won it. The
+wrapper now queues pre-init calls and flushes them once PostHog loads.
+- **Comparability:** mount-time events were systematically undercounted before
+  2026-07-02. `detected_standalone` in particular could not arrive at all from
+  the first build that day; its device-dedup key was bumped (`v1` -> `v2`) so
+  the few devices that hit the broken window (~30 min, likely 1 device) log
+  once for real. Expect no visible shift in fetch-gated events.

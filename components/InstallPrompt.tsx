@@ -20,7 +20,9 @@ declare global {
 const STORAGE_KEY = "ptw-install-dismissed";
 // One pwa_installed per device, however the install happened (in-app button,
 // browser menu, or iOS Add to Home Screen detected on first standalone launch).
-const INSTALL_LOGGED_KEY = "ptw-install-logged";
+// v2: the v1 build (live ~30 min on 2026-07-02) set the flag while the event
+// was dropped pre-PostHog-init; the bump lets those devices log once for real.
+const INSTALL_LOGGED_KEY = "ptw-install-logged-v2";
 
 function logInstallOnce(outcome: "appinstalled" | "detected_standalone") {
   try {

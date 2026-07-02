@@ -127,25 +127,57 @@ function ready(): boolean {
 }
 
 /**
+ * React runs effects child-first, so an event fired in a component's mount
+ * effect happens BEFORE PostHogProvider's init effect. Dropping those events
+ * silently is how the first `pwa_installed` (detected_standalone) was lost.
+ * Queue anything emitted pre-init and flush once PostHog loads. Bounded to
+ * ~10s of retries so environments without a key don't poll forever.
+ */
+const preReadyQueue: Array<() => void> = [];
+let flushAttempts = 0;
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleFlush() {
+  if (flushTimer || flushAttempts >= 40) return;
+  flushTimer = setTimeout(() => {
+    flushTimer = null;
+    flushAttempts += 1;
+    if (ready()) {
+      flushAttempts = 0;
+      for (const fn of preReadyQueue.splice(0)) fn();
+    } else if (preReadyQueue.length) {
+      scheduleFlush();
+    }
+  }, 250);
+}
+
+function runOrQueue(fn: () => void) {
+  if (ready()) {
+    fn();
+    return;
+  }
+  if (typeof window === "undefined") return; // SSR: nothing will ever load
+  preReadyQueue.push(fn);
+  scheduleFlush();
+}
+
+/**
  * Legacy / general-purpose capture. Kept for the un-migrated human-action
  * events. New SYSTEM or semantically-typed INTENT events should use
  * `trackSystem` / `trackIntent` so they're category-stamped and prop-checked.
  */
 export function track(event: EventName, props?: Record<string, unknown>) {
-  if (!ready()) return;
-  posthog.capture(event, props);
+  runOrQueue(() => posthog.capture(event, props));
 }
 
 /** Emit a SYSTEM/availability event (auto-fired on data settling). */
 export function trackSystem<E extends SystemEventName>(event: E, props: PropsFor<E>) {
-  if (!ready()) return;
-  posthog.capture(event, { ...props, event_category: "system" });
+  runOrQueue(() => posthog.capture(event, { ...props, event_category: "system" }));
 }
 
 /** Emit an INTENT/engagement event (a deliberate act or dwell-gated view). */
 export function trackIntent<E extends IntentEventName>(event: E, props: PropsFor<E>) {
-  if (!ready()) return;
-  posthog.capture(event, { ...props, event_category: "intent" });
+  runOrQueue(() => posthog.capture(event, { ...props, event_category: "intent" }));
 }
 
 /**
@@ -157,6 +189,5 @@ export function setPersona(
   set: Record<string, unknown>,
   setOnce?: Record<string, unknown>
 ) {
-  if (!ready()) return;
-  posthog.setPersonProperties(set, setOnce);
+  runOrQueue(() => posthog.setPersonProperties(set, setOnce));
 }
