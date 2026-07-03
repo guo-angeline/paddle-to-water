@@ -36,25 +36,33 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 ## Shipped
 
 - **Retention epic: conditions alerts (Stages A to D), shipped + live 2026-06-29.** Save a spot, install the app, get a capped daily web push when a watched spot has a calm window in the next 1 to 3 days. Stage A (Your Spots ranked by conditions), B (install/opt-in + service worker + push subscription), C (Supabase store + `/api/alerts/subscribe`), D (Vercel Cron watcher that sends). Spec: `docs/superpowers/specs/2026-06-27-retention-hook-design.md`; plans under `docs/superpowers/plans/2026-06-27-retention-hook-stage-{a,b,c,d}.md`.
-  - **Unproven, watch the data before building more retention/premium:** opt-in grant rate (`alert_optin_result`), `alert_clicked`, and whether alerted users beat the 13 to 17% W1 baseline. As of 2026-07-01: 1 granted subscription (iOS standalone, 2026-06-30). **Re-check the save -> opt-in -> push -> return funnel around 2026-07-15 to 2026-07-22**; if saves are still ~2 users/week, fix the landing bounce (item 1) before iterating on alerts.
+  - **Unproven, watch the data before building more retention/premium:** opt-in grant rate (`alert_optin_result`), `alert_clicked`, and whether alerted users beat the 13 to 17% W1 baseline. As of 2026-07-01: 1 granted subscription (iOS standalone, 2026-06-30). **Re-check the save -> opt-in -> push -> return funnel around 2026-07-15 to 2026-07-22**; if saves are still ~2 users/week, fix the landing bounce (item 3) before iterating on alerts.
   - **Evaluator redesigned 2026-07-02:** the original day-period evaluator required the whole 6am to 6pm forecast max wind <= 8 mph, which never happens in SF Bay summer, so alerts could never fire. It now uses the NWS hourly forecast and alerts on >= 2 consecutive calm daytime hours (calm mornings count).
-  - **Real-device test, remaining piece:** install + opt-in verified on a real iOS device 2026-06-30; subscription row confirmed in Supabase 2026-07-02 (re-sync POST succeeded with failure logging live). Still owed: confirm the push actually lands and deep-links. Cron moved 2026-07-02 from 13:00 UTC (6am PDT, woke sleeping users with a same-morning alert) to 02:00 UTC (7pm PDT / 6pm PST): with the hourly evaluator an evening send advertises tomorrow's window, which gives lead time to plan. Dry-run check: `curl -H "Authorization: Bearer $CRON_SECRET" "https://paddletowater.com/api/cron/check-conditions?dry=1"`.
+  - **Real-device test: complete.** Install + opt-in verified on a real iOS device 2026-06-30; subscription row confirmed in Supabase 2026-07-02; push confirmed landing and deep-linking to the spot on iOS 2026-07-03 (owner verified; copy well received). The full save -> install -> push -> return loop is now proven end to end for n=1. Cron moved 2026-07-02 from 13:00 UTC (6am PDT, woke sleeping users with a same-morning alert) to 02:00 UTC (7pm PDT / 6pm PST): with the hourly evaluator an evening send advertises tomorrow's window, which gives lead time to plan. Dry-run check: `curl -H "Authorization: Bearer $CRON_SECRET" "https://paddletowater.com/api/cron/check-conditions?dry=1"`.
 - **Instrumentation pass, shipped + live 2026-06-29.** `spot_viewed` now carries `source: "list" | "map" | "deeplink" | "alert" | "related"` (canonical `SpotViewedSource` in `lib/analytics.ts`), and `alert_clicked` fires when the app opens from a push (the service worker tags the deep link `from=alert`). Outbound on Get Directions / Share was deferred (the `spot_action` click already captures intent; true "the link left" detection is fuzzy and low value).
-- **Mobile UX conversion pass, shipped 2026-06 (branch `mobile-ux-fixes`, PRs #1 and #2).** Fixed the blockers from the 4-agent mobile audit: install banner no longer covers the drawer and dismissal persists in localStorage, Bay-default map with non-destructive pin selection, 44px save heart with first-run nudge, favorites hydration fix, map-tab empty state, place-name-first short search, partial-height draggable sheet, region-pill peek hint. Source docs (ux-mobile-findings.md, IMPROVEMENT-PLAN.md) retired 2026-07-02; still-open leftovers are backlog item 5.
+- **Mobile UX conversion pass, shipped 2026-06 (branch `mobile-ux-fixes`, PRs #1 and #2).** Fixed the blockers from the 4-agent mobile audit: install banner no longer covers the drawer and dismissal persists in localStorage, Bay-default map with non-destructive pin selection, 44px save heart with first-run nudge, favorites hydration fix, map-tab empty state, place-name-first short search, partial-height draggable sheet, region-pill peek hint. Source docs (ux-mobile-findings.md, IMPROVEMENT-PLAN.md) retired 2026-07-02; still-open leftovers are backlog item 7.
 
 ---
 
-## 1. [in-progress] 2026-07-02T16:02:37Z Fix the 58% landing bounce
+## 1. [ready] Alert deep-link interstitial: tell the user exactly when and where to go
+
+Owner directive 2026-07-03, top priority (after the first real-device push landed and deep-linked correctly). When the app opens from a push (`from=alert`, already tagged by the service worker), opening the bare spot drawer loses the alert's context. Show a floating info box or interstitial over the deep-linked spot carrying the alert-specific message: exactly when the calm window is and where to launch (put-in details from the spot's notes). The cron already computes the window; the message needs to survive the click (e.g. via URL params or notification data payload). User-facing flow change: ship behind an A/B flag per policy, and instrument dismiss/engage.
+
+## 2. [ready] Conditions: "next good window" for this spot (within 3 days)
+
+Owner directive 2026-07-03, top priority. In the spot drawer's conditions section, add a small section showing the next good launch window for this spot within the next 3 days, if one exists ("Next calm window: Sat 7 to 10am"). Reuse the same hourly calm-window evaluator the cron uses (`>= 2` consecutive calm daytime hours) so the alert and the in-app answer never disagree. This is also the natural preview of the PaddlePass "multi-day forecast windows" paid feature. New user-facing surface: A/B flag + instrumentation required.
+
+## 3. [in-progress] 2026-07-02T16:02:37Z Fix the 58% landing bounce
 
 142 of 247 visitors never open a single spot. On mobile (77% of users), surface value on load instead of a bare map: auto-open or prompt the nearest spot, or a "good to paddle near you today" view. Near-me works when asked, but nobody asks (10 users). Pairs naturally with the conditions data Stage A already fetches.
 
-## 2. [parked] SEO: monitor, do not build yet (recheck organic traffic ~2026-07-20; if still flat, promote to ready as an indexing investigation)
+## 4. [parked] SEO: monitor, do not build yet (recheck organic traffic ~2026-07-20; if still flat, promote to ready as an indexing investigation)
 
 Organic is 10 users; expected this soon after the 140 spot pages went live. Recheck organic traffic in 4 to 6 weeks. If still flat, the spot pages are not indexing and that becomes a real work item. No build now.
 
 ---
 
-## 3. [ready] Tech follow-ups (from building the retention engine)
+## 5. [ready] Tech follow-ups (from building the retention engine)
 
 Small items, one ship each, in this order:
 
@@ -63,11 +71,11 @@ Small items, one ship each, in this order:
 - **UNIQUE `alert_sends` dedupe index + `ON CONFLICT`** for DB-level dedup (currently app-enforced via `sentKeys`). Note: schema change touching alert infrastructure, expect this to escalate per studio policy.
 - Restrict the cron's unique-spot fetch to spots reachable from an enabled subscription; sort the alert headline by soonest window. Note: cron behavior change, expect escalation.
 
-## 4. [parked] Confirm push lands and deep-links on a real device
+## 6. [done] 2026-07-03 Confirm push lands and deep-links on a real device
 
-Owner action: needs a physical iOS device (install + opt-in already verified 2026-06-30; subscription row confirmed 2026-07-02). Dry-run: `curl -H "Authorization: Bearer $CRON_SECRET" "https://paddletowater.com/api/cron/check-conditions?dry=1"`.
+Owner verified 2026-07-03: push landed on iOS, copy well received, click deep-linked to the spot. Loop proven end to end; follow-up product ideas from this test are items 1 and 2.
 
-## 5. [proposed] Mobile polish leftovers (deferred from the Jun 2026 mobile UX pass)
+## 7. [proposed] Mobile polish leftovers (deferred from the Jun 2026 mobile UX pass)
 
 Carried over when IMPROVEMENT-PLAN.md was retired; verify each still reproduces before working it.
 
