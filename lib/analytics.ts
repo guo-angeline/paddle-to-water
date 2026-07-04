@@ -82,6 +82,12 @@ type IntentEventName =
   | "alert_optin_result"
   // Fired when the app is opened from a push notification (URL contains from=alert).
   | "alert_clicked"
+  // The alert deep-link interstitial (treatment variant) rendered over the
+  // spot drawer: an alert-originated open with a window label to show.
+  | "alert_interstitial_shown"
+  // How the interstitial was left: dismissed with no further action, or the
+  // user tapped through to directions.
+  | "alert_interstitial_result"
   // Experiment exposure: fired once per session when a variant-dependent UI
   // actually renders (see lib/experiments.ts). Exposure = the user saw the
   // treatment, not merely that they were bucketed.
@@ -115,6 +121,8 @@ interface EventPropMap {
   saved_conditions_loaded: { count: number; calm_count: number; latency_ms: number };
   alert_subscribe_failed: { status: number | null; watched_count: number };
   saved_conditions_viewed: { count: number; calm_count: number };
+  alert_interstitial_shown: { spot_id: number };
+  alert_interstitial_result: { spot_id: number; outcome: "dismissed" | "directions" };
   experiment_exposed: { experiment: string; variant: string };
 }
 

@@ -40,6 +40,9 @@ export function composeAlert(spots: SpotWindow[]): { title: string; body: string
   return {
     title: "Good paddling ahead",
     body: `${first.label} looks calm at ${first.spotName}${tail}.`,
-    url: `/?spot=${first.spotId}&from=alert`,
+    // window carries the label through the deep link so the alert interstitial
+    // (item 1) can show the same "when" the notification body already named,
+    // without a second fetch.
+    url: `/?spot=${first.spotId}&from=alert&window=${encodeURIComponent(first.label)}`,
   };
 }

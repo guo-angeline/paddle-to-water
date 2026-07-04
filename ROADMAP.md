@@ -44,15 +44,17 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
-## 1. [ready] Alert deep-link interstitial: tell the user exactly when and where to go
+## 1. [done] 2026-07-04 Alert deep-link interstitial: tell the user exactly when and where to go
 
 Owner directive 2026-07-03, top priority (after the first real-device push landed and deep-linked correctly). When the app opens from a push (`from=alert`, already tagged by the service worker), opening the bare spot drawer loses the alert's context. Show a floating info box or interstitial over the deep-linked spot carrying the alert-specific message: exactly when the calm window is and where to launch (put-in details from the spot's notes). The cron already computes the window; the message needs to survive the click (e.g. via URL params or notification data payload). User-facing flow change: ship behind an A/B flag per policy, and instrument dismiss/engage.
+
+**Shipped (code merged), NOT deployed** — `vercel --prod --yes` has not been run from this branch; production is unchanged until the owner deploys. `composeAlert` (`lib/alerts/select.ts`) now carries the window label as a `window` URL param on the notification's deep link. `AlertInterstitial` (`components/AlertInterstitial.tsx`) renders a floating card over the drawer with that window label and the spot's `notes`, with a Get Directions shortcut, gated behind the `alert_interstitial` PostHog flag (`docs/experiments/alert-interstitial.md`) — control renders nothing, so today's behavior is unchanged until the flag is turned on. New events `alert_interstitial_shown` / `alert_interstitial_result` (see `analytics/INSTRUMENTATION_CHANGELOG.md`, 2026-07-04). Verification: `npm test` (44 passed, including new `composeAlert` URL cases), `npm run lint` (clean), `npm run build` (clean; confirmed `alert_interstitial_shown`/`alert_interstitial_result`/`alert-interstitial` strings land in `.next/static`). No cron schedule, dedup, or Supabase-write behavior changed — only the URL payload the cron already sends.
 
 ## 2. [ready] Conditions: "next good window" for this spot (within 3 days)
 
 Owner directive 2026-07-03, top priority. In the spot drawer's conditions section, add a small section showing the next good launch window for this spot within the next 3 days, if one exists ("Next calm window: Sat 7 to 10am"). Reuse the same hourly calm-window evaluator the cron uses (`>= 2` consecutive calm daytime hours) so the alert and the in-app answer never disagree. This is also the natural preview of the PaddlePass "multi-day forecast windows" paid feature. New user-facing surface: A/B flag + instrumentation required.
 
-## 3. [in-progress] 2026-07-02T16:02:37Z Fix the 58% landing bounce
+## 3. [parked] stale in-progress (2026-07-02 session ended without landing fix code; re-promote to ready to resume) Fix the 58% landing bounce
 
 142 of 247 visitors never open a single spot. On mobile (77% of users), surface value on load instead of a bare map: auto-open or prompt the nearest spot, or a "good to paddle near you today" view. Near-me works when asked, but nobody asks (10 users). Pairs naturally with the conditions data Stage A already fetches.
 

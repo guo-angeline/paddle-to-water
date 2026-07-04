@@ -43,6 +43,15 @@ export const EXPERIMENTS = {
     primaryMetric: "spot_action",
     guardrails: ["conditions_loaded", "spot_sheet_dismissed"],
   },
+  // ROADMAP item 1: a floating card over the deep-linked spot's drawer that
+  // repeats the alert's calm-window timing and put-in notes, so the message
+  // survives the click instead of dropping into a bare spot drawer.
+  alert_interstitial: {
+    flag: "alert-interstitial",
+    variants: ["control", "treatment"],
+    primaryMetric: "alert_interstitial_result",
+    guardrails: ["spot_action", "spot_sheet_dismissed"],
+  },
 } as const satisfies Record<string, ExperimentDef>;
 
 export type ExperimentName = keyof typeof EXPERIMENTS;
