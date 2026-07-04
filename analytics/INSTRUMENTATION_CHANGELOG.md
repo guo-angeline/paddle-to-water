@@ -105,3 +105,17 @@ wrapper now queues pre-init calls and flushes them once PostHog loads.
   the first build that day; its device-dedup key was bumped (`v1` -> `v2`) so
   the few devices that hit the broken window (~30 min, likely 1 device) log
   once for real. Expect no visible shift in fetch-gated events.
+
+## 2026-07-04 — Alert deep-link interstitial (ROADMAP item 1)
+
+**`alert_interstitial_shown`, `alert_interstitial_result` — added (intent).**
+New floating card over the deep-linked spot's drawer, shown only in the
+`alert_interstitial` experiment's `treatment` variant (see
+`docs/experiments/alert-interstitial.md`), repeating the push's calm-window
+label and the spot's put-in notes. `shown` fires when the card actually
+renders for an alert-originated open with a window label; `result` fires once
+on dismiss or on tapping through to directions (`outcome`).
+- **Comparability:** brand new events, no prior series. Exposure for the
+  experiment itself is the existing `experiment_exposed` event
+  (`experiment: "alert_interstitial"`), not these two — restrict any
+  before/after read to the exposed cohort.

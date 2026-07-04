@@ -8,6 +8,7 @@ import spotsData from "@/data/spots.json";
 import FilterBar, { type Filters } from "@/components/FilterBar";
 import SpotList from "@/components/SpotList";
 import SpotDrawer from "@/components/SpotDrawer";
+import AlertInterstitial from "@/components/AlertInterstitial";
 import FeedbackModal from "@/components/FeedbackModal";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
@@ -51,6 +52,10 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   // hydration mismatch (a flash) for exactly the returning savers we care about.
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+  // Set only when the app opened from a push alert with a window label to
+  // show (see composeAlert in lib/alerts/select.ts). Cleared on dismiss or
+  // once the user navigates away from the alerted spot.
+  const [alertBanner, setAlertBanner] = useState<{ spotId: number; windowLabel: string } | null>(null);
 
   useEffect(() => {
     // Loading persisted state from an external store (localStorage) on mount is a
@@ -82,6 +87,8 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             spot_name: found.water,
             region: found.region,
           });
+          const windowLabel = params.get("window");
+          if (windowLabel) setAlertBanner({ spotId: found.id, windowLabel });
         }
         track("spot_viewed", {
           spot_id: found.id,
@@ -145,6 +152,14 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     document.body.dataset.drawerOpen = selected ? "true" : "false";
     window.dispatchEvent(new Event("ptw:drawerchange"));
   }, [selected]);
+
+  // The alert interstitial is tied to the specific spot the push named; once
+  // the user navigates elsewhere it would be stale context, so every path that
+  // changes or clears `selected` below also clears it.
+  function deselect() {
+    setSelected(null);
+    setAlertBanner(null);
+  }
 
   // Only fit the map to the visible spots once the user has narrowed them. On the
   // full set, fitting all 140 spans the whole state; keep the Bay default instead.
@@ -245,6 +260,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
   function handleSelect(spot: Spot, source: SpotViewedSource = "list") {
     setSelected(spot);
+    if (alertBanner && alertBanner.spotId !== spot.id) setAlertBanner(null);
     track("spot_viewed", {
       spot_id: spot.id,
       spot_name: spot.water,
@@ -257,7 +273,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
   function handleFilterChange(f: Filters) {
     setFilters(f);
-    setSelected(null);
+    deselect();
     track("filter_changed", {
       region: f.region || null,
       difficulty: f.difficulty || null,
@@ -274,14 +290,14 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function handleClearAll() {
     setFilters({ region: "", difficulty: "", freeOnly: false, search: "" });
     setUserLocation(null);
-    setSelected(null);
+    deselect();
     setSearchOpen(false);
     track("filter_changed", { cleared: true });
   }
 
   function setSearch(value: string) {
     setFilters((f) => ({ ...f, search: value }));
-    setSelected(null);
+    deselect();
   }
 
   return (
@@ -460,11 +476,21 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         {selected && (
           <SpotDrawer
             spot={selected}
-            onClose={() => setSelected(null)}
+            onClose={deselect}
             onSelect={handleSelect}
             allSpots={ALL_SPOTS}
             isFavorite={selected ? favorites.has(selected.id) : false}
             onToggleFavorite={toggleFavorite}
+          />
+        )}
+
+        {/* Alert deep-link interstitial: repeats the push's calm-window timing
+            and put-in notes over the drawer (A/B gated, see lib/experiments.ts). */}
+        {selected && alertBanner && alertBanner.spotId === selected.id && (
+          <AlertInterstitial
+            spot={selected}
+            windowLabel={alertBanner.windowLabel}
+            onDismiss={() => setAlertBanner(null)}
           />
         )}
       </div>
