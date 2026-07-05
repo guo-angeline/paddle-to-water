@@ -149,3 +149,21 @@ drawer-originated directions taps.
   the shared metric and control exposure did not exist before then. A small,
   expected uptick in total `spot_action`/`directions` volume comes from the card
   now emitting it; segment on `source` to separate card taps from drawer taps.
+
+## 2026-07-04: Next good window experiment (ROADMAP retention loop)
+
+**`next_window_viewed`: added (intent, dwell-gated).**
+Dwell-gated genuine view of the "Next good window" block in the spot drawer
+(see `lib/useGenuineView`), fired only in the `next_good_window` experiment's
+`treatment` variant (see `docs/experiments/next-good-window.md`). `had_window`
+distinguishes a block that rendered a real calm window from the quiet
+no-window line, so it can never be misread as "the block was seen and the
+user got nothing".
+
+**`experiment_exposed`: now also fires for `experiment: "next_good_window"`.**
+Logged for BOTH arms, once the next-window evaluation resolves (`ok: true`)
+and flags are ready, at that single trigger point, not gated behind the
+treatment render. This is the corrected pattern (matching the alert-interstitial
+fix above): control is directly comparable to treatment.
+- **Comparability:** new events, no prior series; they exist only from
+  2026-07-04.

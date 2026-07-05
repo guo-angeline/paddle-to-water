@@ -2,6 +2,12 @@
 
 CEO briefings after each shipped or parked item, newest first, 15 lines max each.
 
+## 2026-07-04T16:05:00Z · Item 2 (next good window) built + verified; PR #7 open
+What: "Looking ahead / Next calm window: Sat 7 to 10am" block in the drawer conditions area, behind the next-good-window A/B flag. Reuses the shared evaluateGoodWindow (extended with start/end hour, cron behavior unchanged) via a client-side lib/nextWindow.ts that mirrors getConditions caching and fails quietly. Symmetric both-arms exposure (corrected pattern), shared spot_action primary metric, dwell-gated next_window_viewed diagnostic.
+Interruption handled: the ship pipeline's whole-branch verify agent died on the account session limit (resets 2pm PT) with the panel work uncommitted. Manager preserved it (pushed), then finished verification by hand: 55 unit tests, lint clean, build clean, Playwright drawer smoke green across treatment/no-window/fetch-fail/control/flag-absent, no JS errors. Live event capture not observable locally (no key); wiring verified by review.
+Blocked on owner: merge + deploy PR #7, and create the next-good-window PostHog flag before starting the experiment. Same standing hold on PR #6 (fix) / the alert-interstitial flag.
+Loop stopped after this item: three studio PRs (#5 doc, #6 fix, #7 feature) now await your merge; not going to pile on a fourth.
+
 ## 2026-07-04T07:40:00Z · Item 1 experiment instrumentation fixed (PR #6, open)
 What: owner's question about the randomization unit surfaced a validity bug in the interstitial's already-deployed experiment. Randomization unit is the anonymous PostHog distinct_id (device/browser). Two defects fixed: (1) exposure logged only for treatment, so control had no cohort to compare; now symmetric trigger-based exposure for both arms. (2) card directions never hit the shared spot_action; now it does (source=alert_interstitial), making directions the arm-comparable primary metric. alert_interstitial_result demoted to treatment-only diagnostic. Query/doc/changelog updated.
 Verification: 44 tests, lint clean, build clean; per-arm variant resolution + render confirmed live via Playwright. Live event capture not observable locally (no PostHog key in local env); wiring verified by type-checked EventPropMap + review.
