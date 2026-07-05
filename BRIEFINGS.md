@@ -18,7 +18,6 @@ What: owner's question about the randomization unit surfaced a validity bug in t
 Verification: 44 tests, lint clean, build clean; per-arm variant resolution + render confirmed live via Playwright. Live event capture not observable locally (no PostHog key in local env); wiring verified by type-checked EventPropMap + review.
 Blocked on owner: merge + deploy PR #6 BEFORE creating the PostHog flag, else the first data collects against broken instrumentation. Caught pre-launch, so nothing lost yet.
 Next up: item 2 (next-good-window in conditions).
->>>>>>> main
 
 ## 2026-07-04T07:25:00Z · Item 1 verified by studio manager; PR #4 ready for owner merge
 What: independently re-verified the interstitial branch locally. Evidence: 44 tests pass; lint clean on PR files (3 pre-existing errors are in untracked local .feedback-auto/, not the PR); build clean; Playwright against the prod build: deep link opens drawer, control renders nothing, forced treatment shows the card with decoded window label over the drawer, coords-based directions URL, dismiss works.
