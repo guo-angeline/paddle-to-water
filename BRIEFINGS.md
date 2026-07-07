@@ -2,6 +2,9 @@
 
 CEO briefings after each shipped or parked item, newest first, 15 lines max each.
 
+## 2026-07-07 · Escalated D2: the live experiments are underpowered
+What: owner probed the experiment rigor. Honest audit: instrumentation is sound (symmetric exposure, real control), but no power calc was done pre-launch and one now shows both experiments are underpowered, ~430-680 exposed/arm needed for a 5pp lift vs the doc's 30; alert-interstitial (1 subscription) can never reach significance. Plus cross-experiment contamination on the shared spot_action metric, no peeking/multiplicity correction, and the primary is a directions proxy the owner already declined as a goal. Filed D2 (rec: convert alert-interstitial to monitored 100% rollout, mutually exclude the flags / de-share the metric, recalibrate next-good-window). Non-blocking; experiments keep running until answered.
+
 ## 2026-07-07 · Both experiments LIVE; spot #148 deployed; studio resumed
 What: owner created both PostHog flags (`alert-interstitial`, `next-good-window`, control/treatment 50/50), so both A/B experiments are now running on the already-deployed code. Separately deployed main (`vercel --prod --yes`) so the owner-merged spot #148 (Lakeshore Park Lake, Newark, PR #10) is live (verified /spot/148 = 200). Flipped the studio marker back to studio:v1 (it was only ever paused in the working tree, never in git).
 Verification: homepage 200, /spot/148 200. Flag creation not independently verifiable by the manager (no read key); taken on owner confirmation ("done").
