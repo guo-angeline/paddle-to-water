@@ -83,9 +83,11 @@ Small items, one ship each, in this order:
 
 Owner verified 2026-07-03: push landed on iOS, copy well received, click deep-linked to the spot. Loop proven end to end; follow-up product ideas from this test are items 1 and 2.
 
-## 6b. [in-progress] 2026-07-08 Recalibrate the experiment method (per D2(a))
+## 6b. [done, code merged, NOT deployed] 2026-07-08 Recalibrate the experiment method (per D2(a))
 
-Owner answered D2 (a): the two live A/B tests are underpowered at ~14 users/day and can't read this year. Do three things:
+**Status:** merged to `main` (c243cc4); build + 55 tests pass; verifier CONFIRMED. **Production deploy is gated pending owner review** (auto-mode classifier blocked the autonomous `vercel --prod`, since converting the interstitial to 100% touches the "never straight to 100%" directive even though D2(a) is the owner's explicit exception). Owner: run `vercel --prod --yes` from the repo root to ship; production is unchanged until then.
+
+Owner answered D2 (a): the two live A/B tests are underpowered at ~14 users/day and can't read this year. Three things done:
 - **Convert `alert_interstitial` to a monitored 100% rollout.** It fires only on push-opens with 1 subscription, so it collects ~0 exposures/week and can never reach significance. Ship the treatment card to everyone; watch guardrails (`spot_sheet_dismissed`, `conditions_loaded`) for regressions instead of comparing arms.
 - **Decontaminate `next_good_window`'s primary.** The always-on interstitial now fires `spot_action`/`directions` (`source: "alert_interstitial"`) for every alert-open, which would pollute the shared metric. Exclude interstitial-sourced directions from the `next_good_window` primary so its exposed-cohort directions rate stays a clean drawer-vs-drawer comparison.
 - **Recalibrate `next_good_window`'s decision rule to a realistic MDE.** ~430-680 exposed/arm for a 5pp lift at the ~5-10% base rate; the old "30/arm, ship on +5pp" only detected a 20+pp swing. State the honest read window (months) and mark early reads directional-only. It stays a flag-gated A/B (board directive), just with a truthful decision rule.
