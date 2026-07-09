@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { Spot } from "@/lib/types";
-import { track, trackIntent } from "@/lib/analytics";
+import { trackIntent } from "@/lib/analytics";
 
 interface Props {
   spot: Spot;
@@ -46,7 +46,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
   }
 
   function handleDirections() {
-    track("spot_action", { ...spotEventProps, action: "directions", source: "alert_interstitial" });
+    trackIntent("spot_action", { ...spotEventProps, action: "directions", source: "alert_interstitial" });
     trackIntent("alert_interstitial_result", { spot_id: spot.id, outcome: "directions" });
     onDismiss();
   }

@@ -12,7 +12,7 @@ import AlertInterstitial from "@/components/AlertInterstitial";
 import FeedbackModal from "@/components/FeedbackModal";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
-import { track, trackSystem, setPersona, type SpotViewedSource } from "@/lib/analytics";
+import { trackIntent, trackSystem, setPersona, type SpotViewedSource } from "@/lib/analytics";
 import { useSavedConditions } from "@/components/useSavedConditions";
 import { syncWatchedSpots } from "@/lib/push";
 
@@ -82,7 +82,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         const from = params.get("from");
         const source: SpotViewedSource = from === "alert" ? "alert" : "deeplink";
         if (from === "alert") {
-          track("alert_clicked", {
+          trackIntent("alert_clicked", {
             spot_id: found.id,
             spot_name: found.water,
             region: found.region,
@@ -90,7 +90,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           const windowLabel = params.get("window");
           if (windowLabel) setAlertBanner({ spotId: found.id, windowLabel });
         }
-        track("spot_viewed", {
+        trackIntent("spot_viewed", {
           spot_id: found.id,
           spot_name: found.water,
           region: found.region,
@@ -128,7 +128,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     setFavorites((prev) => {
       const next = new Set(prev);
       if (adding) next.add(id); else next.delete(id);
-      track("favorite_toggled", {
+      trackIntent("favorite_toggled", {
         spot_id: id,
         spot_name: spot?.water,
         region: spot?.region,
@@ -180,7 +180,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     const q = filters.search.trim();
     if (!q) return;
     const t = setTimeout(() => {
-      track("spot_search", { query: q, results: sortedFiltered.length });
+      trackIntent("spot_search", { query: q, results: sortedFiltered.length });
     }, 500);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -229,13 +229,13 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function handleNearMe() {
     if (userLocation) {
       setUserLocation(null);
-      track("near_me_toggled", { enabled: false });
+      trackIntent("near_me_toggled", { enabled: false });
       return;
     }
     if (!navigator.geolocation) {
       setGeoError(true);
       setTimeout(() => setGeoError(false), 4000);
-      track("near_me_toggled", { enabled: true, outcome: "unsupported" });
+      trackIntent("near_me_toggled", { enabled: true, outcome: "unsupported" });
       return;
     }
     setLocating(true);
@@ -244,7 +244,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
         setActiveTab("list");
-        track("near_me_toggled", { enabled: true, outcome: "granted" });
+        trackIntent("near_me_toggled", { enabled: true, outcome: "granted" });
         // Persona: local user paddling near home vs. someone trip-planning.
         setPersona({ uses_geolocation: true });
       },
@@ -252,7 +252,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         setLocating(false);
         setGeoError(true);
         setTimeout(() => setGeoError(false), 4000);
-        track("near_me_toggled", { enabled: true, outcome: "denied" });
+        trackIntent("near_me_toggled", { enabled: true, outcome: "denied" });
       },
       { timeout: 8000 }
     );
@@ -261,7 +261,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function handleSelect(spot: Spot, source: SpotViewedSource = "list") {
     setSelected(spot);
     if (alertBanner && alertBanner.spotId !== spot.id) setAlertBanner(null);
-    track("spot_viewed", {
+    trackIntent("spot_viewed", {
       spot_id: spot.id,
       spot_name: spot.water,
       region: spot.region,
@@ -274,7 +274,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   function handleFilterChange(f: Filters) {
     setFilters(f);
     deselect();
-    track("filter_changed", {
+    trackIntent("filter_changed", {
       region: f.region || null,
       difficulty: f.difficulty || null,
       free_only: f.freeOnly,
@@ -292,7 +292,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     setUserLocation(null);
     deselect();
     setSearchOpen(false);
-    track("filter_changed", { cleared: true });
+    trackIntent("filter_changed", { cleared: true });
   }
 
   function setSearch(value: string) {
@@ -343,7 +343,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           </button>
 
           <button
-            onClick={() => { setFeedbackOpen(true); track("feedback_opened"); }}
+            onClick={() => { setFeedbackOpen(true); trackIntent("feedback_opened", {}); }}
             className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[--accent] text-[--accent] hover:bg-[--accent] hover:text-white transition-colors"
           >
             Feedback
@@ -407,7 +407,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
                 ? "text-[--accent] border-b-2 border-[--accent]"
                 : "text-[--muted]"
             }`}
-            onClick={() => { setActiveTab(tab); track("view_switched", { view: tab }); }}
+            onClick={() => { setActiveTab(tab); trackIntent("view_switched", { view: tab }); }}
           >
             {tab === "map" ? `Map (${sortedFiltered.length})` : `List`}
           </button>

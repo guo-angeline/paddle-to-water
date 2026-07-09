@@ -71,7 +71,8 @@ PostHog is wired up in `components/PostHogProvider.tsx` (US cloud, gated on `NEX
 
 How to do it:
 - Add the event to the right sub-union (`SystemEventName` or `IntentEventName`) in `lib/analytics.ts`; for metrics a report depends on, add a typed entry to `EventPropMap` so call sites can't omit a needed prop. The unions are the allowlist, unknown names won't compile. Both wrappers stamp `event_category`.
-- The bare `track()` remains for legacy human-action events; prefer `trackSystem`/`trackIntent` for anything new.
+- `trackSystem`/`trackIntent` are the only emitters (the bare `track()` was removed 2026-07-09; every event carries `event_category` from that date).
+- Every event also carries a `display_mode` (`standalone` | `browser`) super property, and `before_send` drops automation/bot traffic; set `localStorage.ptw-internal = "1"` on a device to exclude it. First-touch acquisition (`first_referrer`, `first_utm_*`, ...) is stamped `$set_once` at init. All in `components/PostHogProvider.tsx`.
 - Include `spot_id` / `region` whenever a spot is involved, so events segment consistently with `spot_viewed`.
 - Group variants of one action under a single event with an `action` prop (e.g. `spot_action` with `action: "directions" | "share" | "photos"`) instead of many near-duplicate names.
 - Use `setPersona(...)` (person properties) for durable traits that define a segment (saver, budget, local), not for one-off events.
@@ -80,7 +81,7 @@ How to do it:
 
 Experiments: read flags via `lib/experiments.ts` (`useExperiment` / `getVariant`); exposure is logged only when the treatment renders. Never call `posthog.identify()` / `reset()` (no login; it reshuffles buckets). Declare every experiment in `docs/experiments/` from `TEMPLATE.md` before shipping. **Every major product update (a new user-facing surface or a changed core flow) ships behind an A/B experiment flag, never straight to 100%** (owner directive, 2026-07-02). Low traffic means a longer read window, not a reason to skip the flag; small fixes and copy tweaks are exempt.
 
-`track()`, `trackSystem()`, `trackIntent()` and `setPersona()` no-op when PostHog isn't initialized, so they're safe to call unconditionally. Confirm a new event by checking its string lands in the built bundle: `grep -rho "<event>" .next/static`.
+`trackSystem()`, `trackIntent()` and `setPersona()` no-op when PostHog isn't initialized, so they're safe to call unconditionally. Confirm a new event by checking its string lands in the built bundle: `grep -rho "<event>" .next/static`.
 
 ### Analytics reports
 

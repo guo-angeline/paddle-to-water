@@ -65,6 +65,13 @@ paddle, versus today's drawer which only answers "is it good right now".
   keep control. Any read before the target is **directional only**, never a ship
   decision. No sequential-testing correction is in place, so do not "peek and
   ship" early.
+- **Bucket stability over a months-long read:** bucketing keys on the anonymous
+  distinct_id in browser storage, and Safari's ITP purges that storage after ~7
+  days without a visit. A returning Safari user can therefore be re-bucketed
+  (possibly into the other arm) and count as two exposed users, one per
+  identity. This contamination dilutes measured lift toward zero as the window
+  stretches; treat the final read as conservative, and segment the exposed
+  cohort by `$browser` to gauge how much of it is Safari.
 - **What this test can and cannot do:** it can cleanly read in-session drawer
   directions intent once powered; it cannot cleanly measure the real objective
   (retention / return visits) short-term. If the exposed-count target proves

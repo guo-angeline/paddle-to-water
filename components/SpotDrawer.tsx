@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from 
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL, DIFFICULTY_COLOR } from "@/lib/types";
 import { nearbySpots } from "@/lib/distance";
-import { track, type SpotViewedSource } from "@/lib/analytics";
+import { trackIntent, type SpotViewedSource } from "@/lib/analytics";
 import FeedbackModal from "@/components/FeedbackModal";
 import ConditionsPanel from "@/components/ConditionsPanel";
 
@@ -88,7 +88,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
     const info = spot ? { spot_id: spot.id, spot_name: spot.water, region: spot.region } : {};
     // Dragged well below the peek height -> dismiss; else snap to nearer point.
     if (h < peek * 0.6) {
-      track("spot_sheet_dismissed", { ...info, method: "drag" });
+      trackIntent("spot_sheet_dismissed", { ...info, method: "drag" });
       onClose();
       return;
     }
@@ -97,7 +97,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
     // Only log real state changes, so a drag that resettles at peek isn't noise.
     if (next !== snapState.current) {
       snapState.current = next;
-      track("spot_sheet_resized", { ...info, to: next });
+      trackIntent("spot_sheet_resized", { ...info, to: next });
     }
   }
 
@@ -134,7 +134,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
   };
 
   async function handleShare() {
-    track("spot_action", { ...spotEventProps, action: "share" });
+    trackIntent("spot_action", { ...spotEventProps, action: "share" });
     const url = `${window.location.origin}/spot/${spot!.id}`;
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
@@ -333,7 +333,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
                 href={photosUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => track("spot_action", { ...spotEventProps, action: "photos" })}
+                onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "photos" })}
                 className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
                 style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
               >
@@ -344,7 +344,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => track("spot_action", { ...spotEventProps, action: "directions" })}
+              onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "directions" })}
               className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
               style={{ background: "var(--accent)", color: "#fff" }}
             >

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { track, setPersona } from "@/lib/analytics";
+import { trackIntent, setPersona } from "@/lib/analytics";
 import { enablePushAlerts, readStashedSubscription, type OptInResult } from "@/lib/push";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -31,7 +31,7 @@ function logInstallOnce(outcome: "appinstalled" | "detected_standalone") {
   } catch {
     /* private mode: still log, at worst once per session */
   }
-  track("pwa_installed", { platform: isIOS() ? "ios" : "android", outcome });
+  trackIntent("pwa_installed", { platform: isIOS() ? "ios" : "android", outcome });
   setPersona({ installed_pwa: true });
 }
 
@@ -123,7 +123,7 @@ export default function InstallPrompt() {
   useEffect(() => {
     if (!visible) { shownRef.current = false; return; }
     if (platform && !shownRef.current) {
-      track("alert_optin_shown", { platform });
+      trackIntent("alert_optin_shown", { platform });
       shownRef.current = true;
     }
   }, [visible, platform]);
@@ -140,7 +140,7 @@ export default function InstallPrompt() {
     // Accepted installs are logged by the appinstalled listener; only the
     // declined native dialog is worth an event of its own here.
     if (outcome === "dismissed") {
-      track("pwa_installed", { platform, outcome });
+      trackIntent("pwa_installed", { platform, outcome });
     }
     if (outcome === "accepted") {
       setPersona({ installed_pwa: true });
@@ -150,11 +150,12 @@ export default function InstallPrompt() {
   }
 
   async function handleEnable() {
+    if (!platform) return; // unreachable: the Enable button only renders with a platform
     setEnabling(true);
     const r = await enablePushAlerts(readFavoriteIds());
     setEnabling(false);
     setResult(r);
-    track("alert_optin_result", { platform, result: r });
+    trackIntent("alert_optin_result", { platform, result: r });
     if (r === "granted") {
       setPersona({ alerts_enabled: true });
       setTimeout(() => setVisible(false), 1600);

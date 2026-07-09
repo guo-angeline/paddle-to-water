@@ -43,8 +43,7 @@ type SystemEventName =
 
 /**
  * INTENT / engagement events. Fire only on a deliberate user act or a
- * dwell-gated genuine view. Emit via `trackIntent` (or the legacy `track` for
- * the un-migrated human-action events below — those are intent by construction).
+ * dwell-gated genuine view. Emit via `trackIntent`.
  */
 type IntentEventName =
   | "spot_viewed"
@@ -125,6 +124,13 @@ interface EventPropMap {
   saved_conditions_loaded: { count: number; calm_count: number; latency_ms: number };
   alert_subscribe_failed: { status: number | null; watched_count: number };
   saved_conditions_viewed: { count: number; calm_count: number };
+  // Values mirror lib/push.ts OptInResult; kept inline to avoid a cycle
+  // (push.ts imports trackSystem from this module).
+  alert_optin_shown: { platform: "standalone" | "ios" | "android" };
+  alert_optin_result: {
+    platform: "standalone" | "ios" | "android";
+    result: "granted" | "denied" | "unsupported";
+  };
   alert_interstitial_shown: { spot_id: number };
   alert_interstitial_result: { spot_id: number; outcome: "dismissed" | "directions" };
   next_window_viewed: {
@@ -178,15 +184,6 @@ function runOrQueue(fn: () => void) {
   if (typeof window === "undefined") return; // SSR: nothing will ever load
   preReadyQueue.push(fn);
   scheduleFlush();
-}
-
-/**
- * Legacy / general-purpose capture. Kept for the un-migrated human-action
- * events. New SYSTEM or semantically-typed INTENT events should use
- * `trackSystem` / `trackIntent` so they're category-stamped and prop-checked.
- */
-export function track(event: EventName, props?: Record<string, unknown>) {
-  runOrQueue(() => posthog.capture(event, props));
 }
 
 /** Emit a SYSTEM/availability event (auto-fired on data settling). */

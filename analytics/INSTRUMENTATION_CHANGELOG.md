@@ -202,3 +202,62 @@ months-long read window; early reads directional only).
   discontinuous at 2026-07-08. Read the recalibrated, interstitial-excluded
   definition only from 2026-07-08 forward; windows spanning the date mix the two
   definitions. No event schema changed, so `spot_action` itself is continuous.
+
+## 2026-07-09 — Measurement audit fixes: identity visibility, traffic hygiene, acquisition, alert-loop contract
+
+Implements the 2026-07-09 instrumentation audit. No event was added, renamed,
+or removed and no trigger semantics changed; every change below is
+props/plumbing, but several move counts.
+
+**All events — props-changed (`display_mode` super property added).**
+Every event now carries `display_mode: "standalone" | "browser"`, registered at
+PostHog init. Why: the iOS PWA runs in a storage partition separate from
+Safari, so installing splits one human into two person_ids; this property is
+how reports see and caveat that split (segment retention and DAU by it).
+- **Comparability:** property exists only from 2026-07-09. Queries filtering on
+  it silently exclude all earlier events.
+
+**All events — semantics-changed (bot/automation traffic dropped via `before_send`).**
+Events are dropped client-side when `navigator.webdriver` is true (includes our
+own Playwright smoke tests), the UA matches bot/headless patterns, or the
+device is flagged internal (`localStorage.ptw-internal = "1"`). Why: bots are
+100% one-and-done, inflating `$pageview` denominators and depressing every
+retention cohort (the "78% one-and-done" baseline includes them).
+- **Comparability:** `$pageview` volume, DAU, cohort sizes, and spot-open-rate
+  denominators dip at 2026-07-09 with no change in human behavior. W1 retention
+  may tick UP at the same date because bot "cohorts" vanish. Do not read either
+  move as users.
+
+**Person properties — props-changed (first-touch acquisition, all visitors).**
+On first visit, `$set_once` stamps `first_referrer`, `first_utm_source` /
+`_medium` / `_campaign` (when present), `first_landing_path`,
+`first_display_mode`, `first_device_type`, `first_seen_at`. Why: "who are the
+users / where do they come from" was unanswerable per person; the `setOnce`
+path existed but was never called. Side effect: this creates a person profile
+for EVERY visitor (posthog-js `identified_only` default previously created one
+only when an engaged-user `setPersona` fired).
+- **Comparability:** person-property cohorts are population-complete only from
+  2026-07-09; earlier profiles exist for the engaged subset only. PostHog
+  billable "identified events" volume rises at this date; event counts are
+  unaffected.
+
+**All legacy intent events — props-changed (`event_category` stamp completed).**
+`spot_viewed`, `spot_action`, `filter_changed`, `spot_search`,
+`near_me_toggled`, `favorite_toggled`, `feedback_opened`, `view_switched`,
+`spot_sheet_resized`, `spot_sheet_dismissed`, `pwa_installed`,
+`alert_optin_shown`, `alert_optin_result`, `alert_clicked` migrated from the
+bare `track()` (no category) to `trackIntent`, which stamps
+`event_category: "intent"`. The bare `track()` was removed from
+`lib/analytics.ts`; `alert_optin_shown` / `alert_optin_result` gained typed
+prop contracts (`platform`, `result`) since the new funnel query depends on
+them. Trigger conditions and prop values are unchanged.
+- **Comparability:** any query filtering `event_category = 'intent'` includes
+  these events only from 2026-07-09; before that it silently drops them. Filter
+  by event name for windows spanning the date.
+
+**Measurement contract added (no code change): alert-loop queries + glossary.**
+New `queries/alert_optin_funnel.sql`, `queries/alert_ctr.sql` (cross-store:
+Supabase `alert_sends` ÷ PostHog `alert_clicked`, aggregate only),
+`queries/alert_driven_returns.sql`, plus GLOSSARY sections "Alert loop" and
+"Identity" (PWA partition, Safari ITP ~7-day purge, person-profile coverage).
+Retention reads must use these definitions and caveats from now on.
