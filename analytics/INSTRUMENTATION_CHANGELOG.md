@@ -14,6 +14,19 @@ without touching this file.
 
 ---
 
+## 2026-07-09 — Wordmark home link
+
+**`nav_home_clicked` — added (intent).**
+The header "Paddle to Water" wordmark became a clickable link to `/` (full
+navigation, resets filters/selection). Fires on click, no props beyond the
+standard super-properties (`display_mode`, etc.). Lets us see whether the new
+home affordance gets used and as a reset path.
+- **Comparability:** New event; no prior series. First data from 2026-07-09.
+  Because it precedes a full page navigation, a small fraction of clicks may not
+  flush before unload; treat the count as a floor, not exact.
+
+---
+
 ## 2026-06-29 — Grounded analytics foundation
 
 **`conditions_viewed` — semantics-changed (split).**

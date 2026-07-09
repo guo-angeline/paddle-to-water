@@ -287,6 +287,18 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     });
   }
 
+  // Wordmark click: reset to the default home view. The header only ever renders
+  // on "/", so "home" means clearing filters/search/selection rather than a
+  // navigation (which on the same route wouldn't reset this state).
+  function goHome() {
+    setFilters({ region: "", difficulty: "", freeOnly: false, search: "" });
+    setUserLocation(null);
+    setSearchOpen(false);
+    setActiveTab("map");
+    deselect();
+    trackIntent("nav_home_clicked", {});
+  }
+
   function handleClearAll() {
     setFilters({ region: "", difficulty: "", freeOnly: false, search: "" });
     setUserLocation(null);
@@ -304,9 +316,14 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     <div className="h-full flex flex-col">
       {/* Header */}
       <header className="shrink-0 px-4 py-3 border-b border-gray-200 bg-[--bg] flex items-center justify-between">
-        <h1 className="font-['Newsreader'] text-xl font-bold text-[--dark]">
+        <button
+          type="button"
+          onClick={goHome}
+          className="font-['Newsreader'] text-xl font-bold text-[--dark] rounded-sm hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[--accent]"
+          aria-label="Paddle to Water, return home"
+        >
           Paddle to Water
-        </h1>
+        </button>
         <div className="flex items-center gap-2 md:gap-3">
           <span className="hidden lg:inline text-xs text-[--muted]">Paddleboard &amp; kayak spots across the Bay Area</span>
 

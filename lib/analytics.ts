@@ -60,6 +60,9 @@ type IntentEventName =
   | "saved_conditions_viewed"
   | "feedback_opened"
   | "view_switched"
+  // The "Paddle to Water" wordmark in the header was clicked to return home
+  // (resets filters/selection via a full navigation to "/").
+  | "nav_home_clicked"
   // Actual installs only (Chromium appinstalled event, or an iOS install
   // detected on first standalone launch), plus the declined native dialog
   // (outcome: "dismissed"). The old auto-shown banner event `pwa_prompt_shown`

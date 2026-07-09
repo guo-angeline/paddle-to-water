@@ -184,7 +184,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
             Sticky so it stays grabbable when the body scrolls; touch-action none so
             the gesture drags the sheet instead of scrolling. */}
         <div
-          className="sticky top-0 z-10 bg-white flex justify-center pt-3 pb-2.5 cursor-grab active:cursor-grabbing md:hidden"
+          className="sticky top-0 z-10 bg-white flex justify-center pt-2 pb-1.5 cursor-grab active:cursor-grabbing md:hidden"
           style={{ touchAction: "none" }}
           onTouchStart={onHandleStart}
           onTouchMove={onHandleMove}
@@ -199,11 +199,11 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
         </div>
 
         <div
-          className="p-5"
+          className="p-5 pt-1.5 md:pt-5"
           style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
         >
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 className="font-['Newsreader'] text-xl font-bold text-[--dark] leading-tight">
                 {spot.water}
@@ -220,7 +220,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
           </div>
 
           {/* Badges */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-3">
             <span
               className="px-2.5 py-1 rounded-full text-xs font-medium"
               style={{ background: diff.bg, color: diff.text }}
@@ -246,14 +246,14 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
 
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
               {tags.map((t) => <Tag key={t} label={t} />)}
             </div>
           )}
 
           {/* Notes — truncated on mobile, full on desktop */}
           {spot.notes && (
-            <div className="mb-4 pl-3 border-l-2 border-gray-200">
+            <div className="mb-3 pl-3 border-l-2 border-gray-200">
               <p className="text-sm text-gray-600 leading-relaxed">
                 {/* Mobile: truncate unless expanded */}
                 <span className="md:hidden">
