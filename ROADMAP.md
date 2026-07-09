@@ -124,6 +124,26 @@ Acceptance: Share produces a deep link that opens directly on the spot's conditi
 
 *(A third idea considered, inline paddleability dots on the list/pins, overlaps parked item 3 and should be folded there, not opened separately.)*
 
+## 10. [proposed] Spot sheet: remove the "Report an issue with this spot" button
+
+*(Owner request 2026-07-09.)*
+
+Drop the "Report an issue with this spot" link at the bottom of the spot sheet (`components/SpotDrawer.tsx`, the `setReportOpen` button ~line 356, plus its `FeedbackModal` at ~line 366). Low-traffic utility control that adds a line of chrome to every sheet; issue reports still reach us via the header **Feedback** button. Acceptance: the report link is gone from the sheet, no orphaned `reportOpen` state/handlers left, header Feedback still works. Small change; exempt from the A/B-flag rule.
+
+## 11. [proposed] Spot sheet: re-arrange CTAs to lead with Share + Save, not Get Directions
+
+*(Owner request 2026-07-09.)*
+
+Today the sheet's primary, full-width CTA is "Get Directions" (azure), with Share / Save / Photos as a secondary row (`components/SpotDrawer.tsx` actions block ~lines 308-353). Re-weight the hierarchy so **Share** and **Save** are the emphasized actions and Get Directions is demoted. Why this fits strategy: Get Directions is explicitly NOT a conversion goal (owner removed that optimization 2026-07-02); Save is the retention on-ramp (save -> install -> alerts) and Share is the one working acquisition channel (item 9). Making them primary aligns the sheet's visual priority with the real funnel. Acceptance: Share and Save read as the primary actions, Get Directions demoted but still present; keep the existing `spot_action` / `favorite_toggled` events; design-lead sets exact layout + emphasis. Touches a core flow's visual hierarchy, so ship behind an A/B flag per policy (guardrail: the `spot_action` directions rate shouldn't crater).
+
+## 12. [proposed] (lower priority) Persistent bottom "dead band" on iOS mobile web / installed PWA
+
+*(Owner-reported 2026-07-09; three fix attempts that day did not clear it. Lower priority, cosmetic.)*
+
+A permanent sage strip (the `--bg` body background) sits along the very bottom of the screen on iOS, in the home-indicator zone, showing below the map, the list, and the open spot sheet. It is an installed-PWA / iOS-mobile-web artifact and does NOT reproduce in desktop Chrome (the shell fills correctly there), which is why it resisted blind fixes.
+
+Attempts 2026-07-09 in the `app/globals.css` shell, none cleared it on-device: (1) the original `html,body { height:100% }` on a `position:fixed` body; (2) `100dvh`; (3) dropping the explicit height so `position:fixed; inset:0` defines the box (current prod state, commit 4cd984b). Known-good facts to build on: `viewport-fit=cover` IS in the rendered viewport meta; `public/sw.js` has no fetch/cache handler so deploys DO reach the device, BUT iOS keeps an installed PWA's page alive in memory, so a full force-quit is required to load new code (may have masked whether an attempt worked). Do NOT attempt a 4th blind CSS change. Next step: ship a device-only diagnostic (gate behind `?vh`) printing `screen.height`, `window.innerHeight`, computed `env(safe-area-inset-bottom)`, and standalone-vs-Safari; get one screenshot; THEN pick the fix (candidates: `-webkit-fill-available`, or a JS-set `--app-height` from `window.innerHeight`). No functional impact.
+
 ---
 
 ## Later (after retention is proven) — all [proposed], do not promote before the ~2026-07-15 funnel re-check
