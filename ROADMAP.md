@@ -41,6 +41,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
   - **Real-device test: complete.** Install + opt-in verified on a real iOS device 2026-06-30; subscription row confirmed in Supabase 2026-07-02; push confirmed landing and deep-linking to the spot on iOS 2026-07-03 (owner verified; copy well received). The full save -> install -> push -> return loop is now proven end to end for n=1. Cron moved 2026-07-02 from 13:00 UTC (6am PDT, woke sleeping users with a same-morning alert) to 02:00 UTC (7pm PDT / 6pm PST): with the hourly evaluator an evening send advertises tomorrow's window, which gives lead time to plan. Dry-run check: `curl -H "Authorization: Bearer $CRON_SECRET" "https://paddletowater.com/api/cron/check-conditions?dry=1"`.
 - **Instrumentation pass, shipped + live 2026-06-29.** `spot_viewed` now carries `source: "list" | "map" | "deeplink" | "alert" | "related"` (canonical `SpotViewedSource` in `lib/analytics.ts`), and `alert_clicked` fires when the app opens from a push (the service worker tags the deep link `from=alert`). Outbound on Get Directions / Share was deferred (the `spot_action` click already captures intent; true "the link left" detection is fuzzy and low value).
 - **Mobile UX conversion pass, shipped 2026-06 (branch `mobile-ux-fixes`, PRs #1 and #2).** Fixed the blockers from the 4-agent mobile audit: install banner no longer covers the drawer and dismissal persists in localStorage, Bay-default map with non-destructive pin selection, 44px save heart with first-run nudge, favorites hydration fix, map-tab empty state, place-name-first short search, partial-height draggable sheet, region-pill peek hint. Source docs (ux-mobile-findings.md, IMPROVEMENT-PLAN.md) retired 2026-07-02; still-open leftovers are backlog item 7.
+- 2026-07-09 [done] Spot sheet: removed the "Report an issue" button (item 10). Dropped the low-traffic report link + its FeedbackModal wiring from the spot sheet; issue reports still route through the header Feedback button. Also fixed the disclaimer copy that pointed at the removed link and cleaned two em dashes there (house style). Verified live (sheet DOM + disclaimer). Merge `322b43b` (+ follow-ups `1a35fe8`, `05e3796`), deployed.
 
 ---
 
@@ -123,12 +124,6 @@ Growth is 82% direct/word-of-mouth; Google sent 10 users and the 140 SEO pages a
 Acceptance: Share produces a deep link that opens directly on the spot's conditions section; recipient arrivals attributable via `spot_viewed` `source: "deeplink"`; A/B flag (control keeps today's share); changelog entry for any prop change. Note: OG images are build-time static and can't cheaply embed live conditions, so the value is the landing behavior, not a live-conditions card. Advisory: sequence after the ~2026-07-15 retention read.
 
 *(A third idea considered, inline paddleability dots on the list/pins, overlaps parked item 3 and should be folded there, not opened separately.)*
-
-## 10. [in-progress] 2026-07-09T17:14:51Z Spot sheet: remove the "Report an issue with this spot" button
-
-*(Owner request 2026-07-09.)*
-
-Drop the "Report an issue with this spot" link at the bottom of the spot sheet (`components/SpotDrawer.tsx`, the `setReportOpen` button ~line 356, plus its `FeedbackModal` at ~line 366). Low-traffic utility control that adds a line of chrome to every sheet; issue reports still reach us via the header **Feedback** button. Acceptance: the report link is gone from the sheet, no orphaned `reportOpen` state/handlers left, header Feedback still works. Small change; exempt from the A/B-flag rule.
 
 ## 11. [ready] Spot sheet: re-arrange CTAs to lead with Share + Save, not Get Directions
 
