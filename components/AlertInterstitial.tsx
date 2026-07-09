@@ -52,7 +52,13 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
   }
 
   return (
-    <div className="fixed inset-x-0 top-0 flex justify-center px-4 pt-4" style={{ zIndex: 1300 }}>
+    <div
+      className="fixed inset-x-0 top-0 flex justify-center px-4"
+      // Clear the iOS status bar / notch: the app renders with viewportFit
+      // "cover", so top-0 sits UNDER the status bar. Match the header's inset
+      // convention (globals.css) so the card and its × are fully tappable.
+      style={{ zIndex: 1300, paddingTop: "calc(max(0.75rem, env(safe-area-inset-top)) + 0.5rem)" }}
+    >
       <div className="w-full max-w-sm rounded-2xl shadow-2xl px-4 py-3.5" style={{ background: "var(--accent)" }}>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -64,7 +70,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
           <button
             onClick={handleDismiss}
             aria-label="Dismiss"
-            className="shrink-0 text-white/70 hover:text-white text-xl leading-none"
+            className="shrink-0 -mt-1.5 -mr-1.5 flex h-11 w-11 items-center justify-center text-white/70 hover:text-white text-xl leading-none"
           >
             ×
           </button>
