@@ -14,7 +14,7 @@ export default function DisclaimerPage() {
         minHeight: "100vh",
         background: "var(--bg)",
         color: "var(--dark)",
-        fontFamily: "'Outfit', system-ui, sans-serif",
+        fontFamily: "'Hanken Grotesk', system-ui, sans-serif",
         padding: "env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)",
       }}
     >
@@ -39,7 +39,7 @@ export default function DisclaimerPage() {
         {/* Heading */}
         <h1
           style={{
-            fontFamily: "'Fraunces', serif",
+            fontFamily: "'Newsreader', serif",
             fontSize: "2rem",
             fontWeight: 700,
             color: "var(--dark)",
@@ -130,7 +130,7 @@ export default function DisclaimerPage() {
 }
 
 const h2Style: React.CSSProperties = {
-  fontFamily: "'Fraunces', serif",
+  fontFamily: "'Newsreader', serif",
   fontSize: "1.125rem",
   fontWeight: 700,
   color: "var(--dark)",

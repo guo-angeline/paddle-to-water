@@ -41,10 +41,10 @@ export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
 };
 
 export const DIFFICULTY_COLOR: Record<Difficulty, string> = {
-  flatwater: "#4E6639",
-  bay:       "#2D6A8F",
-  river:     "#B45309",
-  unknown:   "#6B7280",
+  flatwater: "#12A5B0",
+  bay:       "#0E6FD1",
+  river:     "#E06636",
+  unknown:   "#8AA0B4",
 };
 
 export const DIFFICULTY_LEGEND = [

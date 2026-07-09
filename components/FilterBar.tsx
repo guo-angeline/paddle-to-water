@@ -29,21 +29,21 @@ function hasActiveFilters(f: Filters, nearMe?: boolean) {
 
 // Row 1 — region pills: outlined/neutral inactive, solid accent active
 const R_ACTIVE:   React.CSSProperties = { background: "var(--accent)", color: "#fff", border: "none" };
-const R_INACTIVE: React.CSSProperties = { background: "#fff", color: "var(--dark)", border: "1px solid #e5e7eb" };
+const R_INACTIVE: React.CSSProperties = { background: "#fff", color: "var(--dark)", border: "1px solid var(--border)" };
 
-// Row 2 — always softly tinted; each type has its own colour family
+// Row 2 — always softly tinted; each water type has its own Meltwater family
 const DIFF_PALETTE: Record<Difficulty, { bg: string; lightBg: string; color: string }> = {
-  flatwater: { bg: "#4E6639", lightBg: "#eef4ea", color: "#3a5c29" },
-  bay:       { bg: "#2D6A8F", lightBg: "#e8f3fa", color: "#1e4d6b" },
-  river:     { bg: "#B45309", lightBg: "#fef3e7", color: "#92400e" },
-  unknown:   { bg: "#6B7280", lightBg: "#f3f4f6", color: "#374151" },
+  flatwater: { bg: "#12A5B0", lightBg: "#DBF3F0", color: "#0E7F78" },
+  bay:       { bg: "#0E6FD1", lightBg: "#E3EEFA", color: "#0B4E96" },
+  river:     { bg: "#E06636", lightBg: "#FDEAE0", color: "#CC5528" },
+  unknown:   { bg: "#8AA0B4", lightBg: "#EEF3F9", color: "#42607A" },
 };
-const FREE_ACTIVE:   React.CSSProperties = { background: "#16a34a", color: "#fff" };
-const FREE_INACTIVE: React.CSSProperties = { background: "#f0fdf4", color: "#166534" };
+const FREE_ACTIVE:   React.CSSProperties = { background: "#2E9E5B", color: "#fff" };
+const FREE_INACTIVE: React.CSSProperties = { background: "#E4F5EA", color: "#2E9E5B" };
 
 const NEAR_ACTIVE:   React.CSSProperties = { background: "var(--accent)", color: "#fff" };
-const NEAR_INACTIVE: React.CSSProperties = { background: "#e8f3fa", color: "#1e4d6b" };
-const NEAR_ERROR:    React.CSSProperties = { background: "#fef2f2", color: "#991b1b" };
+const NEAR_INACTIVE: React.CSSProperties = { background: "#E3EEFA", color: "#0B4E96" };
+const NEAR_ERROR:    React.CSSProperties = { background: "#FEE9E0", color: "#CC5528" };
 
 export default function FilterBar({
   filters, onChange, total, filtered,
@@ -65,7 +65,7 @@ export default function FilterBar({
   }
 
   return (
-    <div className="sticky top-0 z-10 bg-[--bg] border-b border-gray-200 px-4 py-3 space-y-2">
+    <div className="sticky top-0 z-10 bg-[--bg] border-b border-[--border] px-4 py-3 space-y-2">
       {/* Row 1 — region (outlined, larger) */}
       <div className="-mr-4 overflow-hidden md:mr-0 md:overflow-visible">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none pr-4 md:pr-0">

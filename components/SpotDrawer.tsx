@@ -18,10 +18,10 @@ interface Props {
 }
 
 const DIFF_STYLES: Record<string, { bg: string; text: string }> = {
-  flatwater: { bg: "#ECFDF5", text: "#065F46" },
-  bay:       { bg: "#F0F9FF", text: "#0369A1" },
-  river:     { bg: "#FFF7ED", text: "#9A3412" },
-  unknown:   { bg: "#F5F5F4", text: "#78716C" },
+  flatwater: { bg: "#DBF3F0", text: "#0E7F78" },
+  bay:       { bg: "#E3EEFA", text: "#0B4E96" },
+  river:     { bg: "#FDEAE0", text: "#CC5528" },
+  unknown:   { bg: "#EEF3F9", text: "#8AA0B4" },
 };
 
 function Tag({ label }: { label: string }) {
@@ -198,7 +198,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>
-              <h2 className="font-['Fraunces'] text-xl font-bold text-[--dark] leading-tight">
+              <h2 className="font-['Newsreader'] text-xl font-bold text-[--dark] leading-tight">
                 {spot.water}
               </h2>
               <p className="text-sm text-[--muted] mt-1">{spot.city} &middot; {spot.region}</p>
@@ -304,7 +304,7 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
               <button
                 onClick={handleShare}
                 className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-                style={{ borderColor: "#e5e7eb", color: "var(--dark)" }}
+                style={{ borderColor: "var(--border)", color: "var(--dark)" }}
               >
                 {copied ? "Copied!" : "Share"}
               </button>
@@ -313,8 +313,8 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
                   onClick={() => onToggleFavorite(spot!.id)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
                   style={isFavorite
-                    ? { borderColor: "#fecdd3", color: "#e11d48", background: "#fff1f2" }
-                    : { borderColor: "#e5e7eb", color: "var(--muted)" }
+                    ? { borderColor: "#F5C6CE", color: "#E23B54", background: "#FDECEF" }
+                    : { borderColor: "var(--border)", color: "var(--muted)" }
                   }
                   aria-label={isFavorite ? "Remove from saved spots" : "Save this spot"}
                 >

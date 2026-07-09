@@ -2,11 +2,11 @@ import type { SavedConditionState } from "@/lib/savedConditions";
 
 // Colors mirror PADDLE_COPY in ConditionsPanel.tsx so the two reads agree.
 const STYLE: Record<SavedConditionState, { label: string; bg: string; text: string }> = {
-  calm:    { label: "Calm",    bg: "#ECFDF5", text: "#065F46" },
-  breezy:  { label: "Breezy",  bg: "#FEFCE8", text: "#854D0E" },
-  windy:   { label: "Windy",   bg: "#FEF2F2", text: "#991B1B" },
-  unknown: { label: "No data", bg: "#F5F5F4", text: "#78716C" },
-  loading: { label: "…",       bg: "#F5F5F4", text: "#78716C" },
+  calm:    { label: "Calm",    bg: "#DBF3F0", text: "#0E7F78" },
+  breezy:  { label: "Breezy",  bg: "#FEF3E8", text: "#B4671F" },
+  windy:   { label: "Windy",   bg: "#FEE9E0", text: "#CC5528" },
+  unknown: { label: "No data", bg: "#EEF3F9", text: "#8AA0B4" },
+  loading: { label: "…",       bg: "#EEF3F9", text: "#8AA0B4" },
 };
 
 export default function ConditionsBadge({ state }: { state: SavedConditionState }) {

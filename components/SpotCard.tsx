@@ -86,7 +86,7 @@ export default function SpotCard({ spot, selected, onClick, distance, isFavorite
               // negative margin keeps the row height. Full opacity so it reads as
               // a real save control, not decoration.
               className="-my-2 -mr-1.5 flex h-10 w-10 items-center justify-center text-xl leading-none transition-transform hover:scale-110"
-              style={{ color: isFavorite ? "#e11d48" : "var(--muted)" }}
+              style={{ color: isFavorite ? "#E23B54" : "var(--muted)" }}
             >
               {isFavorite ? "♥" : "♡"}
             </button>

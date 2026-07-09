@@ -1,14 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Meltwater design system (tokens.json): glacial-pale base, deep-azure ink,
+   water-type color coding. Original names (--bg/--dark/--muted/--accent/
+   --accent-light/--border) are kept so existing bg-[--accent] etc. classes
+   pick up the new values; the extra tokens are new. */
 :root {
-  --bg:           #EEF3F5;
-  --white:        #FFFFFF;
-  --dark:         #1A2C36;
-  --muted:        #5B7A87;
-  --accent:       #2D6A8F;
-  --accent-light: #E3EFF7;
-  --border:       #D0E3EE;
+  /* base */
+  --bg:            #EEF5FB;  /* canvas */
+  --white:         #FFFFFF;  /* surface */
+  --surface-muted: #F8FBFE;
+  --fill:          #F2F7FC;
+  --fill-alt:      #EEF3F9;
+  --border:        #DCE7F0;  /* hairline */
+  --border-soft:   #E4EBF2;
+  /* ink */
+  --dark:          #0B2A47;  /* ink primary */
+  --ink-2:         #42607A;  /* ink secondary */
+  --muted:         #6E8598;  /* ink tertiary */
+  --ink-muted:     #8AA0B4;
+  --ink-faint:     #9DAEBD;
+  /* brand */
+  --accent:        #0E6FD1;  /* azure */
+  --accent-ink:    #0B4E96;
+  --accent-light:  #E3EEFA;  /* azureFill */
+  --accent-fill-hi:#EAF2FC;
+  /* water types */
+  --flatwater:      #12A5B0;
+  --flatwater-ink:  #0E7F78;
+  --flatwater-fill: #DBF3F0;
+  --ocean:          #0E6FD1;
+  --ocean-ink:      #0B4E96;
+  --ocean-fill:     #E3EEFA;
+  --river:          #E06636;
+  --river-ink:      #CC5528;
+  --river-fill:     #FDEAE0;
+  /* status */
+  --calm:           #0E7F78;
+  --calm-fill:      #DBF3F0;
+  --free:           #2E9E5B;
+  --free-fill:      #E4F5EA;
+  --wind-alert:     #CC5528;
+  --wind-alert-fill:#FEE9E0;
+  --saved:          #E23B54;
 }
 
 * {
@@ -30,7 +64,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   background: var(--bg);
   color: var(--dark);
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
   margin: 0;
 }
 
@@ -47,7 +81,7 @@ header {
 .leaflet-container { height: 100%; width: 100%; }
 .leaflet-popup-content-wrapper {
   border-radius: 10px;
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
   font-size: 13px;
 }
 .leaflet-popup-content { margin: 10px 14px; }

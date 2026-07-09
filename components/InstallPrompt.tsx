@@ -164,7 +164,7 @@ export default function InstallPrompt() {
   if (!visible || !platform || drawerOpen) return null;
 
   const card: React.CSSProperties = {
-    background: "#1A2C36",
+    background: "#0B2A47",
     color: "#FFFFFF",
     borderRadius: 14,
     padding: "12px 16px",
@@ -178,7 +178,7 @@ export default function InstallPrompt() {
   };
   const muted = { margin: "4px 0 0", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.4 } as const;
   const primaryBtn: React.CSSProperties = {
-    background: "#2D6A8F", color: "#fff", border: "none", borderRadius: 8,
+    background: "#0E6FD1", color: "#fff", border: "none", borderRadius: 8,
     padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
   };
 

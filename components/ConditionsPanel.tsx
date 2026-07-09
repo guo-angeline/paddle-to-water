@@ -22,10 +22,10 @@ import NextGoodWindowPanel from "@/components/NextGoodWindowPanel";
  */
 
 const PADDLE_COPY: Record<Paddleability, { label: string; tone: string; bg: string; text: string }> = {
-  calm:    { label: "Calm",   tone: "Light wind, good for flatwater.",     bg: "#ECFDF5", text: "#065F46" },
-  breezy:  { label: "Breezy", tone: "Some chop likely, fine if you know the spot.", bg: "#FEFCE8", text: "#854D0E" },
-  windy:   { label: "Windy",  tone: "Strong wind, tough for beginners.",   bg: "#FEF2F2", text: "#991B1B" },
-  unknown: { label: "",       tone: "",                                    bg: "#F5F5F4", text: "#78716C" },
+  calm:    { label: "Calm",   tone: "Light wind, good for flatwater.",     bg: "#DBF3F0", text: "#0E7F78" },
+  breezy:  { label: "Breezy", tone: "Some chop likely, fine if you know the spot.", bg: "#FEF3E8", text: "#B4671F" },
+  windy:   { label: "Windy",  tone: "Strong wind, tough for beginners.",   bg: "#FEE9E0", text: "#CC5528" },
+  unknown: { label: "",       tone: "",                                    bg: "#EEF3F9", text: "#8AA0B4" },
 };
 
 function Skeleton() {

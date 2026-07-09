@@ -46,13 +46,13 @@ export default function FeedbackModal({ onClose, defaultType, defaultMessage }: 
     <div
       ref={overlayRef}
       className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
-      style={{ background: "rgba(28,25,23,0.5)", backdropFilter: "blur(2px)" }}
+      style={{ background: "rgba(11,42,71,0.35)", backdropFilter: "blur(2px)" }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="font-['Libre_Baskerville'] text-lg font-bold text-[--dark]">
+          <h2 className="font-['Newsreader'] text-lg font-bold text-[--dark]">
             Get in touch
           </h2>
           <button
@@ -97,7 +97,7 @@ export default function FeedbackModal({ onClose, defaultType, defaultMessage }: 
                     style={
                       type === opt.value
                         ? { background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" }
-                        : { background: "#fff", color: "var(--muted)", borderColor: "#e5e7eb" }
+                        : { background: "#fff", color: "var(--muted)", borderColor: "var(--border)" }
                     }
                   >
                     {opt.label}
@@ -150,7 +150,7 @@ export default function FeedbackModal({ onClose, defaultType, defaultMessage }: 
                 type="button"
                 onClick={onClose}
                 className="flex-1 py-2.5 rounded-xl border text-sm font-medium transition-colors"
-                style={{ borderColor: "#e5e7eb", color: "var(--muted)", background: "#fff" }}
+                style={{ borderColor: "var(--border)", color: "var(--muted)", background: "#fff" }}
               >
                 Cancel
               </button>

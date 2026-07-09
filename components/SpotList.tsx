@@ -69,7 +69,7 @@ export default function SpotList({
           tell people it exists. Drops away the moment they save anything. */}
       {savedSpots.length === 0 && onToggleFavorite && mainSpots.length > 0 && (
         <p className="px-4 pt-2.5 pb-1 text-[11px] text-[--muted]">
-          Tap <span style={{ color: "#e11d48" }}>♥</span> to save spots for later.
+          Tap <span style={{ color: "#E23B54" }}>♥</span> to save spots for later.
         </p>
       )}
 

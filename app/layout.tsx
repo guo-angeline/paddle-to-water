@@ -15,7 +15,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#2D6A8F",
+  themeColor: "#0E6FD1",
 };
 
 const TITLE = "Paddle to Water: Paddleboard & Kayak Spots in the Bay Area";

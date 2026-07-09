@@ -47,16 +47,17 @@ Defined in `lib/types.ts`. Each `Spot` has:
 
 ### Theme
 
-CSS custom properties in `app/globals.css` control the palette:
-- `--bg` `#EDEAE3`, `--accent` `#3730A3` (indigo), `--dark` `#1C1917`, `--muted` `#78716C`
-- Map pin colors and difficulty badge colors are **not** CSS variables — they are hardcoded in `lib/types.ts` (`DIFFICULTY_COLOR`) and inlined in `app/page.tsx` (legend). Update both if changing difficulty colors.
-- Tailwind v4 is used. CSS variable syntax in class names: `bg-[--accent]`, `text-[--muted]`, etc.
+The palette is the **Meltwater** design system (glacial-pale base, deep-azure ink, water-type color coding), applied 2026-07-08 from the claude.ai/design "Style Directions" doc. CSS custom properties in `app/globals.css` are the source of truth; the full token set (base / ink / brand / waterType / status) lives there.
+- Core vars: `--bg` `#EEF5FB` (canvas), `--accent` `#0E6FD1` (azure), `--dark` `#0B2A47` (ink primary), `--muted` `#6E8598` (ink tertiary), `--border` `#DCE7F0` (hairline). Extended tokens (`--flatwater`/`--ocean`/`--river` + `-ink`/`-fill`, `--calm`/`--free`/`--wind-alert` + `-fill`, `--saved`, `--ink-2`, etc.) are also defined.
+- Map pin colors and difficulty badge colors are **not** CSS variables — they are hardcoded in `lib/types.ts` (`DIFFICULTY_COLOR`: flatwater teal `#12A5B0`, bay/ocean azure `#0E6FD1`, river rust `#E06636`) and inlined in the legend in `components/HomeClient.tsx`. Update both if changing difficulty colors. Several components also carry inline tint maps (FilterBar `DIFF_PALETTE`, SpotDrawer `DIFF_STYLES`, ConditionsBadge/Panel status colors) that must be kept in sync with the tokens.
+- The PWA `theme_color`/`background_color` (`app/manifest.ts`) and `themeColor` meta (`app/layout.tsx`) are azure `#0E6FD1` / ink `#0B2A47`. The favicon, app icons, and OG share images were intentionally left on the prior art in this pass.
+- Tailwind v4 is used. CSS variable syntax in class names: `bg-[--accent]`, `text-[--muted]`, `border-[--border]`, etc.
 
 ### Fonts
 
 Loaded via Google Fonts `@import` in `globals.css`. The `@import url(...)` must appear **before** `@import "tailwindcss"` or the build emits a CSS warning.
-- Headings (`h1`, drawer titles): `font-['Libre_Baskerville']`
-- Body: `Nunito` set on `body` in globals
+- Display/serif (wordmark, drawer & sheet titles, `h1`): `font-['Newsreader']`
+- Body / UI: `Hanken Grotesk` set on `body` in globals (inherited everywhere)
 
 ## Analytics
 

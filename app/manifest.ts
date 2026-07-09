@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Find paddleboard & kayak launch spots across the SF Bay Area.",
     start_url: "/",
     display: "standalone",
-    background_color: "#1A2C36",
-    theme_color: "#2D6A8F",
+    background_color: "#0B2A47",
+    theme_color: "#0E6FD1",
     orientation: "portrait",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

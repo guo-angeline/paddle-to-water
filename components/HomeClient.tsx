@@ -304,7 +304,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     <div className="h-full flex flex-col">
       {/* Header */}
       <header className="shrink-0 px-4 py-3 border-b border-gray-200 bg-[--bg] flex items-center justify-between">
-        <h1 className="font-['Fraunces'] text-xl font-bold text-[--dark]">
+        <h1 className="font-['Newsreader'] text-xl font-bold text-[--dark]">
           Paddle to Water
         </h1>
         <div className="flex items-center gap-2 md:gap-3">

@@ -103,19 +103,19 @@ export default function MapView({ spots, selected, onSelect, userLocation, fitTo
           <CircleMarker
             center={[userLocation.lat, userLocation.lng]}
             radius={18}
-            pathOptions={{ color: "transparent", fillColor: "#1A73E8", fillOpacity: 0.18, weight: 0 }}
+            pathOptions={{ color: "transparent", fillColor: "#0E6FD1", fillOpacity: 0.18, weight: 0 }}
           />
           <CircleMarker
             center={[userLocation.lat, userLocation.lng]}
             radius={7}
-            pathOptions={{ color: "#fff", fillColor: "#1A73E8", fillOpacity: 1, weight: 3 }}
+            pathOptions={{ color: "#fff", fillColor: "#0E6FD1", fillOpacity: 1, weight: 3 }}
           />
         </>
       )}
 
       {spots.map((spot) => {
         const isSelected = selected?.id === spot.id;
-        const color = DIFFICULTY_COLOR[spot.difficulty] ?? "#6B7280";
+        const color = DIFFICULTY_COLOR[spot.difficulty] ?? "#8AA0B4";
         return (
           <CircleMarker
             key={spot.id}
@@ -123,7 +123,7 @@ export default function MapView({ spots, selected, onSelect, userLocation, fitTo
             radius={isSelected ? 13 : 10}
             renderer={renderer}
             pathOptions={{
-              color: isSelected ? "#1B2A16" : color,
+              color: isSelected ? "#0B2A47" : color,
               fillColor: color,
               fillOpacity: isSelected ? 1 : 0.75,
               weight: isSelected ? 3 : 2,

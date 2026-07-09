@@ -62,7 +62,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
       <div className="w-full max-w-sm rounded-2xl shadow-2xl px-4 py-3.5" style={{ background: "var(--accent)" }}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-['Libre_Baskerville'] text-white text-base font-bold leading-tight">
+            <p className="font-['Newsreader'] text-white text-base font-bold leading-tight">
               Good window: {windowLabel}
             </p>
             <p className="text-white/80 text-sm mt-0.5">{spot.water}</p>
