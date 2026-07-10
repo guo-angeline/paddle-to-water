@@ -39,7 +39,12 @@ type SystemEventName =
   // The POST persisting a push subscription to /api/alerts/subscribe failed.
   // Without this, a "granted" opt-in that never reached the backend is
   // indistinguishable from a working one. Success is silent; failure is loud.
-  | "alert_subscribe_failed";
+  | "alert_subscribe_failed"
+  // The POST to /api/email/subscribe failed (email channel, item 22). Availability
+  // signal for the capture path; success is the intent event email_capture_submitted.
+  // Note: email SENDS are ledgered server-side in the email_sends table, not here,
+  // exactly like alert_sends (there is no client to fire a send event).
+  | "email_capture_failed";
 
 /**
  * INTENT / engagement events. Fire only on a deliberate user act or a
@@ -98,7 +103,16 @@ type IntentEventName =
   // Experiment exposure: fired once per session when a variant-dependent UI
   // actually renders (see lib/experiments.ts). Exposure = the user saw the
   // treatment, not merely that they were bucketed.
-  | "experiment_exposed";
+  | "experiment_exposed"
+  // Email channel (item 22). Capture form submitted (an address was typed and
+  // sent to /api/email/subscribe). Top of the email funnel.
+  | "email_capture_submitted"
+  // The double-opt-in confirm link was clicked (fires on the /?email_confirmed=1
+  // landing after the confirm route). The consent + activation step.
+  | "email_capture_confirmed"
+  // App opened from an alert EMAIL deep link (URL contains from=email). Email twin
+  // of alert_clicked; the durable return signal is the server email_opens ledger.
+  | "email_alert_opened";
 
 export type EventName = SystemEventName | IntentEventName;
 
@@ -159,6 +173,16 @@ interface EventPropMap {
     had_window: boolean;
   };
   experiment_exposed: { experiment: string; variant: string };
+  // Email channel (item 22). `trigger`/`platform` mirror the alert opt-in so the
+  // email and push enrollment funnels segment the same way.
+  email_capture_submitted: {
+    platform: "standalone" | "ios" | "android" | "desktop";
+    trigger: "first_save" | "return_session" | "manual" | "conditions_interest" | "push_denied";
+    watched_count: number;
+  };
+  email_capture_failed: { status: number | null };
+  email_capture_confirmed: { watched_count: number };
+  email_alert_opened: { spot_id: number };
 }
 
 type PropsFor<E extends EventName> = E extends keyof EventPropMap

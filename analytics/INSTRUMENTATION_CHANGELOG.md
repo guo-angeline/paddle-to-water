@@ -14,6 +14,22 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (item 22) — Email alert channel (added)
+
+The email alert channel (PRD `docs/superpowers/specs/2026-07-10-email-alert-channel-and-enrollment.md`). A second, no-install reach channel that fires on the SAME calm-window evaluator as push. All events are new; there is no prior series for any of them.
+
+**New INTENT events (`trackIntent`):**
+- `email_capture_submitted` (`platform`, `trigger`, `watched_count`) — the capture form was submitted. Top of the email enrollment funnel; `trigger`/`platform` mirror `alert_optin_shown` so email and push funnels segment the same way. (Caller ships with the Phase 2 enrollment UI, item 23.)
+- `email_capture_confirmed` (`watched_count`) — the double-opt-in confirm link was clicked (fires on the `/?email_confirmed=1` landing). The activation step.
+- `email_alert_opened` (`spot_id`) — app opened from an alert email deep link (`from=email`). Email twin of `alert_clicked`.
+
+**New SYSTEM event (`trackSystem`):**
+- `email_capture_failed` (`status`) — the POST to `/api/email/subscribe` failed. Availability signal, like `alert_subscribe_failed`.
+
+**Server-side ledgers (not PostHog events):** email SENDS are recorded in the `email_sends` table and email OPENS in `email_opens` (via `/api/email/opened`, token-keyed, ITP-proof), exactly analogous to `alert_sends` / `alert_opens`. Email-cohort retention is read from these, not from device analytics.
+
+- **Comparability:** all five names are new as of 2026-07-10, no discontinuity in any existing series. `spot_viewed{source:"deeplink"}` volume may rise slightly as email opens land on it (email opens keep `source:"deeplink"`, a new `source` value was deliberately NOT added). Do not read the email funnel against the push funnel as a like-for-like conversion: different channels, different friction.
+
 ## 2026-07-10 (item 20) — next_good_window A/B retired, panel to 100% (semantics-changed)
 
 The `NextGoodWindowPanel` no longer gates on the `next_good_window` treatment
