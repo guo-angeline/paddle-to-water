@@ -20,3 +20,22 @@ Note on the iOS PWA identity split: the owner's phone did **not** fan out into a
 separate Safari-partition person_id (checked 2026-07-09); `11a83b86` carries both
 its browser and standalone events. If a standalone-only twin appears later, add
 it here.
+
+## Excluded email addresses (email alert channel, from 2026-07-10)
+
+The email channel is keyed to the email address in Supabase (`email_subscriptions`,
+`email_sends`, `email_opens`), NOT a PostHog `person_id`, so the person_id list
+above does not cover it. Every email-cohort query (reachable/active-subscriber
+retention, the email funnel, alert CTR over `email_sends` / `email_opens`) MUST
+also exclude these owner addresses, e.g. `AND lower(email) NOT IN (...)` or by
+joining out the matching `email_subscription_id`s. They are the owner's own test
+subscriptions, not users.
+
+| email | why excluded | first seen |
+|---|---|---|
+| `qig6789@gmail.com` | Owner (confirmed 2026-07-10). Used to test the double-opt-in; landed in Gmail inbox. | 2026-07-10 |
+| `qiguo1102@live.com` | Owner. Used for the first live subscribe/confirm spine test; confirmed subscriber watching spots 1 & 7. | 2026-07-10 |
+
+These are also the owner's dogfood subscriptions, so they may generate real
+`email_sends` / `email_opens` rows: filter them from metrics, do not treat as
+signal. If the owner adds more addresses for testing, append them here.
