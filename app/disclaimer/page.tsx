@@ -59,8 +59,8 @@ export default function DisclaimerPage() {
           <section>
             <h2 style={h2Style}>Accuracy of information</h2>
             <p style={pStyle}>
-              Spot details on Paddle to Water — including launch fees, access hours, parking,
-              coordinates, and conditions — are compiled from public sources and community
+              Spot details on Paddle to Water, including launch fees, access hours, parking,
+              coordinates, and conditions, are compiled from public sources and community
               contributions. This information may be inaccurate, incomplete, or outdated.
               Fees change, access points close, and conditions vary by season. Always verify
               current conditions and access directly with the relevant park, marina, or land
@@ -117,9 +117,8 @@ export default function DisclaimerPage() {
             <p style={pStyle}>
               If you find inaccurate or outdated information, please use the{" "}
               <strong>Feedback</strong> button on the{" "}
-              <Link href="/" style={linkStyle}>main page</Link>{" "}
-              or the <strong>Report an issue</strong> link inside any spot&rsquo;s detail
-              view. Community reports help keep this resource accurate for everyone.
+              <Link href="/" style={linkStyle}>main page</Link>. Community reports
+              help keep this resource accurate for everyone.
             </p>
           </section>
 

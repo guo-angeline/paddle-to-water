@@ -5,7 +5,6 @@ import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL, DIFFICULTY_COLOR } from "@/lib/types";
 import { nearbySpots } from "@/lib/distance";
 import { trackIntent, type SpotViewedSource } from "@/lib/analytics";
-import FeedbackModal from "@/components/FeedbackModal";
 import ConditionsPanel from "@/components/ConditionsPanel";
 
 interface Props {
@@ -43,7 +42,6 @@ const FULL = 0.92; // dragged-up / expanded height
 
 export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
 
   // Draggable mobile sheet. The handle (not the content) is the drag surface, so
@@ -305,71 +303,58 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
             </div>
           )}
 
-          {/* Actions — Share + Photos side-by-side, Get Directions full-width below */}
+          {/* Actions — hierarchy optimizes for Save (retention) first, Share
+              (virality) second; Get Directions + Photos are demoted to a neutral
+              row. Shipped to 100% per owner direction 2026-07-09 (explicit
+              exception to the A/B-flag policy, recorded in DECISIONS.md). */}
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
+            {onToggleFavorite && (
               <button
-                onClick={handleShare}
-                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+                onClick={() => onToggleFavorite(spot!.id)}
+                className="flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-semibold border transition-colors"
+                style={isFavorite
+                  ? { borderColor: "#F5C6CE", color: "#E23B54", background: "#FDECEF" }
+                  : { borderColor: "transparent", color: "#fff", background: "var(--accent)" }
+                }
+                aria-label={isFavorite ? "Remove from saved spots" : "Save this spot"}
+              >
+                <span className="text-base leading-none">{isFavorite ? "♥" : "♡"}</span>
+                <span>{isFavorite ? "Saved" : "Save this spot"}</span>
+              </button>
+            )}
+            <button
+              onClick={handleShare}
+              className="flex items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
+              style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+            >
+              {copied ? "Copied!" : "Share"}
+            </button>
+            <div className="flex gap-2">
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "directions" })}
+                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-medium border transition-colors hover:bg-gray-50"
                 style={{ borderColor: "var(--border)", color: "var(--dark)" }}
               >
-                {copied ? "Copied!" : "Share"}
-              </button>
-              {onToggleFavorite && (
-                <button
-                  onClick={() => onToggleFavorite(spot!.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-                  style={isFavorite
-                    ? { borderColor: "#F5C6CE", color: "#E23B54", background: "#FDECEF" }
-                    : { borderColor: "var(--border)", color: "var(--muted)" }
-                  }
-                  aria-label={isFavorite ? "Remove from saved spots" : "Save this spot"}
-                >
-                  <span className="text-base leading-none">{isFavorite ? "♥" : "♡"}</span>
-                  <span>{isFavorite ? "Saved" : "Save"}</span>
-                </button>
-              )}
+                Get Directions
+              </a>
               <a
                 href={photosUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "photos" })}
-                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-                style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-medium border transition-colors hover:bg-gray-50"
+                style={{ borderColor: "var(--border)", color: "var(--dark)" }}
               >
                 Photos
               </a>
             </div>
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "directions" })}
-              className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
-              style={{ background: "var(--accent)", color: "#fff" }}
-            >
-              Get Directions
-            </a>
           </div>
 
-          {/* Report link */}
-          <button
-            onClick={() => setReportOpen(true)}
-            className="mt-3 text-xs text-[--muted] hover:text-[--dark] transition-colors w-full text-center"
-          >
-            Report an issue with this spot
-          </button>
         </div>
       </div>
-
-      {/* Report modal — rendered here so it sits above the drawer */}
-      {reportOpen && (
-        <FeedbackModal
-          onClose={() => setReportOpen(false)}
-          defaultType="issue"
-          defaultMessage={`Issue with: ${spot.water}\n\n`}
-        />
-      )}
     </>
   );
 }

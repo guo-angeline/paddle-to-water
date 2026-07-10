@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Spot } from "@/lib/types";
 import { trackIntent } from "@/lib/analytics";
+import { getNextWindow, formatNextWindow } from "@/lib/nextWindow";
 
 interface Props {
   spot: Spot;
@@ -11,10 +12,24 @@ interface Props {
 }
 
 /**
+ * First complete sentence of the notes: the actual "where to launch"
+ * instruction. Showing the whole notes field here dumped a long generic
+ * description and clamped it mid-word ("...the whole way. The..."), which is
+ * neither alert-relevant nor complete, and duplicates the drawer's own notes
+ * right below. One clean sentence is the put-in line the card promised.
+ */
+function launchLine(notes: string | null | undefined): string {
+  if (!notes) return "";
+  const trimmed = notes.trim();
+  const firstSentence = trimmed.match(/^.*?[.!?](?=\s|$)/);
+  return (firstSentence ? firstSentence[0] : trimmed).trim();
+}
+
+/**
  * Floating card over the deep-linked spot's drawer, shown whenever the app
- * opened from a push alert. Repeats the calm-window timing the notification
- * already named, plus the spot's put-in notes, so that context survives the
- * click instead of dropping into a bare drawer (ROADMAP item 1).
+ * opened from a push alert. Carries the alert's point: exactly WHEN the calm
+ * window is and WHERE to put in, so that context survives the click instead of
+ * dropping into a bare drawer (ROADMAP item 1).
  *
  * Monitored 100% rollout (D2(a), 2026-07-08): this is no longer an A/B test.
  * The interstitial fires only on push-opens with a tiny watched set, so an arm
@@ -27,6 +42,25 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
   useEffect(() => {
     trackIntent("alert_interstitial_shown", { spot_id: spot.id });
   }, [spot.id]);
+
+  // Show the SAME precise window the conditions panel shows ("Fri 6 to 10am"),
+  // via the shared cached lookup, instead of the coarse label the push carried
+  // ("Friday morning"). They were inconsistent on screen: the card said less
+  // than the panel right below it. Falls back to the push label if the live
+  // lookup has no window (conditions can shift between send and open).
+  const [preciseWhen, setPreciseWhen] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    getNextWindow(spot.id, spot.lat, spot.lng).then((r) => {
+      if (alive && r.ok && r.window) setPreciseWhen(formatNextWindow(r.window));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [spot.id, spot.lat, spot.lng]);
+
+  const shownWhen = preciseWhen ?? windowLabel;
+  const putIn = launchLine(spot.notes);
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
   // Same identity the drawer's action events carry, plus source="alert_interstitial"
@@ -63,7 +97,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-['Newsreader'] text-white text-base font-bold leading-tight">
-              Good window: {windowLabel}
+              Good window: {shownWhen}
             </p>
             <p className="text-white/80 text-sm mt-0.5">{spot.water}</p>
           </div>
@@ -75,9 +109,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
             ×
           </button>
         </div>
-        {spot.notes && (
-          <p className="text-white/90 text-sm mt-2 leading-snug line-clamp-3">{spot.notes}</p>
-        )}
+        {putIn && <p className="text-white/90 text-sm mt-2 leading-snug">{putIn}</p>}
         <a
           href={mapsUrl}
           target="_blank"
