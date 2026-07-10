@@ -44,7 +44,12 @@ type SystemEventName =
   // signal for the capture path; success is the intent event email_capture_submitted.
   // Note: email SENDS are ledgered server-side in the email_sends table, not here,
   // exactly like alert_sends (there is no client to fire a send event).
-  | "email_capture_failed";
+  | "email_capture_failed"
+  // The home map auto-centered on the user because geolocation was ALREADY
+  // granted (Permissions API === "granted"), applied on load with no click.
+  // SYSTEM, not intent: the app acted, the user did not toggle Near Me this
+  // session. Never read this as "people use Near Me" — that's near_me_toggled.
+  | "location_auto_applied";
 
 /**
  * INTENT / engagement events. Fire only on a deliberate user act or a
@@ -140,6 +145,7 @@ interface EventPropMap {
     had_data: boolean;
   };
   saved_conditions_loaded: { count: number; calm_count: number; latency_ms: number };
+  location_auto_applied: { source: "permission_granted" };
   alert_subscribe_failed: { status: number | null; watched_count: number };
   saved_conditions_viewed: { count: number; calm_count: number };
   // Values mirror lib/push.ts OptInResult; kept inline to avoid a cycle

@@ -138,6 +138,48 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-locate on load for users who already granted permanent geolocation.
+  // Uses the Permissions API so getCurrentPosition is only called when the state
+  // is already "granted" — this NEVER triggers a permission prompt on open. The
+  // effect mirrors the Near Me result (map flies to the user at zoom 11, list
+  // sorts by distance) but keeps the map tab visible instead of switching to the
+  // list, so a returning local lands on their nearest spots every time.
+  const autoLocated = useRef(false);
+  useEffect(() => {
+    if (autoLocated.current) return;
+    // Don't override a deep-linked spot: the map would fight FlyTo(spot) vs
+    // FlyToUser. If the user opened a /spot URL or ?spot=, let the spot win.
+    const params = new URLSearchParams(window.location.search);
+    if (initialSpotId !== undefined || Number(params.get("spot") || 0)) return;
+    if (!navigator.geolocation || !navigator.permissions?.query) return;
+    let cancelled = false;
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((status) => {
+        if (cancelled || status.state !== "granted") return;
+        autoLocated.current = true;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (cancelled) return;
+            setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            // SYSTEM: the app centered the map, the user did not act. Kept
+            // distinct from near_me_toggled so Near Me intent isn't overstated.
+            trackSystem("location_auto_applied", { source: "permission_granted" });
+            setPersona({ uses_geolocation: true });
+          },
+          // Grant present but position unavailable (GPS off, etc.): stay on the
+          // default Bay view, no error toast — the user didn't ask for anything.
+          () => {},
+          // A cached fix (<=5 min) makes this instant on open; fall back to an
+          // 8s live lock otherwise.
+          { timeout: 8000, maximumAge: 300000 }
+        );
+      })
+      .catch(() => { /* Permissions API unsupported: silently skip auto-locate */ });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sync URL to selected spot. On spot pages, rebase to root so the URL
   // stays honest as the user explores other spots.
   useEffect(() => {

@@ -15,6 +15,7 @@ events and covers devices/partitions where the flag isn't set.
 |---|---|---|---|
 | `11a83b86-4d73-565f-8b70-2f2847d865be` | iOS 18.7 / Mobile Safari / standalone PWA | Owner's phone: saved spots, opted in, clicked own push notifications. Identified 2026-07-09 by the owner. | 2026-06-15 |
 | `0faaad14-aa87-5cda-a76c-a3f59e0fa4d1` | Mac OS X / Chrome / Desktop | Owner's dev/test machine: 2,281 events (largest single contaminant), 14 saves, 1 alert click. Presumed-internal; confirm if a real second user ever surfaces. | 2026-06-27 |
+| `21e77b69-f479-5130-9696-e386ad7f9aa0` | Mac OS X / Chrome / Desktop (browser) | Owner's Mac Chrome, new person_id after the `0faaad14` id churned (storage cleared / new profile). Confirmed 2026-07-10 by the owner: granted geolocation while testing the auto-locate feature. | 2026-07-10 |
 
 Note on the iOS PWA identity split: the owner's phone did **not** fan out into a
 separate Safari-partition person_id (checked 2026-07-09); `11a83b86` carries both

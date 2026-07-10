@@ -14,6 +14,16 @@ without touching this file.
 
 ---
 
+## 2026-07-10 — Auto-locate home map on load for granted-permission users (added)
+
+New SYSTEM event `location_auto_applied` (`trackSystem`, props `{ source: "permission_granted" }`). On home load, if the browser reports geolocation permission is already `granted` (Permissions API, no prompt), the map auto-centers on the user at zoom 11 and the list sorts by distance — the Near Me result, applied without a click (the map tab stays visible; unlike the click path it does not force the List tab). The event fires once per session when that auto-apply happens.
+
+**Why SYSTEM, not intent:** the app acts, the user does not toggle Near Me this session. It measures how often we auto-centered, NOT engagement. Do not merge it into `near_me_toggled` (deliberate toggles) or a report will overstate Near Me usage — the exact anti-pattern this split exists to prevent.
+
+**No A/B flag (monitored 100% rollout).** Only users who previously granted permanent geolocation are eligible (~8 external users all-time as of 2026-07-10), so an arm comparison could never reach significance. Same reasoning and precedent as the `alert_interstitial` retirement (2026-07-08, D2(a)): ship at 100%, watch guardrails (`spot_viewed`, `conditions_loaded`, `spot_sheet_dismissed`) for regressions instead of running a powerless test.
+
+**Comparability:** brand-new event, no prior series. `near_me_toggled` semantics are unchanged (auto-locate deliberately does NOT fire it), so the Near Me intent series stays continuous across this date. From 2026-07-10, some sessions reach a located state with no `near_me_toggled(granted)` — attribute those to `location_auto_applied`, not a drop in Near Me clicks.
+
 ## 2026-07-10 — Internal-device flag now settable via `?internal=1` (traffic filter)
 
 No event change. Added a URL setter: visiting `/?internal=1` once writes the
