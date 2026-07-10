@@ -83,7 +83,7 @@ export default function SpotList({
           tell people it exists. Drops away the moment they save anything. */}
       {savedSpots.length === 0 && onToggleFavorite && mainSpots.length > 0 && (
         <p className="px-4 pt-2.5 pb-1 text-[11px] text-[--muted]">
-          Tap <span style={{ color: "#E23B54" }}>♥</span> to save spots for later.
+          Tap <span style={{ color: "#E23B54" }}>♥</span> to watch a spot&rsquo;s conditions.
         </p>
       )}
 
@@ -91,7 +91,7 @@ export default function SpotList({
       {savedSpots.length > 0 && (
         <div ref={savedSectionRef}>
           <div className="px-4 pt-3 pb-1.5 flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-[--muted] uppercase tracking-wider">Your saved spots</span>
+            <span className="text-[11px] font-semibold text-[--muted] uppercase tracking-wider">Watching</span>
             <span className="text-[11px] text-[--muted] opacity-60">({savedSpots.length})</span>
             {!alertsOn && (
               <button

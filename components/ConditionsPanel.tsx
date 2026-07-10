@@ -28,6 +28,23 @@ const PADDLE_COPY: Record<Paddleability, { label: string; tone: string; bg: stri
   unknown: { label: "",       tone: "",                                    bg: "#EEF3F9", text: "#8AA0B4" },
 };
 
+// Item 21: broaden the alerts offer beyond savers to the core paddle-decision
+// behavior. Track distinct spots whose conditions were genuinely viewed (dwell-
+// gated) this session; the 2nd distinct view means "I'm deciding where to
+// paddle," which is exactly the alert use case. Fire once, then InstallPrompt
+// surfaces the enrollment prompt (subject to its already-subscribed / snooze /
+// opted-out guards). Module scope persists across drawer opens within a session
+// and resets on full reload, which is the session boundary we want.
+const conditionsViewedSpots = new Set<number>();
+let conditionsInterestFired = false;
+function recordConditionsInterest(spotId: number) {
+  conditionsViewedSpots.add(spotId);
+  if (!conditionsInterestFired && conditionsViewedSpots.size >= 2) {
+    conditionsInterestFired = true;
+    window.dispatchEvent(new Event("ptw:conditionsinterest"));
+  }
+}
+
 function Skeleton() {
   return (
     <div className="space-y-2">
@@ -107,6 +124,7 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
         paddleability: d?.wind?.paddleability ?? "unknown",
         had_data: !!d && !d.failed,
       });
+      recordConditionsInterest(spot.id);
     },
   });
 

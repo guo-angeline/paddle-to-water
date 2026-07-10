@@ -14,6 +14,41 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (item 20) — next_good_window A/B retired, panel to 100% (semantics-changed)
+
+The `NextGoodWindowPanel` no longer gates on the `next_good_window` treatment
+arm; it renders for all users. Underpowered test on a surface worth shipping
+(see docs/experiments/next-good-window.md).
+
+**`experiment_exposed` (`experiment: "next_good_window"`) — removed.** No longer
+emitted (there is no experiment). Its series ends 2026-07-10.
+
+**`next_window_viewed` — semantics-changed (audience widened).** Was
+treatment-only; now fires for every user who dwell-views the panel. From
+2026-07-10 its volume rises as a 100% rollout effect, NOT an organic behavior
+change; do not compare the count across that date.
+
+## 2026-07-10 (latest++) — Conditions-interest enrollment trigger + Save→Watch rename (props-changed, copy)
+
+Item 21 (Phase 0 of the email-first retention epic). The alerts prompt used to
+fire only on a save (or the item-14/15/16 re-offers). It now also fires on
+**conditions interest**: the user dwell-viewed conditions (`conditions_viewed`,
+IntersectionObserver + 1s dwell) on **2+ distinct spots** in a session, dispatched
+once from `ConditionsPanel`. This is the core paddle-decision behavior and a
+bigger, better-qualified pool than savers. Respects the 14-day snooze / hard-denial.
+
+**`alert_optin_shown.trigger` / `alert_optin_dismissed.trigger` — props-changed
+(value added).** New value `"conditions_interest"`. `alert_optin_shown` volume
+rises again from 2026-07-10 as conditions-checkers who never saved are now
+offered alerts; segment by `trigger` to keep the earlier save-only cohorts
+comparable. No change to `conditions_viewed` itself (same event, same dwell gate);
+it merely now also increments a client-side distinct-spot counter.
+
+**Save→Watch rename — copy only, no events.** "Save this spot" → "Watch this
+spot", section header "Your saved spots" → "Watching (N)", plus aria labels.
+`favorite_toggled` and the `ptw:spotsaved` internal event are unchanged, so save
+metrics stay fully comparable across the rename; only the visible verb changed.
+
 ## 2026-07-10 (latest+) — Return-session re-offer trigger (props-changed)
 
 Item 16. A non-installed user with 2+ saved spots and no subscription is now
