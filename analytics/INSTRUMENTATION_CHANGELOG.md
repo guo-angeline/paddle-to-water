@@ -14,6 +14,20 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (item 20) — next_good_window A/B retired, panel to 100% (semantics-changed)
+
+The `NextGoodWindowPanel` no longer gates on the `next_good_window` treatment
+arm; it renders for all users. Underpowered test on a surface worth shipping
+(see docs/experiments/next-good-window.md).
+
+**`experiment_exposed` (`experiment: "next_good_window"`) — removed.** No longer
+emitted (there is no experiment). Its series ends 2026-07-10.
+
+**`next_window_viewed` — semantics-changed (audience widened).** Was
+treatment-only; now fires for every user who dwell-views the panel. From
+2026-07-10 its volume rises as a 100% rollout effect, NOT an organic behavior
+change; do not compare the count across that date.
+
 ## 2026-07-10 (latest++) — Conditions-interest enrollment trigger + Save→Watch rename (props-changed, copy)
 
 Item 21 (Phase 0 of the email-first retention epic). The alerts prompt used to

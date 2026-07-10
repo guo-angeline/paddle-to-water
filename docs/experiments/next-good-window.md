@@ -1,5 +1,15 @@
 # Experiment: next_good_window
 
+## STATUS: RETIRED, 100% rollout (2026-07-10, item 20)
+The A/B was retired without a verdict. Detecting the effect needed ~430-680
+exposed users per arm (months at ~14 users/day), and it could not cleanly
+measure short-term return, so it was an underpowered test on a surface worth
+shipping outright. The `NextGoodWindowPanel` now renders for everyone; the
+experiment gate and `experiment_exposed(next_good_window)` logging were removed.
+The dwell-gated `next_window_viewed` intent event is kept for a monitored
+rollout. Owner-approved D3-style exception to the A/B-flag policy (low traffic
+cannot power the test). The section below is retained for history.
+
 ## Hypothesis
 Showing the next calm window in the drawer raises in-session directions
 intent, because a forward-looking "come back Sat" gives a reason to plan a

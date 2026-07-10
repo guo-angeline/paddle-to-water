@@ -51,7 +51,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 The lead work for the 2-month retention push. Install converts at ~1% (1 install / 182 prompts) and iOS web push needs an install first; email converts far higher, works on desktop, and is cross-device + identity-bearing (it also fixes the iOS Safari/PWA partition that blinds retention measurement). This epic adds an anonymous email alert channel on the SAME calm-window evaluator as push, and turns the install-only opt-in into a channel-agnostic enrollment surface that picks the right ask per platform. Full spec, schema, copy, and instrumentation: `docs/superpowers/specs/2026-07-10-email-alert-channel-and-enrollment.md`. Two blocking owner escalations before the first send: **D5** (CAN-SPAM postal address) and **D6** (rollout mechanism). Sequence: 21 (cheap, ship now) -> 22 (the build) -> 23 (placements, depends on 22).
 
-## 21. [ready] Rename Save -> Watch + broaden the enrollment trigger to conditions-interest
+## 21. [done] 2026-07-10 Rename Save -> Watch + broaden the enrollment trigger to conditions-interest
+
+**Shipped 2026-07-10 (commit 1d1e2d9, by a parallel studio session; status reconciled here).** Save→Watch rename (SpotDrawer button, SpotList "Watching" header + nudge) and the conditions-interest enrollment trigger (fires the alerts prompt when a user dwell-viewed conditions on 2+ distinct spots in a session, `trigger: "conditions_interest"`). Confirmed present in the code and building.
 
 Two cheap, independent Phase-0 wins that need no email backend. (a) Rename "Save this spot" to "Watch this spot" and the saved-section header to "Watching (N)": favorites = watch list = alert set are one array, so "watch" teaches the payoff and is honest even pre-subscribe (the saved section already shows live condition badges). Copy tweak, ships to 100%, no flag. (b) Broaden the enrollment prompt from save-only to conditions-interest: fire when the user genuinely viewed conditions (dwell-gated `conditions_viewed`) on 2+ distinct spots in a session, in addition to save / return-session, respecting the existing 14-day snooze. A bigger, better-qualified pool than savers (many check conditions without saving).
 
@@ -85,7 +87,9 @@ Acceptance: saved spots survive the Safari -> installed-PWA transition, OR the i
 
 Acceptance: an external sub-daily scheduler hits `/api/cron/send-reminders` with the `CRON_SECRET` bearer every ~15-30 min, and a reminder fires ~30 min before its window opens. Preferred: Supabase pg_cron + pg_net (Supabase is already the store); alternatives are a GitHub Actions cron or a Vercel Pro upgrade. Verify with a dry-run (`?dry=1`) then a real scheduled fire landing on a device. If it cannot be wired, hide the "Remind me at launch time" CTA in `components/AlertInterstitial.tsx` so we stop promising what we do not deliver. No new client events required; record the scheduler in the deploy notes (`.claude/studio.md` / CLAUDE.md Deployment section) so it is not lost.
 
-## 20. [ready] Ship "Next good window" to 100% (retire the underpowered A/B)
+## 20. [done] 2026-07-10 Ship "Next good window" to 100% (retire the underpowered A/B)
+
+**Shipped 2026-07-10.** Removed the `next_good_window` experiment gate from `NextGoodWindowPanel`; the "Looking ahead / next calm window" panel now renders for every user (it was hidden from half). Kept the dwell-gated `next_window_viewed` intent event for a monitored rollout; stopped emitting `experiment_exposed(next_good_window)`. Doc marked RETIRED / 100% rollout; changelog notes `next_window_viewed` volume rises as a rollout effect (do not compare across 2026-07-10). Verified: 64 tests, lint, build clean; Playwright confirms the panel renders with no experiment flag present.
 
 `components/NextGoodWindowPanel.tsx` renders only for the `next_good_window` treatment arm, but the test needs ~430-680 exposed per arm (months at ~14 users/day) and cannot cleanly measure return short-term (`docs/experiments/next-good-window.md`). It is the one surface that makes opening the app cold (not via a push) worthwhile, and it is hidden from half of users.
 

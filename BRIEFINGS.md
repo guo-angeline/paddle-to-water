@@ -2,6 +2,13 @@
 
 CEO briefings after each shipped or parked item, newest first, 15 lines max each.
 
+## 2026-07-10 · Shipped item 20 (next-good-window to 100%); reconciled item 21
+What: retired the underpowered `next_good_window` A/B and shipped the "Looking ahead / next calm window" panel to 100% (was hidden from half of users; the one surface that makes a cold, non-push app open worthwhile). Removed the experiment gate; kept the dwell-gated next_window_viewed event; stopped experiment_exposed for it. Doc marked retired; changelog comparability note (volume rises as rollout, not organic).
+Reconciled: item 21 (Save→Watch rename + conditions-interest trigger) was already shipped by a PARALLEL studio session (commit 1d1e2d9); flipped its ROADMAP status ready→done rather than re-doing it (caught before duplicating, same as item 6b).
+Parallel-session note: multiple studio sessions are active on this backlog. Item 22 (email channel) is in flight elsewhere (its migration 0003_email_alerts.sql sits untracked); I did NOT touch it, to avoid collision. The changelog/ROADMAP saw concurrent edits.
+Verified: 64 tests, lint + build clean; Playwright confirms the panel renders with no flag. Deployed.
+Ready remaining: 18 (iOS storage partition, needs an on-device repro first), 19 (scheduler already wired by owner via pg_cron; residual = document it), 22 + 23 (email epic, gated on D5/D6, in flight).
+
 ## 2026-07-10 · Shipped items 16 + 17: alerts funnel complete
 What (16): the alerts offer used to only fire on the first save. Now a non-installed user with 2+ saved spots and no subscription is re-offered on a later visit (new return_session trigger, on load), reusing item 15's cadence: gated by the 14-day snooze + hard-denial so it never nags, and a 2+-saves engaged gate so single-save users aren't pestered. Standalone relaunch is item 14; this covers the non-installed browser return.
 What (17): the iOS enable step now leads with the payoff ("Get pinged when your spots are calm") and reads as a 3-step numbered sequence instead of a run-on paragraph. Copy/layout only, no new events.
