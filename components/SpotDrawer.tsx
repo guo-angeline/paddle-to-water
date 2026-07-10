@@ -316,10 +316,10 @@ export default function SpotDrawer({ spot, onClose, onSelect, allSpots, isFavori
                   ? { borderColor: "#F5C6CE", color: "#E23B54", background: "#FDECEF" }
                   : { borderColor: "transparent", color: "#fff", background: "var(--accent)" }
                 }
-                aria-label={isFavorite ? "Remove from saved spots" : "Save this spot"}
+                aria-label={isFavorite ? "Stop watching this spot" : "Watch this spot"}
               >
                 <span className="text-base leading-none">{isFavorite ? "♥" : "♡"}</span>
-                <span>{isFavorite ? "Saved" : "Save this spot"}</span>
+                <span>{isFavorite ? "Watching" : "Watch this spot"}</span>
               </button>
             )}
             <button

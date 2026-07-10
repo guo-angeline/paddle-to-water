@@ -111,7 +111,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
       <div className="w-full max-w-sm rounded-2xl shadow-2xl px-4 py-3.5" style={{ background: "var(--accent)" }}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Your saved spot</p>
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">A spot you watch</p>
             <p className="font-['Newsreader'] text-white text-base font-bold leading-tight mt-0.5">{title}</p>
             <p className="text-white/85 text-sm mt-0.5">{subline}</p>
           </div>

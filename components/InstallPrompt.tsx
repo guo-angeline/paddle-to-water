@@ -83,7 +83,7 @@ export default function InstallPrompt() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [enabling, setEnabling] = useState(false);
   const [result, setResult] = useState<OptInResult | null>(null);
-  const [trigger, setTrigger] = useState<"first_save" | "standalone_relaunch" | "manual" | "return_session">("first_save");
+  const [trigger, setTrigger] = useState<"first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest">("first_save");
 
   // Track whether a spot drawer is open. We no longer HIDE for it (that suppressed
   // the prompt at the exact moment it's earned, since the primary "Save this spot"
@@ -189,6 +189,27 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("ptw:enablealerts", onEnableRequest);
   }, []);
 
+  // Conditions-interest re-offer (item 21): a non-subscribed, non-opted-out user
+  // who dwell-viewed conditions on 2+ distinct spots this session is offered
+  // alerts even without a save, broadening the pool beyond savers to the core
+  // paddle-decision behavior. ConditionsPanel dispatches the event once per
+  // session. Respects the 14-day snooze and hard-denial like the other re-offers.
+  useEffect(() => {
+    function onConditionsInterest() {
+      if (readStashedSubscription()) return; // already subscribed
+      try {
+        const optedOut = snoozedUntil() > Date.now() || localStorage.getItem(DENIED_KEY) === "1";
+        if (optedOut) return;
+      } catch {
+        return; // private mode: skip rather than risk a bad state
+      }
+      setTrigger("conditions_interest");
+      setVisible(true);
+    }
+    window.addEventListener("ptw:conditionsinterest", onConditionsInterest);
+    return () => window.removeEventListener("ptw:conditionsinterest", onConditionsInterest);
+  }, []);
+
   const shownRef = useRef(false);
   useEffect(() => {
     if (!visible) { shownRef.current = false; return; }
@@ -279,9 +300,9 @@ export default function InstallPrompt() {
       <>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
-            {trigger === "standalone_relaunch"
-              ? "Turn on alerts for your saved spots"
-              : `Get a heads-up when ${spotName} is good to paddle`}
+            {trigger === "first_save"
+              ? `Get a heads-up when ${spotName} is good to paddle`
+              : "Turn on alerts for the spots you watch"}
           </p>
           <p style={muted}>
             {result === "denied"
@@ -326,9 +347,11 @@ export default function InstallPrompt() {
       <>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
-            Get alerts when {spotName} is good to paddle
+            {trigger === "first_save"
+              ? `Get alerts when ${spotName} is good to paddle`
+              : "Get alerts when your spots are good to paddle"}
           </p>
-          <p style={muted}>Install the app, then turn on alerts for your saved spots.</p>
+          <p style={muted}>Install the app, then turn on alerts for the spots you watch.</p>
         </div>
         {platform === "android" && (
           <button onClick={handleInstall} style={primaryBtn}>Install</button>

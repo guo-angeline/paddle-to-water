@@ -133,15 +133,17 @@ interface EventPropMap {
   alert_optin_shown: {
     platform: "standalone" | "ios" | "android";
     // What surfaced the prompt: the first save (item 1), an installed standalone
-    // relaunch re-offer (item 14), or an explicit tap on the always-available
-    // "Turn on alerts" entry point in the saved-spots header (item 15).
-    trigger: "first_save" | "standalone_relaunch" | "manual" | "return_session";
+    // relaunch re-offer (item 14), an explicit tap on the always-available "Turn
+    // on alerts" entry point in the saved-spots header (item 15), or genuine
+    // conditions interest (item 21: dwell-viewed conditions on 2+ distinct spots
+    // in a session, the core paddle-decision behavior, a bigger pool than savers).
+    trigger: "first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest";
   };
   // Prompt dismissed (item 15): dismissal is a 14-day snooze, not a permanent
   // kill. `trigger` is which surfacing was dismissed.
   alert_optin_dismissed: {
     platform: "standalone" | "ios" | "android";
-    trigger: "first_save" | "standalone_relaunch" | "manual" | "return_session";
+    trigger: "first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest";
   };
   alert_optin_result: {
     platform: "standalone" | "ios" | "android";
