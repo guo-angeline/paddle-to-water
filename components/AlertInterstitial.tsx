@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import type { Spot } from "@/lib/types";
+import type { GoodWindow } from "@/lib/alerts/conditions-window";
 import { trackIntent } from "@/lib/analytics";
-import { getNextWindow, formatNextWindow } from "@/lib/nextWindow";
+import { getNextWindow, windowDay, windowRange } from "@/lib/nextWindow";
+import { buildLaunchReminder } from "@/lib/calendarReminder";
 
 interface Props {
   spot: Spot;
@@ -12,76 +14,56 @@ interface Props {
 }
 
 /**
- * First complete sentence of the notes: the actual "where to launch"
- * instruction. Showing the whole notes field here dumped a long generic
- * description and clamped it mid-word ("...the whole way. The..."), which is
- * neither alert-relevant nor complete, and duplicates the drawer's own notes
- * right below. One clean sentence is the put-in line the card promised.
- */
-function launchLine(notes: string | null | undefined): string {
-  if (!notes) return "";
-  const trimmed = notes.trim();
-  const firstSentence = trimmed.match(/^.*?[.!?](?=\s|$)/);
-  return (firstSentence ? firstSentence[0] : trimmed).trim();
-}
-
-/**
  * Floating card over the deep-linked spot's drawer, shown whenever the app
- * opened from a push alert. Carries the alert's point: exactly WHEN the calm
- * window is and WHERE to put in, so that context survives the click instead of
- * dropping into a bare drawer (ROADMAP item 1).
+ * opened from a push alert. It reads as a personal update about the user's
+ * saved spot: which spot is good, and exactly when. The alert is about a FUTURE
+ * window, so the action is not "get directions" (they aren't going now) but
+ * "remind me at launch time", delivered as a calendar reminder. Put-in details
+ * are intentionally NOT repeated here; they live in the spot drawer below.
  *
- * Monitored 100% rollout (D2(a), 2026-07-08): this is no longer an A/B test.
- * The interstitial fires only on push-opens with a tiny watched set, so an arm
- * comparison could never reach significance; instead the card ships to everyone
- * and we watch the guardrails (`spot_sheet_dismissed`, `conditions_loaded`) for
- * regressions. The mount is gated on the alert context in HomeClient, so this
- * component renders the card unconditionally.
+ * Monitored 100% rollout (D2(a), 2026-07-08): not an A/B test. The card fires
+ * only on push-opens with a tiny watched set, so an arm comparison could never
+ * reach significance; it ships to everyone and we watch the guardrails
+ * (`spot_sheet_dismissed`, `alert_interstitial_result`). The mount is gated on
+ * the alert context in HomeClient, so this renders unconditionally.
+ *
+ * Reframe + calendar reminder: ROADMAP item 1 (2026-07-09), per the PM design.
+ * A server-sent launch-time PUSH reminder is escalated as D4, not built here.
  */
 export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Props) {
   useEffect(() => {
     trackIntent("alert_interstitial_shown", { spot_id: spot.id });
   }, [spot.id]);
 
-  // Show the SAME precise window the conditions panel shows ("Fri 6 to 10am"),
-  // via the shared cached lookup, instead of the coarse label the push carried
-  // ("Friday morning"). They were inconsistent on screen: the card said less
-  // than the panel right below it. Falls back to the push label if the live
-  // lookup has no window (conditions can shift between send and open).
-  const [preciseWhen, setPreciseWhen] = useState<string | null>(null);
+  // Same precise window the conditions panel computes, via the shared cached
+  // lookup. Null until it resolves, or if conditions shifted since the push was
+  // sent and there's no window now (then we fall back to the coarse push label).
+  const [nextWindow, setNextWindow] = useState<GoodWindow | null>(null);
   useEffect(() => {
     let alive = true;
     getNextWindow(spot.id, spot.lat, spot.lng).then((r) => {
-      if (alive && r.ok && r.window) setPreciseWhen(formatNextWindow(r.window));
+      if (alive && r.ok && r.window) setNextWindow(r.window);
     });
     return () => {
       alive = false;
     };
   }, [spot.id, spot.lat, spot.lng]);
 
-  const shownWhen = preciseWhen ?? windowLabel;
-  const putIn = launchLine(spot.notes);
+  const day = nextWindow ? windowDay(nextWindow) : null;
+  const range = nextWindow ? windowRange(nextWindow) : null;
+  const reminder = nextWindow ? buildLaunchReminder(spot, nextWindow) : null;
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
-  // Same identity the drawer's action events carry, plus source="alert_interstitial"
-  // so the card's directions taps can be told apart from drawer taps (and
-  // excluded from the next_good_window primary metric, which they would
-  // otherwise contaminate now that the card is always on).
-  const spotEventProps = {
-    spot_id: spot.id,
-    spot_name: spot.water,
-    region: spot.region,
-    has_fee: spot.has_fee,
-  };
+  const title = day ? `${spot.water} looks good ${day}` : `${spot.water} has a good window`;
+  const subline = range ? `Calm window ${range}.` : `${windowLabel}.`;
 
   function handleDismiss() {
     trackIntent("alert_interstitial_result", { spot_id: spot.id, outcome: "dismissed" });
     onDismiss();
   }
 
-  function handleDirections() {
-    trackIntent("spot_action", { ...spotEventProps, action: "directions", source: "alert_interstitial" });
-    trackIntent("alert_interstitial_result", { spot_id: spot.id, outcome: "directions" });
+  function handleReminder() {
+    trackIntent("alert_interstitial_result", { spot_id: spot.id, outcome: "reminder" });
+    // Let the anchor's default (open/download the .ics) run; then close the card.
     onDismiss();
   }
 
@@ -96,10 +78,9 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
       <div className="w-full max-w-sm rounded-2xl shadow-2xl px-4 py-3.5" style={{ background: "var(--accent)" }}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-['Newsreader'] text-white text-base font-bold leading-tight">
-              Good window: {shownWhen}
-            </p>
-            <p className="text-white/80 text-sm mt-0.5">{spot.water}</p>
+            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">Your saved spot</p>
+            <p className="font-['Newsreader'] text-white text-base font-bold leading-tight mt-0.5">{title}</p>
+            <p className="text-white/85 text-sm mt-0.5">{subline}</p>
           </div>
           <button
             onClick={handleDismiss}
@@ -109,17 +90,17 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
             ×
           </button>
         </div>
-        {putIn && <p className="text-white/90 text-sm mt-2 leading-snug">{putIn}</p>}
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleDirections}
-          className="mt-3 flex items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold bg-white transition-opacity hover:opacity-90"
-          style={{ color: "var(--accent)" }}
-        >
-          Get Directions
-        </a>
+        {reminder && (
+          <a
+            href={reminder.dataUri}
+            download={reminder.filename}
+            onClick={handleReminder}
+            className="mt-3 flex items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold bg-white transition-opacity hover:opacity-90"
+            style={{ color: "var(--accent)" }}
+          >
+            Remind me at launch time
+          </a>
+        )}
       </div>
     </div>
   );

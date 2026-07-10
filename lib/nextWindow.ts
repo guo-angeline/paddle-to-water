@@ -57,6 +57,7 @@ export function getNextWindow(
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function formatHour12(hour: number): { display: number; meridiem: "am" | "pm" } {
   const meridiem = hour < 12 ? "am" : "pm";
@@ -64,16 +65,24 @@ function formatHour12(hour: number): { display: number; meridiem: "am" | "pm" } 
   return { display, meridiem };
 }
 
+/** Full spot-local weekday of the window, e.g. "Saturday". Pure. */
+export function windowDay(w: GoodWindow): string {
+  return WEEKDAYS_FULL[new Date(`${w.windowKey}T00:00:00Z`).getUTCDay()];
+}
+
+/** The hour range alone, e.g. "7 to 10am" or "11am to 1pm". Pure. */
+export function windowRange(w: GoodWindow): string {
+  const start = formatHour12(w.startHour);
+  const end = formatHour12(w.endHour);
+  return start.meridiem === end.meridiem
+    ? `${start.display} to ${end.display}${end.meridiem}`
+    : `${start.display}${start.meridiem} to ${end.display}${end.meridiem}`;
+}
+
 /** Renders a GoodWindow as e.g. "Sat 7 to 10am" or "Sat 11am to 1pm". Pure. */
 export function formatNextWindow(w: GoodWindow): string {
   const weekday = WEEKDAYS[new Date(`${w.windowKey}T00:00:00Z`).getUTCDay()];
-  const start = formatHour12(w.startHour);
-  const end = formatHour12(w.endHour);
-  const range =
-    start.meridiem === end.meridiem
-      ? `${start.display} to ${end.display}${end.meridiem}`
-      : `${start.display}${start.meridiem} to ${end.display}${end.meridiem}`;
-  return `${weekday} ${range}`;
+  return `${weekday} ${windowRange(w)}`;
 }
 
 /** Quiet settled line when no calm window exists within the horizon. Pure. */
