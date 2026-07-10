@@ -14,6 +14,24 @@ without touching this file.
 
 ---
 
+## 2026-07-09 (later) — Alert interstitial reframed: reminder replaces directions (props-changed)
+
+The interstitial was reframed to a saved-spot update with a calendar "Remind me
+at launch time" CTA; the "Get Directions" control was removed (the alert is
+about a future window, so directions were the wrong action).
+
+**`alert_interstitial_result` — props-changed.** Its `outcome` union changed
+from `"dismissed" | "directions"` to `"dismissed" | "reminder"`. `directions`
+is no longer emitted from the card (the drawer's own Get Directions still fires
+`spot_action`/`directions` as before, unaffected). `reminder` fires when the
+user taps the calendar-reminder CTA.
+- **Comparability:** from 2026-07-09 forward, `alert_interstitial_result` has no
+  `outcome:"directions"` rows (by design, not a behavior drop). The card's prior
+  contribution to `spot_action`/`directions` (`source:"alert_interstitial"`)
+  also stops from this date. The new success signal for the card is
+  `alert_interstitial_result{outcome:"reminder"}` / `alert_interstitial_shown`;
+  it has no prior series. `alert_interstitial_shown` is unchanged.
+
 ## 2026-07-09 — Spot-sheet CTA hierarchy re-weighted (no event change, rates shift)
 
 **`favorite_toggled`, `spot_action` (`action: "directions" | "photos"`) — no schema change; emphasis/layout changed.**

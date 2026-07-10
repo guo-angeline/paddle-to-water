@@ -2,6 +2,12 @@
 
 CEO briefings after each shipped or parked item, newest first, 15 lines max each.
 
+## 2026-07-09 · Interstitial reframed to a saved-spot update + launch reminder (PM design)
+What: owner wanted the interstitial reframed: saved-spot tone, drop "Get Directions" (wrong CTA for a future window), drop the put-in text (it's in the drawer below), add "schedule a reminder for launch time". Ran the product-visionary (PM). Key verdict: a launch-time PUSH reminder can't be done client-side on iOS (no Notification Triggers API) and server-side would touch the PROTECTED push/cron path + re-introduce a morning wake, so it's escalated as D4 (rec: defer). Instead shipped the same value as a client-side CALENDAR reminder (.ics with a 30-min-before alarm), zero backend, works on iOS.
+Card now reads: "Your saved spot / <spot> looks good <Day> / Calm window <range>." + "Remind me at launch time". Instrumentation: alert_interstitial_result outcome changed directions->reminder (changelog updated).
+Verification: 65 tests (8 new for the .ics builder + formatters), lint clean, build clean; Playwright on spot #18 confirms the reframed copy, no Get Directions, no put-in text, a text/calendar reminder CTA with VALARM+DTSTART, no overflow, no JS errors. iOS on-device add-to-calendar UX still worth an owner spot-check (couldn't test on a real device).
+Open: D4 (server push reminder, rec defer).
+
 ## 2026-07-09 · Bugfix: alert interstitial content was irrelevant + truncated
 What: owner sent a real-device screenshot: the interstitial dumped the spot's entire generic `notes` field and line-clamped it mid-word ("...the whole way. The..."), duplicating the drawer's notes below and never completing. It also showed a coarse "Friday morning" while the panel right below showed the precise "Fri 6 to 10am". Fixed: the card now shows the first complete sentence of notes (the actual put-in instruction, no clamp) and the SAME precise window the conditions panel computes (reuses getNextWindow + formatNextWindow, falls back to the push label). This is live for every alert-open since item 6b made the interstitial a 100% rollout, so it mattered.
 Verification: 57 tests, lint, build clean; Playwright on the exact screenshot spot (#18 Mission Creek) confirms precise header ("Fri 7 to 11am"), a complete single-sentence body ending in a period with no mid-word cut, no card overflow, no JS errors. No analytics events changed (content-only fix).

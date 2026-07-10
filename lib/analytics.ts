@@ -135,7 +135,7 @@ interface EventPropMap {
     result: "granted" | "denied" | "unsupported";
   };
   alert_interstitial_shown: { spot_id: number };
-  alert_interstitial_result: { spot_id: number; outcome: "dismissed" | "directions" };
+  alert_interstitial_result: { spot_id: number; outcome: "dismissed" | "reminder" };
   next_window_viewed: {
     spot_id: number;
     region: string;
