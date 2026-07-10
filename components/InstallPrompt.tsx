@@ -110,6 +110,7 @@ export default function InstallPrompt() {
   const [email, setEmail] = useState("");
   const [emailSubmitting, setEmailSubmitting] = useState(false);
   const [emailResult, setEmailResult] = useState<"pending" | "failed" | null>(null);
+  const [emailError, setEmailError] = useState(false);
   const [altChannel, setAltChannel] = useState(false);
 
   // Track whether a spot drawer is open. We no longer HIDE for it (that suppressed
@@ -263,8 +264,14 @@ export default function InstallPrompt() {
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!platform) return;
     const value = email.trim();
-    if (!isValidEmail(value) || !platform) return;
+    // Validate in JS (the form is noValidate) so we control the message instead of
+    // the browser's native bubble that re-fires on every keystroke after a submit.
+    if (!isValidEmail(value)) {
+      setEmailError(true);
+      return;
+    }
     setEmailSubmitting(true);
     const watched = readFavoriteIds();
     // A push-denied installed user reaching the email rescue is a distinct context.
@@ -280,9 +287,10 @@ export default function InstallPrompt() {
         trackSystem("email_capture_failed", { status: res.status });
         setEmailResult("failed");
       } else {
+        // Show "check your inbox" and leave it up: the user dismisses with the X.
+        // (It used to auto-hide after 4.5s, which closed before people could read it.)
         setEmailResult("pending");
         setPersona({ email_captured: true });
-        setTimeout(() => setVisible(false), 4500);
       }
     } catch {
       trackSystem("email_capture_failed", { status: null });
@@ -360,22 +368,31 @@ export default function InstallPrompt() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{headline}</p>
         <p style={muted}>{sub}</p>
-        <form onSubmit={handleEmailSubmit} style={{ display: "flex", gap: 6, marginTop: 8 }}>
+        <form onSubmit={handleEmailSubmit} noValidate style={{ display: "flex", gap: 6, marginTop: 8 }}>
           <input
             type="email"
             inputMode="email"
             autoComplete="email"
-            required
             value={email}
-            onChange={(ev) => setEmail(ev.target.value)}
+            onChange={(ev) => { setEmail(ev.target.value); if (emailError) setEmailError(false); }}
             placeholder="you@email.com"
             aria-label="Email address"
-            style={{ flex: 1, minWidth: 0, borderRadius: 8, border: "none", padding: "7px 10px", fontSize: 13, color: "#0B2A47" }}
+            // Explicit light colors + color-scheme so a dark-mode browser does not
+            // paint the field dark (which made it blend into the card and hid the
+            // typed text). White box, dark text, gray placeholder.
+            style={{
+              flex: 1, minWidth: 0, borderRadius: 8, border: "1px solid #DCE7F0",
+              padding: "7px 10px", fontSize: 13, background: "#FFFFFF", color: "#0B2A47",
+              colorScheme: "light",
+            }}
           />
           <button type="submit" disabled={emailSubmitting} style={primaryBtn}>
             {emailSubmitting ? "..." : "Email me alerts"}
           </button>
         </form>
+        {emailError && (
+          <p style={{ ...muted, color: "#FCA5A5" }}>Enter a valid email address.</p>
+        )}
         {emailResult === "failed" && (
           <p style={{ ...muted, color: "#FCA5A5" }}>Something went wrong. Try again.</p>
         )}
