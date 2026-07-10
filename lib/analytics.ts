@@ -129,7 +129,12 @@ interface EventPropMap {
   saved_conditions_viewed: { count: number; calm_count: number };
   // Values mirror lib/push.ts OptInResult; kept inline to avoid a cycle
   // (push.ts imports trackSystem from this module).
-  alert_optin_shown: { platform: "standalone" | "ios" | "android" };
+  alert_optin_shown: {
+    platform: "standalone" | "ios" | "android";
+    // What surfaced the prompt: the first save, or an installed standalone
+    // relaunch that re-offered alerts without needing a new save (item 14).
+    trigger: "first_save" | "standalone_relaunch";
+  };
   alert_optin_result: {
     platform: "standalone" | "ios" | "android";
     result: "granted" | "denied" | "unsupported";
