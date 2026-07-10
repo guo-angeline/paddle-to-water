@@ -14,6 +14,16 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (item 23) — Channel-agnostic enrollment matrix (props-changed)
+
+The install-only opt-in card became a per-platform enrollment card: desktop and iOS Safari lead with email, a push-denied installed user gets an email rescue, Android keeps one-tap install with an email fallback, and the email capture form now calls `/api/email/subscribe`.
+
+**`alert_optin_shown` / `alert_optin_dismissed` — props-changed.** Added `channel: "push" | "email"` (which channel the card LED with) and `platform: "desktop"`. From 2026-07-10, `alert_optin_shown` volume rises because desktop users are now offered enrollment at all (they previously saw a dead, button-less card and no event); segment by `channel` and `platform` to keep the pre-existing push/mobile funnel comparable. Pre-2026-07-10 rows have no `channel`.
+
+**`email_capture_submitted` — `trigger` value added.** Now also `"push_denied"` (the installed-but-notifications-off rescue), alongside the shared enrollment triggers.
+
+**Comparability:** treat desktop as a brand-new enrollment surface from 2026-07-10 (no prior series). Do not read total `alert_optin_shown` across that date without splitting by `channel`/`platform`.
+
 ## 2026-07-10 (item 22) — Email alert channel (added)
 
 The email alert channel (PRD `docs/superpowers/specs/2026-07-10-email-alert-channel-and-enrollment.md`). A second, no-install reach channel that fires on the SAME calm-window evaluator as push. All events are new; there is no prior series for any of them.

@@ -3,6 +3,12 @@ import { Resend } from "resend";
 import { FROM, type EmailMessage } from "@/lib/email/templates";
 import { unsubscribeUrl } from "@/lib/email/templates";
 
+// A real reply-to reads as legitimate (not a no-reply blast), a small
+// deliverability + trust signal. Point EMAIL_REPLY_TO at a monitored inbox;
+// recommended: hello@paddletowater.com with Cloudflare Email Routing forwarding
+// to your inbox (free), so replies actually land. Defaults to that address.
+const REPLY_TO = process.env.EMAIL_REPLY_TO || "hello@paddletowater.com";
+
 /**
  * Server-only email transport (Resend). Env-gated the same way the push sender is
  * VAPID-gated: throws if unconfigured, so a missing key fails loud in a route,
@@ -47,6 +53,7 @@ export async function sendEmail(
     const { data, error } = await getResend().emails.send({
       from: FROM,
       to,
+      replyTo: REPLY_TO,
       subject: msg.subject,
       html: msg.html,
       text: msg.text,

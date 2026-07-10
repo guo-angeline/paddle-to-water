@@ -34,8 +34,9 @@ export function emailOpenUrl(spotId: number, token: string): string {
   return `${SITE_URL}/?spot=${spotId}&from=email&t=${encodeURIComponent(token)}`;
 }
 
-function shell(bodyHtml: string, unsubUrl: string): string {
+function shell(bodyHtml: string, unsubUrl: string, preheader: string): string {
   return `<!doctype html><html><body style="margin:0;background:#EEF5FB;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0B2A47">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0">${preheader}</div>
   <div style="max-width:480px;margin:0 auto;padding:24px">
     ${bodyHtml}
     <hr style="border:none;border-top:1px solid #DCE7F0;margin:24px 0 12px">
@@ -51,12 +52,14 @@ export function composeConfirmEmail(confirmToken: string, token: string): EmailM
   const subject = "Confirm your Paddle to Water alerts";
   const html = shell(
     `<p style="font-size:16px;font-weight:600;margin:0 0 8px">Confirm your alerts</p>
-     <p style="font-size:14px;line-height:1.5;margin:0 0 16px">Tap to confirm and we'll watch your spots for calm windows.</p>
+     <p style="font-size:14px;line-height:1.5;margin:0 0 12px">You asked us to keep an eye on your paddling spots. Confirm and we'll email you when one has a calm window worth getting on the water for.</p>
      <a href="${url}" style="display:inline-block;background:#0E6FD1;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px">Confirm alerts</a>
-     <p style="font-size:13px;color:#6E8598;line-height:1.5;margin:16px 0 0">Didn't sign up? Ignore this email, nothing happens.</p>`,
-    unsubscribeUrl(token)
+     <p style="font-size:13px;color:#6E8598;line-height:1.5;margin:16px 0 0">One email a day at most, only when conditions are actually good. Unsubscribe any time in one tap.</p>
+     <p style="font-size:13px;color:#6E8598;line-height:1.5;margin:8px 0 0">Didn't sign up? Ignore this email and nothing happens.</p>`,
+    unsubscribeUrl(token),
+    "Confirm to start getting calm-window alerts for your spots."
   );
-  const text = `Confirm your Paddle to Water alerts.\n\nTap to confirm and we'll watch your spots for calm windows:\n${url}\n\nDidn't sign up? Ignore this email, nothing happens.`;
+  const text = `Confirm your Paddle to Water alerts.\n\nYou asked us to keep an eye on your paddling spots. Confirm and we'll email you when one has a calm window worth getting on the water for:\n${url}\n\nOne email a day at most, only when conditions are actually good. Unsubscribe any time in one tap.\n\nDidn't sign up? Ignore this email and nothing happens.`;
   return { subject, html, text };
 }
 
@@ -82,7 +85,8 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
      <p style="font-size:14px;line-height:1.5;margin:0 0 12px">A spot you watch has a calm window. Go while it lasts.</p>
      ${notesHtml}
      <a href="${openUrl}" style="display:inline-block;background:#0E6FD1;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px">Open in the app</a>`,
-    unsubscribeUrl(token)
+    unsubscribeUrl(token),
+    `${spotName} looks calm ${windowLabel}. Check the window before you go.`
   );
   const text = `${spotName} looks calm ${windowLabel}${tail}.\n\nA spot you watch has a calm window. Go while it lasts.\n${notes ? `\n${notes}\n` : ""}\nOpen in the app: ${openUrl}`;
   return { subject, html, text };
