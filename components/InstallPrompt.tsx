@@ -18,6 +18,9 @@ declare global {
 }
 
 const STORAGE_KEY = "ptw-install-dismissed";
+// Set when the OS permission is hard-denied, so a standalone relaunch does not
+// re-offer alerts to someone who already said no at the browser level (item 14).
+const DENIED_KEY = "ptw-alerts-denied";
 // One pwa_installed per device, however the install happened (in-app button,
 // browser menu, or iOS Add to Home Screen detected on first standalone launch).
 // v2: the v1 build (live ~30 min on 2026-07-02) set the flag while the event
@@ -66,6 +69,7 @@ export default function InstallPrompt() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [enabling, setEnabling] = useState(false);
   const [result, setResult] = useState<OptInResult | null>(null);
+  const [trigger, setTrigger] = useState<"first_save" | "standalone_relaunch">("first_save");
 
   // Track whether a spot drawer is open. We no longer HIDE for it (that suppressed
   // the prompt at the exact moment it's earned, since the primary "Save this spot"
@@ -88,6 +92,19 @@ export default function InstallPrompt() {
       logInstallOnce("detected_standalone");
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlatform("standalone");
+      // item 14: re-offer alerts on this relaunch if the user has saved spots,
+      // is not subscribed yet, and has not opted out or been hard-denied.
+      // Otherwise the installed iOS user dead-ends: the enable step only fired
+      // on a fresh save, which they already did before installing.
+      try {
+        const optedOut = localStorage.getItem(STORAGE_KEY) === "1" || localStorage.getItem(DENIED_KEY) === "1";
+        if (!optedOut && readFavoriteIds().length > 0 && !readStashedSubscription()) {
+          setTrigger("standalone_relaunch");
+          setVisible(true);
+        }
+      } catch {
+        /* private mode: skip the auto-surface */
+      }
       return;
     }
     // Fires for ANY Chromium install (our button or the browser's own menu/icon).
@@ -117,6 +134,7 @@ export default function InstallPrompt() {
       if (localStorage.getItem(STORAGE_KEY) === "1") return; // user dismissed before
       if (readStashedSubscription()) return; // already subscribed
       setSpotName(e.detail?.spotName || "this spot");
+      setTrigger("first_save");
       setVisible(true);
     }
     window.addEventListener("ptw:spotsaved", onSaved);
@@ -127,10 +145,10 @@ export default function InstallPrompt() {
   useEffect(() => {
     if (!visible) { shownRef.current = false; return; }
     if (platform && !shownRef.current) {
-      trackIntent("alert_optin_shown", { platform });
+      trackIntent("alert_optin_shown", { platform, trigger });
       shownRef.current = true;
     }
-  }, [visible, platform]);
+  }, [visible, platform, trigger]);
 
   function handleDismiss() {
     setVisible(false);
@@ -163,6 +181,9 @@ export default function InstallPrompt() {
     if (r === "granted") {
       setPersona({ alerts_enabled: true });
       setTimeout(() => setVisible(false), 1600);
+    } else if (r === "denied") {
+      // Persist the hard denial so a standalone relaunch does not re-offer.
+      try { localStorage.setItem(DENIED_KEY, "1"); } catch { /* private mode */ }
     }
   }
 
@@ -204,7 +225,9 @@ export default function InstallPrompt() {
       <>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
-            Get a heads-up when {spotName} is good to paddle
+            {trigger === "standalone_relaunch"
+              ? "Turn on alerts for your saved spots"
+              : `Get a heads-up when ${spotName} is good to paddle`}
           </p>
           <p style={muted}>
             {result === "denied"

@@ -14,6 +14,23 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (later) — alert_optin_shown gains a `trigger` prop; iOS relaunch re-offer (props-changed)
+
+Item 14 fix. Installed iOS users dead-ended: the enable-alerts step only fired
+on a fresh `ptw:spotsaved`, so a user who saved then installed never saw it on
+relaunch. Now a standalone relaunch auto-surfaces the enable step when there are
+saved spots, no subscription, and no opt-out/hard-denial.
+
+**`alert_optin_shown` — props-changed (added `trigger`).** Now carries
+`trigger: "first_save" | "standalone_relaunch"`. `first_save` is the prior
+behavior (prompt on the first save); `standalone_relaunch` is the new
+re-surface. Pre-2026-07-10 rows have no `trigger`; treat missing as `first_save`.
+- **Comparability:** total `alert_optin_shown` volume rises from 2026-07-10 as
+  installed-but-unsubscribed iOS users finally get re-offered. Segment by
+  `trigger` to keep the first-save funnel comparable to history. Also note
+  `alert_optin_result{result:"denied"}` is now persisted (localStorage
+  `ptw-alerts-denied`) so a hard denial is not re-prompted on relaunch.
+
 ## 2026-07-10 — Install/alerts prompt no longer suppressed by an open drawer (rate shift, no event change)
 
 Item 13 fix. `InstallPrompt` used to `return null` while a spot drawer was open,

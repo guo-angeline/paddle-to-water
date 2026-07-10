@@ -58,7 +58,9 @@ Highest-leverage fix. `InstallPrompt` returns `null` whenever a spot drawer is o
 
 Acceptance: after a save, the enable-alerts step is visible at save time even with the drawer open (surface it inline in the drawer post-save, or allow the banner to render above the drawer without covering the primary actions). The old "hide over Get Directions" concern is now moot since Get Directions was demoted to a secondary row. Verify on both desktop (persistent sidebar) and mobile (bottom sheet). Existing `alert_optin_shown` / `alert_optin_result` events unchanged; changelog note that shown-rate will rise as a fix, not a behavior change.
 
-## 14. [ready] iOS silently dead-ends after install
+## 14. [done] 2026-07-10 iOS silently dead-ends after install
+
+**Shipped 2026-07-10.** On a standalone relaunch, `InstallPrompt` now auto-surfaces the enable-alerts step (generic "Turn on alerts for your saved spots" copy) when there are saved spots, no push subscription, and no opt-out or hard-denial, so the installed iOS user no longer has to save another spot to find it. Hard denials are now persisted (`ptw-alerts-denied`) so they are not re-offered. `alert_optin_shown` gains a `trigger: "first_save" | "standalone_relaunch"` prop (changelog noted). Verified: 64 tests, lint, build clean; Playwright confirms auto-surface with saves + unsubscribed, and correctly quiet with no saves / after dismiss / after denial.
 
 On iOS the banner gives manual Add-to-Home-Screen instructions ending "Open it from there to turn on alerts" (`components/InstallPrompt.tsx:214`). But on the next standalone launch `visible` starts `false` and only flips on a fresh `ptw:spotsaved` event (`components/InstallPrompt.tsx:64,111`), so the installed iOS user lands in the app and is never shown the enable-alerts step. They must save another spot to resurface it, with no hint that's required. iOS is the bulk of saves (owner's iOS PWA drove ~72% per the excluded-persons analytics), so this dead-end sits on the main path.
 

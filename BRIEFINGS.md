@@ -2,6 +2,12 @@
 
 CEO briefings after each shipped or parked item, newest first, 15 lines max each.
 
+## 2026-07-10 · Shipped item 14: iOS no longer dead-ends after install
+What: installed iOS users hit a dead end. The enable-alerts step only fired on a fresh save, so someone who saved a spot then installed (the normal iOS flow) never saw it again on relaunch and had to save another spot with no hint that was required. iOS is the bulk of saves, so this sat on the main path. Fix: a standalone relaunch now auto-surfaces the enable step (generic "your saved spots" copy) when there are saved spots, no subscription, and no opt-out; hard denials are persisted so they aren't re-offered.
+Instrumentation: alert_optin_shown gains a `trigger` prop (first_save | standalone_relaunch) so the resurfaced prompt is distinguishable in the funnel; changelog notes total volume rises as installed-but-unsubscribed iOS users finally get re-offered.
+Verified: 64 tests, lint + build clean; Playwright confirms auto-surface with saves+unsubscribed and correctly quiet with no saves / after dismiss / after denial.
+Next up: items 15 + 16 (dismiss-kills-funnel + only-fires-on-first-save) share a single re-ask cadence, best defined once and built together; item 17 is iOS copy polish.
+
 ## 2026-07-10 · Shipped item 13: alerts prompt no longer suppressed by the drawer
 What: highest-leverage funnel fix. Item 11 moved the primary "Save this spot" button into the drawer, but InstallPrompt returned null whenever a drawer was open, so saving via the primary CTA surfaced the enable-alerts step nowhere (only later, if/when the user closed the drawer; on desktop's persistent sidebar, potentially never). Fixed: the prompt now renders with the drawer open, anchored to the top so it clears the drawer's bottom Save/Share actions. The old reason for the guard (covering Get Directions) is moot since item 11 demoted it.
 Verified: 64 tests, lint + build clean; Playwright confirms the prompt is visible and top-anchored at save time with a drawer open, and unchanged (bottom-anchored) with no drawer. `alert_optin_shown` unchanged; changelog notes its shown-rate will rise as a fix, not behavior.
