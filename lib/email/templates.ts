@@ -123,8 +123,15 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
   const lengthHours = endHour - startHour;
   const count = extras.length + 1;
 
+  // Only claim a shared weekday in the multi-spot subject when every spot really
+  // is good that same day; extras can fall on different days in the 3-day horizon.
+  const allSameDay = extras.every((e) => e.windowKey === windowKey);
   const subject =
-    count > 1 ? `${count} spots good to paddle ${weekday}` : `${spotName} is good to paddle ${weekday}`;
+    count > 1
+      ? allSameDay
+        ? `${count} spots good to paddle ${weekday}`
+        : `${count} spots good to paddle soon`
+      : `${spotName} is good to paddle ${weekday}`;
 
   const windText = maxWindMph ? `, with wind topping out at ${maxWindMph} mph` : "";
   const lengthLine = `That's about a ${lengthHours}-hour window${windText}.`;

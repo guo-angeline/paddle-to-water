@@ -125,6 +125,16 @@ describe("composeAlertEmail", () => {
     expect(msg.html).not.toMatch(/\+\d+ more/);
   });
 
+  it("drops the shared weekday from the subject when spots are good on different days", () => {
+    const msg = composeAlertEmail({
+      ...base, // primary is Saturday
+      extras: [{ name: "Shoreline Lake", windowKey: "2026-07-12", startHour: 9, endHour: 13 }],
+    });
+    expect(msg.subject).toBe("2 spots good to paddle soon");
+    // body stays day-accurate per spot
+    expect(msg.text).toContain("Shoreline Lake, Sunday 9am to 1pm");
+  });
+
   it("caps the named extras at 3 and collapses the rest", () => {
     const extra = (name: string, h: number) => ({ name, windowKey: "2026-07-11", startHour: h, endHour: h + 2 });
     const msg = composeAlertEmail({
