@@ -4,6 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { trackIntent, trackSystem, setPersona } from "@/lib/analytics";
 import { enablePushAlerts, readStashedSubscription, getAnonId, type OptInResult } from "@/lib/push";
 import { isValidEmail } from "@/lib/email/validation";
+import {
+  RESEND_COOLDOWN_MS,
+  RESEND_SPAM_LINE,
+  RESEND_LABEL,
+  RESEND_SENDING_LABEL,
+  RESEND_SENT_NOTE,
+  RESEND_CONFIRMED_NOTE,
+  RESEND_FAILED_NOTE,
+  submitEmailCapture,
+} from "@/lib/email/capture";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -112,6 +122,11 @@ export default function InstallPrompt() {
   const [emailResult, setEmailResult] = useState<"pending" | "failed" | null>(null);
   const [emailError, setEmailError] = useState(false);
   const [altChannel, setAltChannel] = useState(false);
+  // Resend control on the pending card (item 24): lets the user re-trigger the
+  // confirm email if it did not land, with a client cooldown so one tap cannot
+  // spam the resend endpoint.
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "confirmed" | "failed">("idle");
+  const [resendCooling, setResendCooling] = useState(false);
 
   // Track whether a spot drawer is open. We no longer HIDE for it (that suppressed
   // the prompt at the exact moment it's earned, since the primary "Save this spot"
@@ -284,19 +299,40 @@ export default function InstallPrompt() {
         body: JSON.stringify({ email: value, watchedSpotIds: watched, anonId: getAnonId() }),
       });
       if (!res.ok) {
-        trackSystem("email_capture_failed", { status: res.status });
+        trackSystem("email_capture_failed", { status: res.status, source: "submit" });
         setEmailResult("failed");
       } else {
         // Show "check your inbox" and leave it up: the user dismisses with the X.
         // (It used to auto-hide after 4.5s, which closed before people could read it.)
         setEmailResult("pending");
         setPersona({ email_captured: true });
+        setPersona({ email_submit_platform: platform, email_submit_trigger: submitTrigger });
       }
     } catch {
-      trackSystem("email_capture_failed", { status: null });
+      trackSystem("email_capture_failed", { status: null, source: "submit" });
       setEmailResult("failed");
     }
     setEmailSubmitting(false);
+  }
+
+  async function handleResend() {
+    if (!platform || resendCooling) return;
+    const submitTrigger = platform === "standalone" ? "push_denied" : trigger;
+    trackIntent("email_confirm_resend_clicked", { platform, trigger: submitTrigger, watched_count: readFavoriteIds().length });
+    setResendState("sending");
+    const r = await submitEmailCapture(email.trim(), readFavoriteIds(), getAnonId());
+    if (r.outcome === "pending") {
+      setResendState("sent");
+      setResendCooling(true);
+      setTimeout(() => setResendCooling(false), RESEND_COOLDOWN_MS);
+    } else if (r.outcome === "already_confirmed") {
+      setResendState("confirmed");
+    } else {
+      trackSystem("email_capture_failed", { status: r.httpStatus, source: "resend" });
+      setResendState("failed");
+      setResendCooling(true);
+      setTimeout(() => setResendCooling(false), RESEND_COOLDOWN_MS);
+    }
   }
 
   async function handleInstall() {
@@ -434,10 +470,34 @@ export default function InstallPrompt() {
     );
   } else if (emailResult === "pending") {
     // Double opt-in sent: nothing to do until they click the confirm link.
+    // Item 24: a resend control rescues the user if the mail lands in spam or
+    // never arrives, instead of leaving them stuck with only "check your inbox".
     body = (
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>Check your inbox.</p>
         <p style={muted}>Tap the confirm link and you are set. We will email when your spots are calm.</p>
+        <p style={muted}>{RESEND_SPAM_LINE}</p>
+        {(() => {
+          const resendDisabled =
+            resendState === "sending" || resendState === "confirmed" || resendCooling;
+          return (
+            <button
+              onClick={handleResend}
+              disabled={resendDisabled}
+              style={{
+                ...primaryBtn,
+                marginTop: 8,
+                opacity: resendDisabled ? 0.55 : 1,
+                cursor: resendDisabled ? "default" : "pointer",
+              }}
+            >
+              {resendState === "sending" ? RESEND_SENDING_LABEL : RESEND_LABEL}
+            </button>
+          );
+        })()}
+        {resendState === "sent" && <p style={muted}>{RESEND_SENT_NOTE}</p>}
+        {resendState === "confirmed" && <p style={muted}>{RESEND_CONFIRMED_NOTE}</p>}
+        {resendState === "failed" && <p style={{ ...muted, color: "#FCA5A5" }}>{RESEND_FAILED_NOTE}</p>}
       </div>
     );
   } else if (platform === "desktop") {
