@@ -14,6 +14,12 @@ without touching this file.
 
 ---
 
+## 2026-07-10 (item 24, follow-up): Confirm leak now segmentable by channel (props-changed, person properties)
+
+On a successful email capture submit, `handleEmailSubmit` in `InstallPrompt.tsx` now also calls `setPersona({ email_submit_platform: platform, email_submit_trigger: submitTrigger })` right after the existing `setPersona({ email_captured: true })`. `email_capture_confirmed` itself still carries only `{ watched_count }` (no event prop change), but these durable person properties survive the confirm redirect on the same device, so the confirm event can now be split by `email_submit_platform` (desktop / standalone / etc.) and `email_submit_trigger` (including the `push_denied` rescue) in PostHog without any cross-request plumbing.
+
+**Comparability:** brand-new person properties, no prior series. Rows/persons created before 2026-07-10 have neither property set; only `email_capture_confirmed` events tied to a person who submitted on or after this date carry the platform/trigger split. Confirm rate totals across the date boundary are unaffected, this only adds a segmentation dimension.
+
 ## 2026-07-10 (item 24): Confirm-step resend control (added)
 
 New INTENT event `email_confirm_resend_clicked` (`trackIntent`, props `{ platform, trigger, watched_count }`), fires when a user taps Resend confirm email in the post-submit pending card (`InstallPrompt.tsx`, `emailResult === "pending"`); the tap re-triggers `POST /api/email/subscribe` with the same email and watched spots (re-arms `confirm_token`, re-sends the confirm mail); resend has a client-side cooldown so one tap cannot spam it.

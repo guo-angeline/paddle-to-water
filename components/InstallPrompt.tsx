@@ -306,6 +306,7 @@ export default function InstallPrompt() {
         // (It used to auto-hide after 4.5s, which closed before people could read it.)
         setEmailResult("pending");
         setPersona({ email_captured: true });
+        setPersona({ email_submit_platform: platform, email_submit_trigger: submitTrigger });
       }
     } catch {
       trackSystem("email_capture_failed", { status: null });
