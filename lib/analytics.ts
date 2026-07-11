@@ -45,6 +45,12 @@ type SystemEventName =
   // Note: email SENDS are ledgered server-side in the email_sends table, not here,
   // exactly like alert_sends (there is no client to fire a send event).
   | "email_capture_failed"
+  // A confirm-link click landed on /?email_confirmed=0: the token was missing,
+  // malformed, unknown, or already consumed, so the confirm route bounced it.
+  // SYSTEM (a `_failed` availability signal about the confirm link), NOT intent:
+  // it fires on the redirect landing, not on an in-app action. Never read its
+  // volume as engagement. Pairs with email_capture_confirmed (the success twin).
+  | "email_confirm_failed"
   // The home map auto-centered on the user because geolocation was ALREADY
   // granted (Permissions API === "granted"), applied on load with no click.
   // SYSTEM, not intent: the app acted, the user did not toggle Near Me this
@@ -120,10 +126,7 @@ type IntentEventName =
   | "email_alert_opened"
   // The Resend control on the pending post-submit card was tapped, re-triggering
   // the confirm email via /api/email/subscribe (same address, re-armed token).
-  | "email_confirm_resend_clicked"
-  // The /?email_confirmed=0 landing was hit: a confirm-link click carried an
-  // unknown or already-consumed token.
-  | "email_confirm_failed";
+  | "email_confirm_resend_clicked";
 
 export type EventName = SystemEventName | IntentEventName;
 
@@ -202,7 +205,12 @@ interface EventPropMap {
       | "push_denied";
     watched_count: number;
   };
-  email_capture_failed: { status: number | null };
+  // `source` distinguishes the initial submit POST failing from a later Resend
+  // POST failing (item 24). Only source:"submit" means "no email_subscriptions
+  // row was created", so the Gap C submitter-correction in
+  // analytics/queries/email_confirm_funnel.sql must subtract source:"submit"
+  // failures only, never resend failures.
+  email_capture_failed: { status: number | null; source: "submit" | "resend" };
   email_capture_confirmed: { watched_count: number };
   email_alert_opened: { spot_id: number };
   // Mirrors email_capture_submitted so the resend and submit funnels segment

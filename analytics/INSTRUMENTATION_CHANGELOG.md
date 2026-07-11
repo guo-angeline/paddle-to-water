@@ -26,9 +26,15 @@ New INTENT event `email_confirm_resend_clicked` (`trackIntent`, props `{ platfor
 
 **Comparability:** brand-new event, no prior series. Resend volume from 2026-07-10 forward is a NEW signal prompted by UI copy that did not exist before, not organic behavior, and is not a direct proxy for how often mail lands in spam; the primary signal for this item is the guardrail in `analytics/queries/email_confirm_funnel.sql`, resend clicks are a secondary diagnostic.
 
+## 2026-07-10 (item 24): email_capture_failed gains a `source` discriminator (props-changed)
+
+`email_capture_failed` (SYSTEM) now carries `source: "submit" | "resend"`. It previously fired only when the initial submit POST failed; the item-24 Resend control reuses the same endpoint, so a failed Resend now also fires it with `source: "resend"`. Only `source: "submit"` means "no `email_subscriptions` row was created". The Gap C submitter-correction in `analytics/queries/email_confirm_funnel.sql` was updated to subtract `source='submit'` failures only.
+
+**Comparability:** `email_capture_failed` total volume is discontinuous upward from 2026-07-10, because resend failures now also count under this event. Any analysis of this event from 2026-07-10 forward MUST filter on `source` (submit vs resend); pre-2026-07-10 rows have no `source` prop and are all submit failures. The Supabase PRIMARY funnel query is unaffected (it reads rows, not events).
+
 ## 2026-07-10 (item 24): Stale confirm-link loss (added)
 
-New INTENT event `email_confirm_failed` (`trackIntent`, props `{ reason: "stale_token" | "no_token" }`). The confirm route (`app/api/email/confirm/route.ts`) used to bounce a missing, too-long, unknown, or already-consumed token straight to `/` with no signal. It now redirects to `/?email_confirmed=0&reason=stale|no_token`, and the client fires the event on that landing before stripping both params (no toast is shown; the successful `/?email_confirmed=1` path is unchanged).
+New SYSTEM event `email_confirm_failed` (`trackSystem`, props `{ reason: "stale_token" | "no_token" }`). SYSTEM, not intent, per the `_failed`-suffix convention: it fires on the redirect landing (server-side confirm-link failure), not on an in-app action, so it measures confirm-link availability, never engagement. The confirm route (`app/api/email/confirm/route.ts`) used to bounce a missing, too-long, unknown, or already-consumed token straight to `/` with no signal. It now redirects to `/?email_confirmed=0&reason=stale|no_token`, and the client fires the event on that landing before stripping both params (no toast is shown; the successful `/?email_confirmed=1` path is unchanged).
 
 **Why:** resending the confirm email (item 24) re-arms `confirm_token` in `/api/email/subscribe`, which invalidates any earlier mailed link. A user who finally digs the first, now-stale mail out of spam and taps it lands on a dead-looking bounce with no way to tell "expected, please use the newer link" apart from a real bug. This closes guardrail G3.
 

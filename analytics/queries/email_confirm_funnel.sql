@@ -33,10 +33,14 @@
 --            that later fails server-side (invalid address, Supabase error,
 --            rate limit) still counts as a submitter in PostHog, inflating
 --            that denominator. The companion query below subtracts distinct
---            email_capture_failed submitters from the submitter count to
---            correct for this. Supabase has no such gap: a row only exists in
---            email_subscriptions after a successful insert, so the PRIMARY
---            query below does not need this correction.
+--            email_capture_failed submitters (filtered to source='submit')
+--            from the submitter count to correct for this. The filter matters:
+--            email_capture_failed ALSO fires with source='resend' when a later
+--            Resend POST fails (item 24), and those persons DID create a row,
+--            so subtracting them would undercount genuine submitters and can
+--            push the confirm rate above 100%. Supabase has no such gap: a row
+--            only exists in email_subscriptions after a successful insert, so
+--            the PRIMARY query below does not need this correction.
 --
 -- Placeholders :from / :to (or {filters.dateRange.from}/{filters.dateRange.to}
 -- in the Supabase SQL editor's saved-query UI) bound created_at to the
@@ -87,9 +91,11 @@ SELECT
 -- ============================================================
 -- SELECT
 --   uniq(person_id) FILTER (WHERE event = 'email_capture_submitted') AS raw_submitters,
---   uniq(person_id) FILTER (WHERE event = 'email_capture_failed') AS failed_submitters,
+--   uniq(person_id) FILTER (WHERE event = 'email_capture_failed'
+--     AND properties.source = 'submit') AS failed_submitters,
 --   uniq(person_id) FILTER (WHERE event = 'email_capture_submitted')
---     - uniq(person_id) FILTER (WHERE event = 'email_capture_failed') AS submitters_corrected,
+--     - uniq(person_id) FILTER (WHERE event = 'email_capture_failed'
+--         AND properties.source = 'submit') AS submitters_corrected,
 --   uniq(person_id) FILTER (WHERE event = 'email_capture_confirmed') AS confirmers,
 --   round(
 --     100.0 * uniq(person_id) FILTER (WHERE event = 'email_capture_confirmed')

@@ -299,7 +299,7 @@ export default function InstallPrompt() {
         body: JSON.stringify({ email: value, watchedSpotIds: watched, anonId: getAnonId() }),
       });
       if (!res.ok) {
-        trackSystem("email_capture_failed", { status: res.status });
+        trackSystem("email_capture_failed", { status: res.status, source: "submit" });
         setEmailResult("failed");
       } else {
         // Show "check your inbox" and leave it up: the user dismisses with the X.
@@ -309,7 +309,7 @@ export default function InstallPrompt() {
         setPersona({ email_submit_platform: platform, email_submit_trigger: submitTrigger });
       }
     } catch {
-      trackSystem("email_capture_failed", { status: null });
+      trackSystem("email_capture_failed", { status: null, source: "submit" });
       setEmailResult("failed");
     }
     setEmailSubmitting(false);
@@ -328,7 +328,7 @@ export default function InstallPrompt() {
     } else if (r.outcome === "already_confirmed") {
       setResendState("confirmed");
     } else {
-      trackSystem("email_capture_failed", { status: r.httpStatus });
+      trackSystem("email_capture_failed", { status: r.httpStatus, source: "resend" });
       setResendState("failed");
       setResendCooling(true);
       setTimeout(() => setResendCooling(false), RESEND_COOLDOWN_MS);
@@ -477,13 +477,24 @@ export default function InstallPrompt() {
         <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>Check your inbox.</p>
         <p style={muted}>Tap the confirm link and you are set. We will email when your spots are calm.</p>
         <p style={muted}>{RESEND_SPAM_LINE}</p>
-        <button
-          onClick={handleResend}
-          disabled={resendState === "sending" || resendState === "confirmed" || resendCooling}
-          style={{ ...primaryBtn, marginTop: 8 }}
-        >
-          {resendState === "sending" ? RESEND_SENDING_LABEL : RESEND_LABEL}
-        </button>
+        {(() => {
+          const resendDisabled =
+            resendState === "sending" || resendState === "confirmed" || resendCooling;
+          return (
+            <button
+              onClick={handleResend}
+              disabled={resendDisabled}
+              style={{
+                ...primaryBtn,
+                marginTop: 8,
+                opacity: resendDisabled ? 0.55 : 1,
+                cursor: resendDisabled ? "default" : "pointer",
+              }}
+            >
+              {resendState === "sending" ? RESEND_SENDING_LABEL : RESEND_LABEL}
+            </button>
+          );
+        })()}
         {resendState === "sent" && <p style={muted}>{RESEND_SENT_NOTE}</p>}
         {resendState === "confirmed" && <p style={muted}>{RESEND_CONFIRMED_NOTE}</p>}
         {resendState === "failed" && <p style={{ ...muted, color: "#FCA5A5" }}>{RESEND_FAILED_NOTE}</p>}

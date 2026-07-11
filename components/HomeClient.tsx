@@ -78,7 +78,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     const params = new URLSearchParams(window.location.search);
     if (params.get("email_confirmed") === "0") {
       const reason = params.get("reason");
-      trackIntent("email_confirm_failed", { reason: reason === "stale" ? "stale_token" : "no_token" });
+      trackSystem("email_confirm_failed", { reason: reason === "stale" ? "stale_token" : "no_token" });
       params.delete("email_confirmed");
       params.delete("reason");
       const qs = params.toString();

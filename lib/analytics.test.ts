@@ -77,11 +77,11 @@ describe("pre-init event queue", () => {
       event_category: "intent",
     });
 
-    trackIntent("email_confirm_failed", { reason: "stale_token" });
+    trackSystem("email_confirm_failed", { reason: "stale_token" });
 
     expect(capture).toHaveBeenCalledWith("email_confirm_failed", {
       reason: "stale_token",
-      event_category: "intent",
+      event_category: "system",
     });
   });
 });
