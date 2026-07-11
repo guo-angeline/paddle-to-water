@@ -97,7 +97,7 @@ Recommendation: run the repro; if confirmed, (a). This is the highest-leverage r
 
 Answer: a - also mark this device as my device (test device, excluded from analytics)
 
-## D8 [OPEN] 2026-07-11 · Studio PR merges now hit a human-review guard: PR-only, or allow-list the merge?
+## D8 [RESOLVED] 2026-07-11 · Studio PR merges now hit a human-review guard: PR-only, or allow-list the merge?
 
 Context: shipping item 24, the studio opened PR #32 and tried to auto-merge it (`gh pr merge --merge`), the same step it used to ship items 13 to 23. A NEW auto-mode classifier BLOCKED it: "Merging the agent's own PR before any human review or approval." The merge had already landed a moment earlier, so item 24 is merged and deployed to prod, verified live. But going forward this guard will stop the autonomous loop at the merge step every time, which changes how `/studio` and `/ship` can complete.
 
@@ -110,4 +110,4 @@ Options:
 
 Recommendation: (a) if you want a human gate on `main` (the guard firing suggests that is the intent); (b) if you want the loop to stay fully autonomous and trust the existing verifier gates. Either way, item 24 is already in and live; this only affects future iterations.
 
-Answer:
+Answer: b (owner, 2026-07-11): allow-list the studio's merge command so the unattended loop completes end to end. Trust the adversarial verifier + live-verify gates instead of a human merge gate. Implemented via a Bash permission rule `Bash(gh pr merge:*)` in `.claude/settings.json`.
