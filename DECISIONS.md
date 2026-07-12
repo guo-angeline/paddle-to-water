@@ -112,7 +112,7 @@ Recommendation: (a) if you want a human gate on `main` (the guard firing suggest
 
 Answer: b (owner, 2026-07-11): allow-list the studio's merge command so the unattended loop completes end to end. Trust the adversarial verifier + live-verify gates instead of a human merge gate. Implemented via a Bash permission rule `Bash(gh pr merge:*)` in `.claude/settings.json`.
 
-## D9 [OPEN] 2026-07-11 · Push analytics have no owner-exclusion key (contaminates every Supabase push metric)
+## D9 [RESOLVED] 2026-07-11 · Push analytics have no owner-exclusion key (contaminates every Supabase push metric)
 
 Context: building item 25 (the unified enrollment-return funnel) surfaced a gap that predates it. `analytics/EXCLUDED_PERSONS.md` can exclude the owner two ways: PostHog `person_id`s (client events) and owner email addresses (the email Supabase tables). But the PUSH Supabase tables (`push_subscriptions`, `alert_opens`, `alert_sends`) carry neither, only `anon_id` / `endpoint` / `token`, none of which is recorded for the owner. So the owner's own iOS PWA push subscription (the one that opted in and clicked its own test pushes, PostHog person `11a83b86`) cannot be filtered from ANY Supabase push metric. This contaminates not just item 25 but the two existing push retention queries (`reachable_audience_retention.sql`, `active_subscriber_retention.sql`), which today silently include the owner. At single-digit N, that one owner row can be the entire push cohort, so every push number is owner-inclusive until this is fixed.
 
@@ -123,4 +123,4 @@ Options:
 
 Recommendation: (a). It is the only option that cleans the historical rows and the two existing retention queries, not just item 25. Low effort: one lookup, one paste into `EXCLUDED_PERSONS.md`. This does not block item 25 (which ships with the placeholder and the caveat documented), it just gates trustworthy push numbers.
 
-Answer:
+Answer: a (owner, 2026-07-11): look up the owner's push subscription key and add it to EXCLUDED_PERSONS.md; wire it into enrollment_return_funnel.sql + the two existing push retention queries.
