@@ -285,6 +285,21 @@ Attempts 2026-07-09 in the `app/globals.css` shell, none cleared it on-device: (
 - Rollout: monitored 100% behind a kill-switch flag with guardrails (`spot_viewed`, `conditions_loaded`), per the D2/D3/D6 low-traffic precedent, not an A/B.
 - Net-new vs item 3 (first-time landing bounce), item 8 (calmer alternative when blown out), and item 20 (per-spot next-window): this targets returners with view history, not first-timers or a single open drawer.
 
+## 28. [proposed] Copy consistency pass: finish the calm -> good-to-paddle migration + de-stiffen the enrollment card
+
+*(From the 2026-07-11 editor-agent review of all user-facing writing.)*
+
+Item 27 moved the ALERT EMAIL to a "good to paddle" promise but did not propagate: the app still tells users at enrollment "we'll email you when your spots are **calm**", then sends an email that says "**good to paddle**". Same event, two names, sitting on the conversion path. Reserve "Calm" for the wind-scale label only (Calm/Breezy/Windy in ConditionsPanel/ConditionsBadge, DO NOT touch); use "good to paddle" / "good window" everywhere the app names the alert trigger or promise. Second theme: `InstallPrompt.tsx` (the biggest conversion surface) never uses contractions ("We will", "You are", "it is") so it reads robotic, while emails/toasts/interstitial all contract.
+
+Acceptance (owner OK needed on one judgment call: extending the calm->good framing app-wide, since item 27 was scoped to email):
+- Unify the alert promise to "good to paddle / good window" across: push body (`lib/alerts/select.ts` "looks calm at" -> "looks good"), `InstallPrompt.tsx` (desktop/iOS/Android/pending-card headers + sublines), the confirm toast (`HomeClient.tsx`), the `SpotList.tsx` re-save nudge, `NextGoodWindowPanel.tsx` + `lib/nextWindow.ts` ("Next calm window" -> "Next good window", `noWindowLine`), and `AlertInterstitial.tsx` ("Calm window" subline). Leave the Calm/Breezy/Windy wind scale alone.
+- De-stiffen `InstallPrompt.tsx` with contractions throughout.
+- Standardize on "Watch" vocabulary (kill the last "save/re-save" leaks in the SpotList nudge + mismatched aria-labels).
+- `"Get Directions"` -> `"Get directions"` (SpotDrawer + the disclaimer's quoted reference): the only Title Case button in the app.
+- Trim `app/layout.tsx` meta description (currently ~300 chars, truncates ~155 in SERPs; also "paddleboard and SUP" is redundant).
+- Copy-only, no behavior/flags; scan `grep -n "—"` clean before deploy. Keep the safety disclaimer copy AS-IS (editor confirmed it reads human and is a real caveat).
+- Separate future pass (not this item): audit the 140 `data/spots.json` notes for the "reply to a feedback sender" anti-pattern (grep for "Yes," / "you can").
+
 ---
 
 ## Later (after retention is proven) — all [proposed], do not promote before the ~2026-07-15 funnel re-check
