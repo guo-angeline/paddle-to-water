@@ -140,7 +140,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           // Email twin of the alert-open path. Same durable, ITP-proof return
           // signal via the token that rode the email deep link. See
           // /api/email/opened. No interstitial (that is push-only, from=alert).
-          trackIntent("email_alert_opened", { spot_id: found.id });
+          // `v` is the email copy-variant index (0-6 rotation, lib/email/templates.ts).
+          const v = params.get("v");
+          trackIntent("email_alert_opened", {
+            spot_id: found.id,
+            ...(v !== null && /^\d+$/.test(v) ? { variant: Number(v) } : {}),
+          });
           const token = params.get("t");
           if (token) reportEmailOpen(token, found.id);
         }
