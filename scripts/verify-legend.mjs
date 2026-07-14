@@ -76,6 +76,9 @@ async function checkViewport(browser, viewport) {
     } else {
       const centerX = box.x + box.width / 2;
       const centerY = box.y + box.height / 2;
+      // Run against a URL with results (the default 142-spot load). A zero-result
+      // filter state raises the empty-state overlay (z-400) over the legend on
+      // purpose, which would read here as a false occlusion failure.
       const isUnoccluded = await page.evaluate(
         ({ x, y }) => {
           const el = document.elementFromPoint(x, y);
