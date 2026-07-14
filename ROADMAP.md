@@ -48,6 +48,55 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner items, added 2026-07-13 (board-directed; the two [ready] items are queued top-most on purpose)
+
+## 29. [ready] Remove the emojis (dogs, waves, etc.) from the spot list
+
+**Why:** Owner call 2026-07-13: the emoji glyphs on list rows are not intuitive; a reader can't tell what a dog or a wave icon is asserting about a spot without guessing. The information should be carried by labeled text/badges or dropped from the row.
+
+**Acceptance:**
+- No emoji glyphs render in spot list rows (desktop list panel and mobile list tab).
+- Any load-bearing fact an emoji was carrying (e.g. dog policy, water type) either already exists as a labeled element (difficulty badge, fee text) or gets a short text label; nothing informative silently disappears without the owner seeing a before/after note in the briefing.
+- Check the spot drawer/sheet for the same glyphs while in there; if present, flag in the briefing but do not expand scope without an owner OK.
+- Copy/UI-only, no behavior change; small fix, exempt from the A/B flag rule. No new events needed; note the change date in `analytics/INSTRUMENTATION_CHANGELOG.md` only if any tracked element is removed.
+
+## 30. [ready] Fix the map legend not displaying
+
+**Why:** Owner report 2026-07-13: the legend (pin-color key, inlined in `components/HomeClient.tsx`) is not displaying on the map. Without it, the difficulty color coding (flatwater teal / bay azure / river rust, `DIFFICULTY_COLOR` in `lib/types.ts`) is unreadable to new users.
+
+**Acceptance:**
+- Reproduce first and record where it fails (desktop, mobile map tab, installed PWA; check z-index vs Leaflet panes, the 2026-07-08 Meltwater theme pass, and any conditional rendering) before fixing.
+- Legend renders on desktop and mobile map views with the current difficulty colors; verify live on prod after deploy, not just locally.
+- Bugfix, exempt from the A/B flag rule. Add a regression check if the failure mode is testable cheaply.
+
+## 31. [proposed] A picture for each spot
+
+**Why:** Owner idea 2026-07-13. Spot cards/sheets are text-only; a photo is the highest-impact visual upgrade for browse appeal and shared-link CTR.
+
+**Acceptance (to be sized before promoting):**
+- Every spot (or a defined first tranche) shows a photo on the drawer/sheet without hurting load performance (lazy-load, sized derivatives).
+- Sourcing must be rights-clean and attributed (owner photos, CC-licensed with attribution, or a licensed API); no scraping. This is the hard part: 140 spots, so propose the sourcing plan + effort estimate as a decision before building.
+- New user-facing surface: ships behind a flag or staged tranche per the major-update directive.
+
+## 32. [proposed] Enrollment window: make the push CTA as prominent as email
+
+**Why:** Owner call 2026-07-13: after tapping "Watch this spot", the enrollment window leads with the email field and buries push. Owner wants the push option presented at equal visual weight so push-capable users are not funneled into email by default.
+
+**Acceptance (to be reconciled before promoting):**
+- On platforms where push is possible (installed PWA, Android, desktop with permission), the enrollment card (`InstallPrompt.tsx`) presents push and email at equal prominence (equal-weight buttons or side-by-side choice), not email-primary with push as small print.
+- Note the tension with item 23's per-platform channel matrix (email was deliberately made the lead on desktop/iOS Safari because push there needs an install first); resolve the matrix vs equal-prominence question explicitly in the design step, escalate to a decision if they can't both hold.
+- Enrollment funnel events (`alert_optin_shown` `channel` prop, `alert_optin_result`, `email_capture_submitted`) must keep working so the mid-July funnel read stays comparable; changelog entry for any prop/semantics change. Changed core flow: behind a flag or explicit owner exception per the D3 precedent.
+
+## 33. [proposed] Move the map zoom +/- control to the right side
+
+**Why:** Owner call 2026-07-13: the +/- control sits top-left over the map; owner wants it on the right.
+
+**Acceptance:**
+- Leaflet zoom control renders on the right (`zoomControl` position, `MapView`), on desktop and mobile, not overlapped by the drawer (desktop right sidebar) or the mobile bottom sheet / legend at any viewport; verify with the drawer open.
+- One-line UI change, exempt from the A/B flag rule.
+
+---
+
 ## Epic: retention reach + enrollment redesign (email-first) — 2026-07-10
 
 The lead work for the 2-month retention push. Install converts at ~1% (1 install / 182 prompts) and iOS web push needs an install first; email converts far higher, works on desktop, and is cross-device + identity-bearing (it also fixes the iOS Safari/PWA partition that blinds retention measurement). This epic adds an anonymous email alert channel on the SAME calm-window evaluator as push, and turns the install-only opt-in into a channel-agnostic enrollment surface that picks the right ask per platform. Full spec, schema, copy, and instrumentation: `docs/superpowers/specs/2026-07-10-email-alert-channel-and-enrollment.md`. Two blocking owner escalations before the first send: **D5** (CAN-SPAM postal address) and **D6** (rollout mechanism). Sequence: 21 (cheap, ship now) -> 22 (the build) -> 23 (placements, depends on 22).
