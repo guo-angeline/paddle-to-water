@@ -4,6 +4,7 @@ import { findGoodWindow, type GoodWindow } from "@/lib/alerts/conditions-window"
 import { selectAlertSpots, sentKey, type SpotWindow } from "@/lib/alerts/select";
 import { composeAlertEmail, alertVariantForDay } from "@/lib/email/templates";
 import { sendEmail, emailAlertsEnabled } from "@/lib/email/sender";
+import { launchDirectionTip } from "@/lib/launchDirection";
 import spotsData from "@/data/spots.json";
 import type { Spot } from "@/lib/types";
 
@@ -92,6 +93,7 @@ export async function GET(req: Request) {
   // 3. Per sub: pick, send ONE email for the soonest spot, log, respect the cap.
   let emailsSent = 0;
   let failed = 0;
+  let tipsIncluded = 0;
   // Copy rotation: one wording per UTC send day, shared by every email that day
   // so day-over-day emails to the same subscriber never repeat.
   const variant = alertVariantForDay(nowMs);
@@ -126,6 +128,7 @@ export async function GET(req: Request) {
     const result = await sendEmail(sub.email, msg, sub.token);
     if (result.ok) {
       emailsSent += 1;
+      if (launchDirectionTip(first.windDirection, first.maxWindMph) !== null) tipsIncluded += 1;
       const { error: insertErr } = await db.from("email_sends").insert(
         picks.map((p) => ({
           email_subscription_id: sub.id,
@@ -149,6 +152,7 @@ export async function GET(req: Request) {
     goodSpots: windowBySpot.size,
     emailsSent,
     failed,
+    tipsIncluded,
     planned: dry ? planned : undefined,
   });
 }
