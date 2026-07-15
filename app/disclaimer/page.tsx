@@ -11,7 +11,11 @@ export default function DisclaimerPage() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        position: "fixed",
+        inset: 0,
+        overflowY: "auto",
+        overscrollBehavior: "contain",
+        WebkitOverflowScrolling: "touch",
         background: "var(--bg)",
         color: "var(--dark)",
         fontFamily: "'Hanken Grotesk', system-ui, sans-serif",
