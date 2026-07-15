@@ -28,8 +28,11 @@ describe("header search control border token alignment", () => {
     expect(homeClientSrc).not.toContain("border-[--border]");
   });
 
-  it("the Feedback button still keeps its accent border", () => {
-    expect(homeClientSrc).toContain("border border-[--accent]");
+  it("the Feedback button keeps its accent border, in the working Tailwind v4 parens form", () => {
+    // Parens (--accent) compiles to var(--accent); the bracket form [--accent]
+    // compiled to invalid `border-color:--accent` and rendered dark, not azure.
+    expect(homeClientSrc).toContain("border border-(--accent)");
+    expect(homeClientSrc).not.toContain("border border-[--accent]");
   });
 
   it("radius and height are preserved on the search input", () => {

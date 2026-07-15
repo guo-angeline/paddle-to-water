@@ -466,7 +466,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
           <button
             onClick={() => { setFeedbackOpen(true); trackIntent("feedback_opened", {}); }}
-            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[--accent] text-[--accent] hover:bg-[--accent] hover:text-white transition-colors"
+            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-(--accent) text-(--accent) hover:bg-(--accent) hover:text-white transition-colors"
           >
             Feedback
           </button>
