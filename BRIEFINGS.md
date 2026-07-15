@@ -1,5 +1,15 @@
 # Briefings: the board log
 
+## 2026-07-15 · Visual polish pass (item 37) · SHIPPED
+What: Header search and Feedback button now read as a matched pair (30px height, 8px radius, token border). Found and fixed the Feedback CTA rendering dark instead of azure. Shipped a ?vh device diagnostic for the iOS bottom dead-band; the fix itself is deferred to an owner screenshot.
+Evidence: 174 unit tests pass, build green, item-37 files lint clean. Live-drove desktop 1280px + mobile 390px: pair dimensions match, Feedback azure on prod (rgb 14,111,209), ?vh diagnostic present with param and absent without, zero console errors.
+Measure: n/a (pure visual polish + dev diagnostic, no new interaction). INSTRUMENTATION_CHANGELOG records nothing added and why.
+Deployed: paddletowater.com, home and /?vh both 200, branch merged to main, verified 2026-07-15.
+Limit: the two device-only things this item is about (installed-PWA dead band, iOS chrome seam) could not be verified headless. That is why part 3 ships a diagnostic not a blind fix, and part 2's seam was left to owner on-device judgment.
+Decisions raised: D12 resolved (keep azure chrome + pale header, ship diagnostic, defer dead-band fix). Quality pass caught a project-wide bug: the Tailwind v4 bracket form border-[--x] compiles to invalid CSS, ~77 occurrences render muted text dark and azure surfaces transparent. Filed as new item 38 (proposed), must also correct CLAUDE.md which documents the broken syntax as canonical.
+Parked: item 12 dead-band fix folded into 37, blocked on owner /?vh screenshot.
+Next up: [ready] queue empty. Two owner actions pending: send the /?vh installed-PWA screenshot; decide whether to promote item 38 (visible app-wide color shift, needs sign-off). Item 31 photos still blocked on D10.
+
 ## 2026-07-15 · Shipped item 36 (launch-direction tip on the alert surfaces)
 What: your item 36, the two alert surfaces now tell a paddler which way to head out so the tired return leg is downwind. One line, "Head out toward the northwest so the wind helps push you back," on the post-tap interstitial and in the alert email. Derived from the NWS wind direction at the calm run's peak-wind hour; omitted below 5 mph or when wind is variable. It is an informational tip, not a safety instruction, and item 34's safety framing is intact.
 Under the hood: wind direction wasn't on the payload these surfaces read, so it was threaded through the shared evaluateGoodWindow that the protected push cron also calls; verified additive/optional, cron behavior unchanged. A pure helper holds the 16-point compass abbreviation-to-words lookup.
