@@ -10,6 +10,7 @@ import SpotList from "@/components/SpotList";
 import SpotDrawer from "@/components/SpotDrawer";
 import AlertInterstitial from "@/components/AlertInterstitial";
 import FeedbackModal from "@/components/FeedbackModal";
+import ViewportDiagnostic from "@/components/ViewportDiagnostic";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
 import { trackIntent, trackSystem, setPersona, type SpotViewedSource } from "@/lib/analytics";
@@ -624,6 +625,8 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           Email alerts on. We&rsquo;ll ping you when your spots are good to paddle.
         </div>
       )}
+
+      <ViewportDiagnostic />
     </div>
   );
 }

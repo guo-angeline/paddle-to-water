@@ -14,6 +14,23 @@ without touching this file.
 
 ---
 
+## 2026-07-15 (item 37 part 3, ROADMAP item 12): Viewport diagnostic added, no PostHog event
+
+**No event added.** Shipped `components/ViewportDiagnostic.tsx`, a device-only
+overlay gated behind the `?vh` URL param that prints `screen.height`,
+`window.innerHeight`, `visualViewport.height`, computed
+`env(safe-area-inset-bottom)`, and standalone-vs-Safari, so the owner can
+screenshot real iOS numbers before picking a fix for the item-12 dead band.
+It renders nothing without the param and is mounted unconditionally in
+`HomeClient.tsx`, but there is no user-facing interaction to log: nobody
+chooses to open it (it requires manually editing the URL), it is not a
+control or a flow, and it is intended to be looked at once on one device, not
+used repeatedly. Logging a "diagnostic opened" event would just tell us the
+owner loaded their own debug page, which is not a metric.
+- **Comparability:** N/A, no series created or changed.
+
+---
+
 ## 2026-07-15 (item 36): `alert_interstitial_shown` gains `launch_tip_shown`; emit moved off the mount effect (props-changed, semantics-changed)
 
 `alert_interstitial_shown` (`lib/analytics.ts` `EventPropMap`) gains a required
