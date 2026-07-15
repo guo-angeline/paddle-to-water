@@ -3,8 +3,8 @@ import { evaluateGoodWindow, type HourlyPeriod } from "@/lib/alerts/conditions-w
 
 // 2026-07-01 is a Wednesday. Times are spot-local (PDT), like NWS hourly startTime.
 const NOW = Date.parse("2026-07-01T08:00:00-07:00");
-function h(day: string, hour: number, windSpeed: string): HourlyPeriod {
-  return { startTime: `${day}T${String(hour).padStart(2, "0")}:00:00-07:00`, windSpeed };
+function h(day: string, hour: number, windSpeed: string, windDirection = ""): HourlyPeriod {
+  return { startTime: `${day}T${String(hour).padStart(2, "0")}:00:00-07:00`, windSpeed, windDirection };
 }
 
 describe("evaluateGoodWindow (hourly)", () => {
@@ -116,6 +116,29 @@ describe("evaluateGoodWindow (hourly)", () => {
     const w = evaluateGoodWindow(periods, NOW, 3);
     expect(w).not.toBeNull();
     expect(w!.endHour).toBe(12);
+  });
+
+  it("samples windDirection at the peak-wind hour of the run", () => {
+    const periods = [
+      h("2026-07-02", 7, "5 mph", "N"),
+      h("2026-07-02", 8, "8 mph", "WNW"),
+      h("2026-07-02", 9, "6 mph", "SW"),
+      h("2026-07-02", 10, "14 mph", "S"),
+    ];
+    const w = evaluateGoodWindow(periods, NOW, 3);
+    expect(w).not.toBeNull();
+    expect(w!.windDirection).toBe("WNW");
+  });
+
+  it("reports an empty windDirection when the peak-wind hour had no direction", () => {
+    const periods = [
+      h("2026-07-02", 7, "5 mph"),
+      h("2026-07-02", 8, "8 mph"),
+      h("2026-07-02", 9, "14 mph"),
+    ];
+    const w = evaluateGoodWindow(periods, NOW, 3);
+    expect(w).not.toBeNull();
+    expect(w!.windDirection).toBe("");
   });
 
   it("does not advance to a later longer run", () => {
