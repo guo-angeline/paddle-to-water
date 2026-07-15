@@ -42,29 +42,28 @@ These are also the owner's dogfood subscriptions, so they may generate real
 `email_sends` / `email_opens` rows: filter them from metrics, do not treat as
 signal. If the owner adds more addresses for testing, append them here.
 
-## Excluded push subscriptions (PENDING, D9 resolved (a) 2026-07-11)
+## Excluded push subscriptions (WIRED 2026-07-15, D9 resolved (a) 2026-07-11)
 
 The PUSH Supabase tables (`push_subscriptions`, `alert_opens`, `alert_sends`) are
 keyed by `anon_id` / `id` / `endpoint` / `token`, NONE of which is a PostHog
 `person_id` or an email, so the two lists above do NOT cover them. The owner's own
-iOS PWA push subscription therefore CANNOT be filtered from any Supabase push
-metric yet, which contaminates `queries/enrollment_return_funnel.sql`,
+iOS PWA push subscription is filtered by the `anon_id` below, wired into the
+owner-exclusion clause of `queries/enrollment_return_funnel.sql`,
 `queries/reachable_audience_retention.sql`, and
-`queries/active_subscriber_retention.sql` at single-digit N. Until this is filled,
-read every push number as owner-inclusive.
+`queries/active_subscriber_retention.sql`. Add any further owner/test push
+`anon_id`s to both the table below and those three clauses.
 
-**To complete (owner has Supabase access):** run in the Supabase SQL editor
+**To add another owner/test push subscription:** run in the Supabase SQL editor
 ```
 select id, anon_id, user_agent, enabled, created_at, last_seen
 from push_subscriptions order by created_at;
 ```
-identify the owner's iOS-standalone row (user_agent mentions iPhone / Mobile
-Safari, created ~2026-06-30), then add it below and wire the key into the three
-push queries' owner-exclusion clause (the funnel query has a NO-OP placeholder
-`'__no_owner_push_key_documented__'` ready to receive it). Prefer `anon_id` as the
-key (it also joins across the push/email stores); fall back to the row `id` if
-`anon_id` is null.
+identify the device's row, add its `anon_id` (fall back to the row `id` if
+`anon_id` is null) to the table below, and paste the same value into the
+owner-exclusion clause of all three push queries
+(`enrollment_return_funnel.sql`, `reachable_audience_retention.sql`,
+`active_subscriber_retention.sql`).
 
 | anon_id (or id) | device | why excluded | first seen |
 |---|---|---|---|
-| _pending owner lookup_ | Owner iOS PWA (the granted push subscription) | Owner's own dogfood push subscription, not a user. | 2026-06-30 |
+| `2f625b9b-4627-483e-b29b-8ab5973e046b` | Owner iOS PWA (the granted push subscription) | Owner's own dogfood push subscription, not a user. Identified 2026-07-15 by the owner via the Supabase `push_subscriptions` lookup. | 2026-06-30 |

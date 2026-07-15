@@ -102,9 +102,9 @@ WITH push_cohort AS (
   SELECT id, anon_id, created_at, disabled_at
   FROM push_subscriptions
   WHERE created_at >= :from AND created_at < :to
-    -- OWNER EXCLUSION, PUSH SIDE: NO-OP until a real key is documented. Paste
-    -- the owner's push anon_id(s) here once EXCLUDED_PERSONS.md carries them.
-    AND coalesce(anon_id, '') NOT IN ('__no_owner_push_key_documented__')
+    -- OWNER EXCLUSION, PUSH SIDE: owner's own iOS PWA push subscription.
+    -- See analytics/EXCLUDED_PERSONS.md "Excluded push subscriptions".
+    AND coalesce(anon_id, '') NOT IN ('2f625b9b-4627-483e-b29b-8ab5973e046b')
 ),
 email_cohort AS (
   -- Enrolled email cohort: submitted in the window AND confirmed (double

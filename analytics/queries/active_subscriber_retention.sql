@@ -21,6 +21,9 @@
 WITH sub AS (
   SELECT id, date_trunc('week', created_at)::date AS cohort_week
   FROM push_subscriptions
+  -- OWNER EXCLUSION, PUSH SIDE: owner's own iOS PWA push subscription.
+  -- See analytics/EXCLUDED_PERSONS.md "Excluded push subscriptions".
+  WHERE coalesce(anon_id, '') NOT IN ('2f625b9b-4627-483e-b29b-8ab5973e046b')
 ),
 opens AS (
   SELECT DISTINCT subscription_id, date_trunc('week', opened_at)::date AS open_week

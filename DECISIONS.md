@@ -125,6 +125,8 @@ Recommendation: (a). It is the only option that cleans the historical rows and t
 
 Answer: a (owner, 2026-07-11): look up the owner's push subscription key and add it to EXCLUDED_PERSONS.md; wire it into enrollment_return_funnel.sql + the two existing push retention queries.
 
+WIRED 2026-07-15: owner supplied push anon_id `2f625b9b-4627-483e-b29b-8ab5973e046b` (iOS PWA). Added to EXCLUDED_PERSONS.md and the owner-exclusion clause of all three push queries. Placeholder removed. Push numbers are now owner-clean.
+
 ## D10 [OPEN] 2026-07-14 · Item 31 (a photo per spot): pick the sourcing approach
 
 Context: item 31 wants a hero photo on each spot card/sheet. 142 spots, a mix of famous water (Tahoe, Folsom, Fallen Leaf, Pillar Point) and obscure sloughs / boat ramps / creeks. The build is easy; rights-clean sourcing at scale is the hard part, and it forks the whole approach, so it needs your call before I build. Two findings from a feasibility probe today:
