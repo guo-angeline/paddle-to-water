@@ -4,7 +4,6 @@ import { findGoodWindow, type GoodWindow } from "@/lib/alerts/conditions-window"
 import { selectAlertSpots, sentKey, type SpotWindow } from "@/lib/alerts/select";
 import { composeAlertEmail, alertVariantForDay } from "@/lib/email/templates";
 import { sendEmail, emailAlertsEnabled } from "@/lib/email/sender";
-import { launchDirectionTip } from "@/lib/launchDirection";
 import spotsData from "@/data/spots.json";
 import type { Spot } from "@/lib/types";
 
@@ -128,7 +127,7 @@ export async function GET(req: Request) {
     const result = await sendEmail(sub.email, msg, sub.token);
     if (result.ok) {
       emailsSent += 1;
-      if (launchDirectionTip(first.windDirection, first.maxWindMph) !== null) tipsIncluded += 1;
+      if (msg.tipIncluded) tipsIncluded += 1;
       const { error: insertErr } = await db.from("email_sends").insert(
         picks.map((p) => ({
           email_subscription_id: sub.id,

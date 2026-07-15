@@ -17,6 +17,9 @@ export interface EmailMessage {
   subject: string;
   html: string;
   text: string;
+  // Whether the launch-direction tip line was included (alert emails only), so
+  // callers can count tip reach without re-deriving the gating logic.
+  tipIncluded?: boolean;
 }
 
 export function confirmUrl(confirmToken: string): string {
@@ -289,7 +292,7 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
   );
 
   const text = `${headline}\n\n${lengthLine}\n${tip ? `${tip}\n` : ""}${extras.length ? `\n${extrasLine(extras)}\n` : ""}${notes ? `\n${notes}\n` : ""}\n${v.cta}: ${openUrl}`;
-  return { subject, html, text };
+  return { subject, html, text, tipIncluded: tip !== null };
 }
 
 function escapeHtml(s: string): string {

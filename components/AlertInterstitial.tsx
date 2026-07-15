@@ -62,6 +62,15 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
     });
     return () => {
       alive = false;
+      // If we unmount before getNextWindow settles (e.g. a fast dismiss), the
+      // interstitial was still shown, it renders immediately on mount, with no
+      // tip visible yet. Record that impression once with launch_tip_shown=false
+      // instead of dropping it, which would leave a dismissed result with no
+      // matching shown and push the shown->result rate past 100%.
+      if (!shownFired.current) {
+        shownFired.current = true;
+        trackIntent("alert_interstitial_shown", { spot_id: spot.id, launch_tip_shown: false });
+      }
     };
   }, [spot.id, spot.lat, spot.lng]);
 

@@ -26,11 +26,14 @@ mount, before the `getNextWindow` call had resolved. `launch_tip_shown` cannot
 be known until that window resolves, so the fire had to defer: it now fires
 once (guarded by a ref) inside the window-resolving effect, after the
 `getNextWindow` promise settles, on both the window-found and
-no-window/failed branches (the interstitial renders either way, so the event
-still fires exactly once per render). This mirrors the `dualCta.ready` gating
-in the 2026-07-14 item 32 entry above, the same pattern of deferring an emit
-until a value it depends on is actually known, rather than firing blind at
-mount.
+no-window/failed branches. To keep volume equal to the old mount-fire, the
+effect cleanup fires the same event once with `launch_tip_shown: false` if the
+interstitial unmounts (e.g. a fast dismiss) before `getNextWindow` settles, so
+every mounted interstitial still emits exactly one `alert_interstitial_shown`
+and never leaves a dismissed `result` without a matching `shown`. This mirrors
+the `dualCta.ready` gating in the 2026-07-14 item 32 entry above, the same
+pattern of deferring an emit until a value it depends on is actually known,
+rather than firing blind at mount.
 
 - **Comparability:** `launch_tip_shown` exists only from 2026-07-15 forward;
   pre-deploy rows have no such prop, treat missing as false/unknown, not as
