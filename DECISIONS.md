@@ -159,3 +159,14 @@ Context: item 36 adds a one-line "head out against the wind so the return is dow
 Options: (a) ship experiment-exempt at 100% with a `has_launch_tip` guardrail prop; (b) declare a flag and run monitored 100%; (c) powered A/B arm.
 
 Answer: (a) ship experiment-exempt at 100% (owner, 2026-07-15), with a boolean guardrail prop on the existing events as the segment. (Shipped as `launch_tip_shown` on `alert_interstitial_shown`, the clearer name; `has_launch_tip` in this memo was shorthand. See analytics/INSTRUMENTATION_CHANGELOG.md 2026-07-15.) Copy: use the expanded compass words ("toward the west-northwest"), not the abbreviation, for friendliness to non-sailors, which requires a 16-point abbreviation-to-words lookup. This entry records the deliberate flag exemption so a later audit does not read it as a bypassed directive.
+
+## D12 [RESOLVED] 2026-07-15 · Item 37 (visual polish pass): chrome seam + dead-band discipline
+
+Context: item 37 bundled three polish fixes. The vision gate flagged two as needing owner/device calls. (Part 2) `theme_color` is ALREADY azure #0E6FD1 in both `app/layout.tsx` and `app/manifest.ts`, so "make the chrome match azure" is a literal no-op; the perceived jar is the seam where the azure browser chrome meets the pale `#EEF5FB` app header (iOS also uses a black-translucent status bar). (Part 3) is roadmap item 12 verbatim, which explicitly bars a 4th blind CSS fix and requires a `?vh` device diagnostic + an installed-PWA screenshot before choosing a fix, which an unattended run cannot capture.
+
+Answer (owner, 2026-07-15):
+- Part 2: KEEP azure chrome, leave the header pale. No value change; the seam is accepted as-is. Do not tint the header azure.
+- Part 3: ship the `?vh` device diagnostic ONLY this pass (prints `screen.height`, `window.innerHeight`, computed `env(safe-area-inset-bottom)`, standalone-vs-Safari, per item 12), and DEFER the actual dead-band fix until the owner sends one installed-PWA screenshot. Item 12 is merged into item 37 and closed as a standalone.
+- Part 1 (search/Feedback alignment) proceeds normally: match height + radius + border token, keep natural widths (search is an input, Feedback a button, so no literal equal-width).
+
+So this pass ships Part 1 + the Part 3 diagnostic; Part 2 is a confirmed no-change; the Part 3 fix is a fast follow-up gated on an owner screenshot.

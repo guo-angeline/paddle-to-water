@@ -14,6 +14,40 @@ without touching this file.
 
 ---
 
+## 2026-07-15 (item 37 part 3, ROADMAP item 12): Viewport diagnostic added, no PostHog event
+
+**No event added.** Shipped `components/ViewportDiagnostic.tsx`, a device-only
+overlay gated behind the `?vh` URL param that prints `screen.height`,
+`window.innerHeight`, `visualViewport.height`, computed
+`env(safe-area-inset-bottom)`, and standalone-vs-Safari, so the owner can
+screenshot real iOS numbers before picking a fix for the item-12 dead band.
+It renders nothing without the param and is mounted unconditionally in
+`HomeClient.tsx`, but there is no user-facing interaction to log: nobody
+chooses to open it (it requires manually editing the URL), it is not a
+control or a flow, and it is intended to be looked at once on one device, not
+used repeatedly. Logging a "diagnostic opened" event would just tell us the
+owner loaded their own debug page, which is not a metric.
+- **Comparability:** N/A, no series created or changed.
+
+## 2026-07-15 (item 37, both parts): Visual polish pass adds no analytics event
+
+**No event added.** The item 37 pass is two changes and neither warrants a new
+event. Part 1 swapped the header search control's hardcoded `border-gray-200`
+for the existing `--border` design token in `components/HomeClient.tsx`, so it
+reads as one matched pair with the Feedback button. It is a passive style
+change, same markup, same control, same interaction, no new state to log. Part
+3 is the `?vh` viewport diagnostic documented in the entry directly above: a
+device-only debug overlay nobody opens as a feature, not a user flow. Neither
+part adds a new control, gesture, filter, or navigation path, so no INTENT
+(`_clicked` / `_toggled` / `_viewed`) or SYSTEM (`_loaded` / `_failed`) event
+applies to this pass.
+
+- **Comparability:** no PostHog metric series is affected by this pass, no
+  behavior-change interpretation applies. This entry exists so a later analyst
+  does not read the absence of a new event here as a gap.
+
+---
+
 ## 2026-07-15 (item 36): `alert_interstitial_shown` gains `launch_tip_shown`; emit moved off the mount effect (props-changed, semantics-changed)
 
 `alert_interstitial_shown` (`lib/analytics.ts` `EventPropMap`) gains a required

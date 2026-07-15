@@ -36,6 +36,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Shipped
 
+- 2026-07-15 [done, PART 3 FIX DEFERRED] Item 37: visual polish pass. **Part 1 (shipped):** the header search input and Feedback button now read as a deliberate pair, matched height (30px) and radius (8px), search border moved onto the `--border` token; and the Feedback button's azure CTA border was fixed to actually render (it used the broken Tailwind v4 bracket form and was rendering dark). **Part 2 (no-op, D12):** `theme_color`/`themeColor` were already azure `#0E6FD1`; owner chose to keep azure chrome + the pale header, so no change. **Part 3 (diagnostic only, D12):** added a `?vh`-gated device diagnostic (`components/ViewportDiagnostic.tsx`) printing screen.height / window.innerHeight / visualViewport height / computed `env(safe-area-inset-bottom)` / standalone-vs-Safari; absent without the param, z-9999 when present. The actual iOS dead-band FIX is deferred pending an owner installed-PWA `/?vh` screenshot (item 12, now folded into this item). Verified: 174 tests, build green, live-checked at desktop + 390px with no console errors, Feedback azure confirmed on prod, `?vh` overlay confirmed on prod. Branch `studio/visual-polish-pass`, deployed. Follow-up filed: item 38 (the bracket-syntax bug is app-wide, ~77 occurrences). Recorded in DECISIONS D12.
 - 2026-07-15 [done] Item 36: launch-direction tip ("Head out toward the {expanded compass words} so the wind helps push you back") on the alert interstitial and the alert email body. Threads NWS wind direction (sampled at the calm run's peak-wind hour, matching `maxWindMph`) through the shared `evaluateGoodWindow` so both surfaces agree; pure `launchDirectionTip` helper with a 16-point abbreviation-to-words lookup, omitting the tip below 5 mph or when direction is variable/absent. Informational tip, not a safety instruction (item-34 framing intact). Shipped experiment-EXEMPT at 100% per **D11** (additive copy on existing surfaces; single-digit audience can't power an A/B); guardrail is `launch_tip_shown` on `alert_interstitial_shown` (now fires once after the window resolves, with an unmount-fallback so a fast dismiss can't drop the impression). Live-verified: interstitial rendered "Head out toward the northwest..." on real NWS data, 156 unit tests, no console errors desktop/mobile. Branch `studio/launch-direction-suggestion`, deployed. NOTE: the same deploy also carried the owner's pre-existing uncommitted WIP (FilterBar spot-count removed; Leaflet attribution collapsed to an info toggle in globals.css), now live and revertible.
 - 2026-07-14 [done, FLAG OFF] Item 32: dual-CTA enrollment card (push + email at equal weight on installed/Android/iOS; iOS push = "Add to Home Screen"; desktop unchanged). Owner-approved Option B. Shipped behind the `enrollment-dual-cta` experiment flag, CONTROL is the live default so the retention read is undisturbed; OWNER FLIPS to treatment (100% or a bucket) in PostHog after the read. (PR #40, merge e95fc2c, deployed; treatment verified in-browser iOS+Android)
 - 2026-07-14 [done] Item 33: moved the map zoom +/- control to the top-right (explicit ZoomControl position=topright; clear of legend, mobile sheet, and desktop drawer) (PR #39, merge 5cb6677, deployed + prod-verified)
@@ -56,6 +57,18 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 ## Owner items, added 2026-07-13 (board-directed; the two [ready] items are queued top-most on purpose)
 
 (Item 36 launch-direction tip shipped 2026-07-15, see Shipped. Item 37 visual-polish pass is the next [ready], below.)
+
+## 38. [proposed] App-wide bug: Tailwind v4 bracket CSS-variable utilities silently render wrong
+
+**Why:** Found during item 37 (2026-07-15). This project runs Tailwind v4.3.0, where the arbitrary-value **bracket** form for a CSS variable, e.g. `text-[--muted]`, `bg-[--accent]`, `border-[--accent]`, compiles to invalid CSS (`color: --muted` with no `var()`), so the property is dropped and the element falls back to an inherited/default value. Only the **parens** shorthand `text-(--muted)` / `bg-(--accent)` / `border-(--accent)` compiles to `var(--...)` and actually works. Measured live on prod-equivalent build: `text-[--muted]` renders `#0B2A47` (dark) instead of `#6E8598` (muted gray); `bg-[--accent]` renders transparent instead of azure; the Feedback button's `text-[--accent]` rendered dark. The app looks mostly right only because `text-[--dark]` happens to match the inherited fallback and the loud azure surfaces (interstitial, primary buttons) use inline `style={{background:"var(--accent)"}}` not Tailwind classes.
+
+**Scope:** ~77 bracket-form occurrences across `components/` and `app/` (`text-[--muted]` x30, `text-[--dark]` x22, `border-[--accent]` x10, `text-[--accent]` x7, `bg-[--bg]` x5, `border-[--border]` x3, `bg-[--accent]` x3). Item 37 already fixed the two header search inputs, the mobile search toggle, and the Feedback button to the parens form; everything else still uses the broken bracket form.
+
+**Acceptance (to be sized):**
+- Convert every `\{prop\}-[--token]` to `\{prop\}-(--token)` app-wide (codemod-able: it is a mechanical bracket-to-parens swap for the `--`-prefixed cases only; do NOT touch legitimate bracket arbitrary values like `text-[13px]` or `w-[92vh]`).
+- This is a **visible** change: muted text goes lighter, accent borders/text/backgrounds become azure across the app. Verify before/after at desktop + 390px and get owner eyes on the shift; it is a design-system correction, not a redesign.
+- **Correct CLAUDE.md:** the "Theme" section documents the broken bracket syntax as canonical ("`bg-[--accent]`, `text-[--muted]`, `border-[--border]`"). Update it to the parens form so the next change does not reintroduce the bug.
+- Pure CSS/class correctness, exempt from the A/B-flag rule, but the visual shift warrants a monitored deploy + owner sign-off.
 
 ## 31. [proposed] A picture for each spot
 
@@ -251,16 +264,7 @@ Carried over when IMPROVEMENT-PLAN.md was retired; verify each still reproduces 
 - Map zoom controls are 30px (HIG minimum 44) and far from the thumb.
 - Empty-state copy says "filters" when search caused it, and "Clear filters" silently also clears search.
 
-## 37. [ready] Visual polish pass: search/feedback alignment, mobile chrome color, PWA footer gap
-
-Owner-flagged 2026-07-14. Three small UI-professionalism fixes, sized before working:
-- Align the search bar and the feedback section to the same width/height so they read as one deliberate system, not two mismatched widgets.
-- Make the mobile browser chrome (address-bar tint via `theme-color` / `themeColor` meta + `manifest` `theme_color`) match the app's azure main color so the top bar is consistent with the UI, not a jarring default.
-- Remove the empty footer/dead-band space at the bottom of the installed mobile PWA (likely the item-12 iOS safe-area band; confirm whether this supersedes or overlaps item 12 before building).
-
-Pure visual/CSS polish, no new user-facing surface, so exempt from the A/B-flag rule. Verify on device at 390px + installed PWA, not just desktop.
-
----
+## 37. [done] 2026-07-15 Visual polish pass (Part 1 + Part 3 diagnostic shipped; Part 3 fix deferred). See Shipped. Part 2 was a confirmed no-op (D12). The iOS dead-band FIX awaits an owner installed-PWA `/?vh` screenshot, then a fast follow-up picks the fix (candidates: `-webkit-fill-available` or JS-set `--app-height`).
 
 ## 8. [proposed] "Go here instead": nearby calmer alternative when your spot is blown out
 
@@ -286,7 +290,9 @@ Acceptance:
 
 Caveat: share volume is tiny today (1 user / 3 events), so the immediate lift is modest; the win is a better first impression for any shared arrival and a cleaner on-ramp as sharing grows. Cheap to build (reuses the existing draggable sheet). The old inline-paddleability-dots idea stays folded into parked item 3.
 
-## 12. [proposed] (lower priority) Persistent bottom "dead band" on iOS mobile web / installed PWA
+## 12. [blocked(owner-screenshot)] Persistent bottom "dead band" on iOS mobile web / installed PWA (folded into item 37)
+
+*(Folded into item 37 on 2026-07-15 per D12. The `?vh` device diagnostic this item asked for is now SHIPPED, so the "no 4th blind fix" gate is satisfied. Next step is entirely on the owner: open `paddletowater.com/?vh` on the installed iOS PWA and send one screenshot of the printed numbers; then a fast follow-up picks the fix from data, `-webkit-fill-available` or a JS-set `--app-height` from `window.innerHeight`. Re-promote to `[ready]` once the screenshot lands.)*
 
 *(Owner-reported 2026-07-09; three fix attempts that day did not clear it. Lower priority, cosmetic.)*
 
