@@ -8,6 +8,7 @@ export interface SpotWindow {
   startHour?: number; // spot-local hour the calm run starts
   endHour?: number;   // spot-local hour AFTER the calm run ends
   maxWindMph?: number; // peak wind (mph) across the calm run
+  windDirection?: string; // NWS wind-FROM direction at the peak-wind hour, for the email launch tip
 }
 
 /** Dedup key for one (spot, window): shared by the selector and the route's alert_sends rows. */

@@ -3,6 +3,7 @@ import { paddleabilityFromWind } from "@/lib/conditions";
 export interface HourlyPeriod {
   startTime: string; // ISO with the spot's local UTC offset, as NWS returns it
   windSpeed: string; // "7 mph" or "5 to 10 mph"
+  windDirection?: string; // NWS wind-FROM compass direction, e.g. "WNW"
 }
 
 export interface GoodWindow {
@@ -11,6 +12,8 @@ export interface GoodWindow {
   startHour: number; // spot-local hour of the run's first calm period
   endHour: number;   // spot-local hour AFTER the run's last calm period
   maxWindMph: number; // peak wind (mph) across the calm run, for the alert copy
+  /** Wind direction sampled at the run's peak-wind hour. Empty string when that period had no direction. */
+  windDirection: string;
 }
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -51,8 +54,9 @@ export function evaluateGoodWindow(
   let runStart: HourlyPeriod | null = null;
   let runLength = 0;
   let runMaxWind = 0;
+  let runMaxDir = "";
   let prevMs = NaN;
-  let locked: { runStart: HourlyPeriod; lastPeriod: HourlyPeriod; maxWind: number } | null = null;
+  let locked: { runStart: HourlyPeriod; lastPeriod: HourlyPeriod; maxWind: number; maxDir: string } | null = null;
   for (const period of periods) {
     const startMs = Date.parse(period.startTime);
     const { hour } = localParts(period.startTime);
@@ -68,7 +72,10 @@ export function evaluateGoodWindow(
     if (locked) {
       if (eligible && startMs - prevMs === 3600000) {
         locked.lastPeriod = period;
-        locked.maxWind = Math.max(locked.maxWind, wind);
+        if (wind > locked.maxWind) {
+          locked.maxWind = wind;
+          locked.maxDir = period.windDirection ?? "";
+        }
         prevMs = startMs;
         continue;
       }
@@ -77,19 +84,24 @@ export function evaluateGoodWindow(
 
     if (eligible && runLength > 0 && startMs - prevMs === 3600000) {
       runLength += 1;
-      runMaxWind = Math.max(runMaxWind, wind);
+      if (wind > runMaxWind) {
+        runMaxWind = wind;
+        runMaxDir = period.windDirection ?? "";
+      }
     } else if (eligible) {
       runStart = period;
       runLength = 1;
       runMaxWind = wind;
+      runMaxDir = period.windDirection ?? "";
     } else {
       runStart = null;
       runLength = 0;
       runMaxWind = 0;
+      runMaxDir = "";
     }
     prevMs = startMs;
     if (runStart && runLength >= minHours) {
-      locked = { runStart, lastPeriod: period, maxWind: runMaxWind };
+      locked = { runStart, lastPeriod: period, maxWind: runMaxWind, maxDir: runMaxDir };
     }
   }
   if (!locked) return null;
@@ -99,6 +111,7 @@ export function evaluateGoodWindow(
     startHour: localParts(locked.runStart.startTime).hour,
     endHour: localParts(locked.lastPeriod.startTime).hour + 1,
     maxWindMph: locked.maxWind,
+    windDirection: locked.maxDir,
   };
 }
 

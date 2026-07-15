@@ -84,6 +84,7 @@ export async function GET(req: Request) {
         startHour: win.startHour,
         endHour: win.endHour,
         maxWindMph: win.maxWindMph,
+        windDirection: win.windDirection,
       });
     }
   }
@@ -91,6 +92,7 @@ export async function GET(req: Request) {
   // 3. Per sub: pick, send ONE email for the soonest spot, log, respect the cap.
   let emailsSent = 0;
   let failed = 0;
+  let tipsIncluded = 0;
   // Copy rotation: one wording per UTC send day, shared by every email that day
   // so day-over-day emails to the same subscriber never repeat.
   const variant = alertVariantForDay(nowMs);
@@ -111,6 +113,7 @@ export async function GET(req: Request) {
       startHour: first.startHour ?? 0,
       endHour: first.endHour ?? 0,
       maxWindMph: first.maxWindMph,
+      windDirection: first.windDirection,
       notes: spotById.get(first.spotId)?.notes ?? undefined,
       extras: picks.slice(1).map((p) => ({
         name: p.spotName,
@@ -124,6 +127,7 @@ export async function GET(req: Request) {
     const result = await sendEmail(sub.email, msg, sub.token);
     if (result.ok) {
       emailsSent += 1;
+      if (msg.tipIncluded) tipsIncluded += 1;
       const { error: insertErr } = await db.from("email_sends").insert(
         picks.map((p) => ({
           email_subscription_id: sub.id,
@@ -147,6 +151,7 @@ export async function GET(req: Request) {
     goodSpots: windowBySpot.size,
     emailsSent,
     failed,
+    tipsIncluded,
     planned: dry ? planned : undefined,
   });
 }

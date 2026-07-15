@@ -162,6 +162,25 @@ describe("composeAlertEmail", () => {
     expect(msg.html).not.toContain("—");
     expect(msg.text).not.toContain("—");
   });
+
+  it("includes the launch direction tip in both html and text when the wind qualifies", () => {
+    const msg = composeAlertEmail({ ...base, windDirection: "WNW", maxWindMph: 12 });
+    expect(msg.html).toContain("Head out toward the west-northwest so the wind helps push you back.");
+    expect(msg.text).toContain("Head out toward the west-northwest so the wind helps push you back.");
+  });
+
+  it("omits the tip cleanly when direction is missing, with no doubled blank line in text", () => {
+    const msg = composeAlertEmail({ ...base, windDirection: "", maxWindMph: 12 });
+    expect(msg.html).not.toContain("Head out toward");
+    expect(msg.text).not.toContain("Head out toward");
+    expect(msg.text).not.toContain("\n\n\n");
+  });
+
+  it("omits the tip cleanly when wind is under 5 mph", () => {
+    const msg = composeAlertEmail({ ...base, windDirection: "WNW", maxWindMph: 3 });
+    expect(msg.html).not.toContain("Head out toward");
+    expect(msg.text).not.toContain("Head out toward");
+  });
 });
 
 describe("copy rotation", () => {

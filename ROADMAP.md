@@ -36,6 +36,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Shipped
 
+- 2026-07-15 [done] Item 36: launch-direction tip ("Head out toward the {expanded compass words} so the wind helps push you back") on the alert interstitial and the alert email body. Threads NWS wind direction (sampled at the calm run's peak-wind hour, matching `maxWindMph`) through the shared `evaluateGoodWindow` so both surfaces agree; pure `launchDirectionTip` helper with a 16-point abbreviation-to-words lookup, omitting the tip below 5 mph or when direction is variable/absent. Informational tip, not a safety instruction (item-34 framing intact). Shipped experiment-EXEMPT at 100% per **D11** (additive copy on existing surfaces; single-digit audience can't power an A/B); guardrail is `launch_tip_shown` on `alert_interstitial_shown` (now fires once after the window resolves, with an unmount-fallback so a fast dismiss can't drop the impression). Live-verified: interstitial rendered "Head out toward the northwest..." on real NWS data, 156 unit tests, no console errors desktop/mobile. Branch `studio/launch-direction-suggestion`, deployed. NOTE: the same deploy also carried the owner's pre-existing uncommitted WIP (FilterBar spot-count removed; Leaflet attribution collapsed to an info toggle in globals.css), now live and revertible.
 - 2026-07-14 [done, FLAG OFF] Item 32: dual-CTA enrollment card (push + email at equal weight on installed/Android/iOS; iOS push = "Add to Home Screen"; desktop unchanged). Owner-approved Option B. Shipped behind the `enrollment-dual-cta` experiment flag, CONTROL is the live default so the retention read is undisturbed; OWNER FLIPS to treatment (100% or a bucket) in PostHog after the read. (PR #40, merge e95fc2c, deployed; treatment verified in-browser iOS+Android)
 - 2026-07-14 [done] Item 33: moved the map zoom +/- control to the top-right (explicit ZoomControl position=topright; clear of legend, mobile sheet, and desktop drawer) (PR #39, merge 5cb6677, deployed + prod-verified)
 - 2026-07-14 [done] Item 30: fixed the map legend not displaying (Leaflet tile pane painted over it; the map now owns its stacking context via `isolate` on MapContainer; colors still from DIFFICULTY_LEGEND; committed Playwright regression check) (PR #38, merge 788c811, deployed + prod-verified 10/10)
@@ -54,7 +55,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Owner items, added 2026-07-13 (board-directed; the two [ready] items are queued top-most on purpose)
 
-
+(Item 36 launch-direction tip shipped 2026-07-15, see Shipped. Item 37 visual-polish pass is the next [ready], below.)
 
 ## 31. [proposed] A picture for each spot
 
@@ -64,6 +65,8 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 - Every spot (or a defined first tranche) shows a photo on the drawer/sheet without hurting load performance (lazy-load, sized derivatives).
 - Sourcing must be rights-clean and attributed (owner photos, CC-licensed with attribution, or a licensed API); no scraping. This is the hard part: 140 spots, so propose the sourcing plan + effort estimate as a decision before building.
 - New user-facing surface: ships behind a flag or staged tranche per the major-update directive.
+
+**Sourcing plan sized 2026-07-14 (studio); decision open at DECISIONS.md D10.** Feasibility probe found: Google Places Photos can't be self-hosted (ToS bars caching, photo names expire, so re-fetch + pay per view + a render-path dependency); free self-hostable CC sources (Wikimedia Commons + Flickr CC) cover ~55-75% of spots after human curation (36-spot probe: 78% have a geo-tagged Commons file within 500m, 22% none). Recommended path (D10 option a): tiered hybrid, harvest + curate CC-BY/BY-SA/CC0 photos self-hosted with attribution, static-map-thumbnail fallback for gaps, owner photos backfill, ship the curated tranche behind the flag. Effort ~2.5 eng days + ~1 day curation. **Blocked on D10** before build (which sourcing approach, fallback treatment, tranche scope, UGC defer). Stays `[proposed]` until the owner answers D10 and promotes to `[ready]`.
 
 
 ## 34. [proposed] Reframe alert copy so it can't read as a safety guarantee (legal gate)
@@ -247,6 +250,15 @@ Carried over when IMPROVEMENT-PLAN.md was retired; verify each still reproduces 
 - Geolocation-denied recovery: guidance lives in a `title` tooltip invisible on touch; show an inline toast.
 - Map zoom controls are 30px (HIG minimum 44) and far from the thumb.
 - Empty-state copy says "filters" when search caused it, and "Clear filters" silently also clears search.
+
+## 37. [ready] Visual polish pass: search/feedback alignment, mobile chrome color, PWA footer gap
+
+Owner-flagged 2026-07-14. Three small UI-professionalism fixes, sized before working:
+- Align the search bar and the feedback section to the same width/height so they read as one deliberate system, not two mismatched widgets.
+- Make the mobile browser chrome (address-bar tint via `theme-color` / `themeColor` meta + `manifest` `theme_color`) match the app's azure main color so the top bar is consistent with the UI, not a jarring default.
+- Remove the empty footer/dead-band space at the bottom of the installed mobile PWA (likely the item-12 iOS safe-area band; confirm whether this supersedes or overlaps item 12 before building).
+
+Pure visual/CSS polish, no new user-facing surface, so exempt from the A/B-flag rule. Verify on device at 390px + installed PWA, not just desktop.
 
 ---
 

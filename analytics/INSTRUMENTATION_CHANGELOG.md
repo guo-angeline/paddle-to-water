@@ -14,6 +14,40 @@ without touching this file.
 
 ---
 
+## 2026-07-15 (item 36): `alert_interstitial_shown` gains `launch_tip_shown`; emit moved off the mount effect (props-changed, semantics-changed)
+
+`alert_interstitial_shown` (`lib/analytics.ts` `EventPropMap`) gains a required
+`launch_tip_shown: boolean`, set from whether the interstitial actually
+rendered the new launch-direction tip line (`launchDirectionTip(windDirection,
+maxWindMph) !== null`). No new event name, `spot_id` is unchanged.
+
+**Semantics-changed timing nuance:** the event used to fire synchronously on
+mount, before the `getNextWindow` call had resolved. `launch_tip_shown` cannot
+be known until that window resolves, so the fire had to defer: it now fires
+once (guarded by a ref) inside the window-resolving effect, after the
+`getNextWindow` promise settles, on both the window-found and
+no-window/failed branches. To keep volume equal to the old mount-fire, the
+effect cleanup fires the same event once with `launch_tip_shown: false` if the
+interstitial unmounts (e.g. a fast dismiss) before `getNextWindow` settles, so
+every mounted interstitial still emits exactly one `alert_interstitial_shown`
+and never leaves a dismissed `result` without a matching `shown`. This mirrors
+the `dualCta.ready` gating in the 2026-07-14 item 32 entry above, the same
+pattern of deferring an emit until a value it depends on is actually known,
+rather than firing blind at mount.
+
+- **Comparability:** `launch_tip_shown` exists only from 2026-07-15 forward;
+  pre-deploy rows have no such prop, treat missing as false/unknown, not as
+  "no tip". Separately, the emit now waits on one NWS fetch instead of firing
+  at mount, so `alert_interstitial_shown` timestamps from 2026-07-15 land
+  later relative to component mount than before, roughly one network round
+  trip. Any later latency- or volume-sensitive read of `alert_interstitial_shown`
+  must not read this timing shift as a behavior change: the event still fires
+  exactly once per interstitial render regardless of whether a window or tip
+  was found, so volume itself is unaffected. Per measurement-spec guardrail 2,
+  watch the `alert_interstitial_shown` / `alert_clicked` ratio for a
+  fetch-fail or slow-resolve drop and attribute any dip there to the
+  `getNextWindow` dependency, not to fewer people clicking through.
+
 ## 2026-07-14 (item 32): Dual-CTA enrollment card behind `enrollment_dual_cta`; `alert_optin_shown`/`_dismissed` can emit `channel: "both"` (semantics-changed)
 
 `components/InstallPrompt.tsx` gained a treatment branch for the `enrollment_dual_cta`
