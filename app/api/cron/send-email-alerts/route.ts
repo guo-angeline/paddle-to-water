@@ -84,6 +84,7 @@ export async function GET(req: Request) {
         startHour: win.startHour,
         endHour: win.endHour,
         maxWindMph: win.maxWindMph,
+        windDirection: win.windDirection,
       });
     }
   }
@@ -111,6 +112,7 @@ export async function GET(req: Request) {
       startHour: first.startHour ?? 0,
       endHour: first.endHour ?? 0,
       maxWindMph: first.maxWindMph,
+      windDirection: first.windDirection,
       notes: spotById.get(first.spotId)?.notes ?? undefined,
       extras: picks.slice(1).map((p) => ({
         name: p.spotName,
