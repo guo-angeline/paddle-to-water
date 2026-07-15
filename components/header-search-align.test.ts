@@ -18,8 +18,14 @@ describe("header search control border token alignment", () => {
   });
 
   it("the border token is used at least 3 times for the search controls", () => {
-    const matches = homeClientSrc.match(/border-\[--border\]/g) ?? [];
+    const matches = homeClientSrc.match(/border-\(--border\)/g) ?? [];
     expect(matches.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("does not use the Tailwind v4 arbitrary-variable bracket shorthand, which compiles to an invalid border-color declaration", () => {
+    // border-[--border] compiles to `border-color:--border` (invalid, no var()) on Tailwind 4.3.0.
+    // The parens form border-(--border) compiles to `border-color:var(--border)`.
+    expect(homeClientSrc).not.toContain("border-[--border]");
   });
 
   it("the Feedback button still keeps its accent border", () => {
