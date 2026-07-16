@@ -197,3 +197,21 @@ Question for the owner:
 2. **76:** call the harbormaster (650-583-6975) to confirm whether a public launch exists, drop a pin from personal knowledge, or delist.
 
 Answer: 
+
+## D15 [RESOLVED] 2026-07-16 · Item 39 (Paddle score): scope + how the research gets done
+
+Context: item 39 was blocked on two things. (1) The design agent's rubric weighted wind exposure 0.30 and water quality 0.15, so 45% of the score was about the water, while the lawyer gate called "rate the put-in, not the paddle" the highest-leverage decision in the whole reviews/accounts block (an average the site computes is arguably first-party speech with no Section 230 protection; *Lemmon v. Snap* and progeny let negligent-design claims past 230 when they target the platform's own design choice). (2) A full 142-spot pass was priced at 23-30 hours, and the lawyer was explicit that a published rubric decorating an unresearched score is deception.
+
+Options on scope: (a) put-in only, cut wind + water quality; (b) keep wind at a low weight with hard-descriptive level words + the safety cap; (c) ship as written.
+Options on research: agents research with owner spot-check; a 10-spot pilot first; derive only from existing fields; owner does it.
+
+Answer (owner, 2026-07-16, in chat): **(a) put-in only** on scope, and **a 10-spot pilot** before any full pass.
+
+Consequences recorded:
+- Rubric v2 is four axes, all about the launch: launch ease (0.40), parking (0.30), launch-area traffic (0.15), facility condition (0.15). v1 is in git history.
+- What we give up: wind exposure was the one axis the app cannot answer live (a calm forecast does not tell you a big-fetch bay whitecaps by 1pm). If that gap matters, its honest home is descriptive prose in `notes`, not a rating that implies a safety verdict.
+- What we gain beyond the legal argument: a clean product seam. The score answers "how good is this launch" (static, editorial). The conditions engine answers "is it good right now" (live, already shipped, already the differentiator). Item 43 (reviews) inherits the same boundary.
+- The v1 safety cap goes with its axes; a narrower launch-ease floor replaces it, which is an access statement, not a safety claim.
+- The pilot carries a kill criterion set in advance (spec §4.1): if 10 spots spanning the expected range produce a spread under 1.5 points, the score does not discriminate and item 39 gets cut or rethought, not shipped.
+
+Still open, tracked in the spec §3: never emit schema.org `aggregateRating` for the editorial score (recommendation: no structured data in v1; an implementer will reach for it because it is what makes the star show in search).

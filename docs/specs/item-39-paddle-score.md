@@ -1,6 +1,6 @@
 # Item 39: Paddle score, rubric + row design
 
-Status: **spec, not built. One BLOCKING conflict unresolved (§0.1).** Read alongside ROADMAP.md items 39, 40, 43, and the legal gate summary in DECISIONS.md.
+Status: **§0.1 RESOLVED by the owner 2026-07-16: option (a), PUT-IN ONLY.** Wind exposure and water quality are CUT. Rubric v2 in §1 reflects that; §1-old is preserved in git if the reasoning is ever needed. Next step is a 10-spot pilot (owner decision, 2026-07-16), not a 142-spot pass. Read alongside ROADMAP.md items 39, 40, 43, and DECISIONS.md D15.
 
 Authored by the design-lead agent 2026-07-16. The legal-gate findings in §0.1 arrived from the lawyer agent in parallel and did **not** reach the design agent before it finished, so §1's rubric is written against the original brief. Where they conflict, §0.1 wins pending an owner decision.
 
@@ -20,20 +20,18 @@ The design agent and the lawyer agent worked in parallel without seeing each oth
 - *Legal reason:* "paddleability" reads as "safe to paddle" on a site whose central risk is a wrongful-death claim.
 - *Shared resolution:* **"Paddle score"** in copy, code, and data (`paddle_score`).
 
-### 0.1 BLOCKING CONFLICT: what the score is allowed to be about
+### 0.1 RESOLVED: the score is about the PUT-IN, not the paddle
 
-**The lawyer's requirement:** *"Rate the put-in, not the paddle."* Called the single highest-leverage decision in the whole reviews/accounts block. The score should cover parking, ramp, access, cleanliness, crowding. Not whether the water is safe, not conditions, not suitability for a skill level. Wind exposure is permitted as the one safety-adjacent axis **only if kept descriptive** ("exposed to afternoon westerlies") rather than evaluative about safety.
+**Owner decision 2026-07-16: option (a), put-in only.** Wind exposure and water quality are cut from the rubric entirely. The score covers the launch and its facility: getting the board from the car to the water, parking, the state of the place, and how contested it is.
 
-**The design agent's rubric (§1) does not comply.** It weights wind exposure at 0.30 (the highest weight) and water quality at 0.15, so **45% of the score is safety-adjacent**, and wind is the single largest driver of a number labeled "score" rendered near a live conditions widget. The design agent's justification is real and should not be dismissed: wind exposure is the biggest determinant of whether a trip is good, and it is the one axis the app cannot already answer live (a spot can have a calm forecast today and still be a structurally bad pick, e.g. a big-fetch bay that whitecaps by 1pm regardless).
+Why this was the right call, recorded so it is not relitigated:
+- The lawyer called "rate the put-in, not the paddle" the single highest-leverage decision in the whole reviews/accounts block. An average **you compute** is arguably first-party speech with no Section 230 protection (*Lemmon v. Snap* and progeny let negligent-design claims past 230 when they target the platform's own design choice). A plaintiff does not plead "you published a user's false statement", they plead "you designed and displayed a 5-star safety signal next to a live conditions widget."
+- It also gives the product a clean seam, which is worth more than the legal argument alone: **the score answers "how good is this launch" (static, editorial, researched once). The conditions engine answers "is it good right now" (live, per-spot, already shipped and already the differentiator).** Two questions, two surfaces, no overlap. A score that mixed them would compete with the thing that already works.
+- Item 43 (reviews) inherits this boundary: reviews are about the launch and facility too, never about whether the water was safe or suitable for a skill level.
 
-**Why the lawyer's concern is not hypothetical:** an average *you compute* is arguably first-party speech with no Section 230 protection. There is live case law (*Lemmon v. Snap* and progeny) letting negligent-design claims past 230 when they target the platform's own design choice. The plaintiff does not plead "you published a user's false statement," they plead "you designed and displayed a 5-star safety signal."
+**What this costs, honestly.** The design agent weighted wind exposure highest (0.30) and its argument was real: wind exposure is the one axis the app cannot answer live, because a spot can have a calm forecast today and still be a structurally bad pick (a big-fetch bay whitecaps by 1pm regardless). Cutting it means the score cannot warn about that. If that gap matters later, the honest home for it is **descriptive prose in the spot's `notes`** ("exposed to afternoon westerlies across 3mi of open fetch"), which is a fact about the place, not a rating that implies a safety verdict.
 
-**Owner decision required. Options:**
-- **(a) Put-in only.** Cut wind exposure and water quality; reweight across launch ease, parking, boat traffic, crowding. Safest, and cleanly separates "how good is this launch" (static, editorial) from "is it good right now" (live, the conditions engine). Costs the axis the design agent considers most valuable.
-- **(b) Keep wind, reweight down and hard-descriptive.** Wind exposure drops to a low weight, its level words become purely geographic (fetch distance, no "extreme"/"dangerous" language), and the §1.3 safety cap stays. Keeps most of the utility, keeps some risk.
-- **(c) Ship §1 as written.** Highest utility, highest exposure, and directly against the gate.
-
-Recommendation: **(b)**, with the §1.3 safety cap retained (it is a genuine mitigation the lawyer would credit: the app can never show 4-5 for a spot under an active advisory) and every wind level word rewritten to describe geography rather than judge risk.
+**The open question this raises, which the pilot exists to answer:** does a put-in-only score actually discriminate? If parking and ramp quality are broadly fine across the Bay Area, every spot lands at 3.5-4.5 and the score is decoration. See §4.
 
 ### 0.2 Required additions the design spec is missing
 
@@ -47,136 +45,109 @@ From the legal gate, not yet reflected in §2:
 
 ---
 
-## 1. The rubric (as authored; see §0.1 before implementing)
+## 1. The rubric, v2 (put-in only, per §0.1)
+
+Four axes. All four are about the launch and its facility. None is about the water, conditions, or whether a spot suits a skill level. v1 (wind exposure 0.30, water quality 0.15) is preserved in git history.
 
 ### 1.1 Axes and weights
 
 | Axis | Weight | Derivable from `spots.json` today? |
 |---|---|---|
-| Wind exposure | 0.30 | Partial. `difficulty` is a strong prior; final level needs a map check |
-| Wake / boat traffic | 0.20 | Mostly. `power_boats` gives a direct signal |
-| Launch ease | 0.20 | Partial. `tide_sensitive` + `notes` give a prior; needs an imagery check |
-| Water quality | 0.15 | No. Needs per-spot research against a public source |
-| Parking | 0.15 | No. No structured field; `has_fee` is a weak proxy at best |
+| Launch ease | 0.40 | Partial. `tide_sensitive` + `notes` give a strong prior; final level needs an imagery check |
+| Parking | 0.30 | No. No structured field; `has_fee` is a weak proxy at best |
+| Launch-area traffic | 0.15 | Mostly. `power_boats` gives a direct signal, but the question is narrower (see below) |
+| Facility condition | 0.15 | No. Needs per-spot research |
+
+Launch ease carries 0.40 because it is the axis that actually decides whether a paddler can use the place: everything else is friction, but a marginal put-in is a no. Parking is next because in the Bay Area it is the most common real-world blocker on a good day.
 
 ### 1.2 Axis level definitions
 
 Written to be measured, not felt, so two researchers land within one level of each other.
 
-**Wind exposure (0.30).** The spot's geography, not today's forecast. Estimate fetch distance from a map.
-- 5: Fully enclosed. Pond, narrow slough, or reservoir cove with breaks on all sides; fetch < 0.3 mi in every direction.
-- 4: Mostly sheltered. 0.3-1 mi of open fetch in one or two directions, breaks elsewhere.
-- 3: Moderate open water. Bay, wide river, or large reservoir with 1-3 mi of fetch.
-- 2: Highly exposed. Large open bay or main channel, 3+ mi unobstructed fetch, no lee shore.
-- 1: Extreme exposure. Open coast, harbor entrance, or bay mouth with ocean swell, current, or shipping-channel chop.
-
-*(Per §0.1(b), these level WORDS need rewriting toward pure geography if option (b) is taken.)*
-
-**Wake / boat traffic (0.20).** Start from `power_boats`.
-- 5: No motorized craft permitted, enforced by regulation.
-- 4: Allowed but rare or low-speed (no-wake zone, small slough, low-traffic weekday lake).
-- 3: Mixed use, moderate. Recreational motorboats on summer weekends; launch sits off the main channel.
-- 2: Mixed use, heavy. Active marina, water-ski lake, or bay channel with regular traffic near the launch.
-- 1: Commercial/high-speed. Shipping channel, ferry route, or a launch in a marina fairway.
-
-`power_boats: false` → 4 or 5 depending on whether the ban is posted/enforced (check notes). `true` → research to place at 3/2/1. `null` → full research, no prior.
-
-**Launch ease (0.20).** Car to water.
+**Launch ease (0.40).** Car to water, with a board.
 - 5: Paved ramp or dock, gentle grade, carry under 50 ft, tide-independent.
 - 4: Improved but unpaved. Graded gravel/dirt or beach, carry 50-150 ft; or a paved ramp with a longer carry.
 - 3: Natural shoreline. Sand/gravel beach or bank, carry 150-300 ft.
-- 2: Difficult footing. Mudflat, reeds, riprap, or steep bank; carry over 300 ft.
-- 1: Marginal. No formal access, a long bushwhack, or only usable at a narrow tide window.
+- 2: Difficult footing. Mudflat, reeds, riprap, or a steep bank; carry over 300 ft.
+- 1: Marginal. No formal access, a long bushwhack, or usable only at a narrow tide window.
 
-`tide_sensitive: true` pushes toward 2-3 unless notes describe a floating dock. Read `notes` first, it is often most of the answer.
+`tide_sensitive: true` pushes toward 2-3 unless notes describe a floating dock or similar tide-independent access. Read `notes` first, it is often most of the answer.
 
-**Water quality (0.15).**
-- 5: Clean, no known advisories; well-flushed, no bloom or contamination history.
-- 4: Generally clean. Minor seasonal turbidity or occasional anecdotal late-summer algae, no official advisory.
-- 3: Fair. Slow-moving or stagnant (dead-end slough, small pond) with plausible warm-water risk, no active advisory.
-- 2: Known recurring issue. Documented HAB advisory history or listed impaired for a contact-recreation pollutant; nothing active now.
-- 1: Active advisory in effect as of the scoring date.
+Note the boundary: tide-dependence counts here as **access** (can you physically launch), not as a water-safety judgment. Describe it, do not warn about it.
 
-Source of record: California's statewide HAB portal (mywaterquality.ca.gov/habs) for lakes/reservoirs/sloughs, plus county health advisory pages for bay/ocean spots. **Batch by water body, not by spot**: many spots share one lake or bay.
-
-**Parking (0.15).**
+**Parking (0.30).**
 - 5: Dedicated free lot at the launch, rarely full.
 - 4: Free street or lot within < 0.1 mi, typically available.
-- 3: Paid lot/meter; or free but fills on summer weekends; or a 0.1-0.25 mi walk.
+- 3: Paid lot or meter; or free but fills on summer weekends; or a 0.1-0.25 mi walk.
 - 2: Scarce. A handful of spots, frequently full, or a 0.25-0.5 mi walk.
-- 1: Very limited. Informal roadside with tow/ticket risk, or over 0.5 mi with gear.
+- 1: Very limited. Informal roadside with tow or ticket risk, or over 0.5 mi with gear.
 
-No structured prior. Research via satellite imagery and recent map reviews mentioning parking.
+No structured prior. Research via satellite imagery (lot size) and recent map reviews mentioning parking. `has_fee`/`fee_amount` correlates weakly with a maintained lot, which argues against a 1, but does not separate 3 from 5.
+
+**Launch-area traffic (0.15).** Congestion **at the put-in**, not boat traffic out on the water. The question is whether you can get on your board without queuing behind trailers or standing in a fairway.
+- 5: Paddler-oriented access, separate from any ramp; no trailer queue.
+- 4: Shared ramp, light use; you may wait briefly on a summer weekend.
+- 3: Shared ramp, moderate use; a real queue at peak times.
+- 2: Busy ramp. Trailer traffic dominates, launching a board means working around it.
+- 1: The put-in sits in an active marina fairway or a commercial ramp; hard to launch safely at all.
+
+`power_boats: false` pushes toward 4-5. `true` means research where the paddler actually enters relative to the ramp.
+
+This is deliberately narrower than v1's "wake / boat traffic", which rated the water. Wake out on the water is a conditions question, not a put-in question.
+
+**Facility condition (0.15).** The state of the place. Restrooms, trash, maintenance, lighting, signage.
+- 5: Well-maintained. Restrooms, trash service, clear signage, obviously cared for.
+- 4: Maintained. Basic amenities present and working.
+- 3: Basic. Little or no amenity, but not neglected.
+- 2: Neglected. Litter, broken or locked facilities, no signage.
+- 1: Degraded or unsafe-feeling. Persistent dumping, vandalism, or an access point in disrepair.
+
+This is facility cleanliness, **not water quality**. Trash in the parking lot is in scope. Algae in the water is not.
 
 ### 1.3 Aggregation
 
 ```
-raw = 0.30*wind + 0.20*boat_traffic + 0.20*launch_ease + 0.15*water_quality + 0.15*parking
-score = round(raw, 1)
+score = round(0.40*launch_ease + 0.30*parking + 0.15*launch_traffic + 0.15*facility, 1)
 
-// Safety cap: good parking cannot rescue a genuinely dangerous spot.
-if wind_exposure == 1 or water_quality == 1:
+// Access floor: a spot you cannot reasonably launch from is not a 3 because
+// the parking is nice.
+if launch_ease == 1:
     score = min(score, 2.0)
     capped = true
 ```
 
-Weighted average rather than worst-axis-floors-everything: a weakness in a convenience axis should pull the score down proportionally, not floor it. The cap is reserved for the two axes that are safety/health matters, where no amount of good parking should average real risk away into a decent-looking number. **Keep this cap under any §0.1 option that retains wind or water quality.** It is the mitigation that lets the app never show 4-5 for a spot under an active advisory.
+The v1 safety cap (which triggered on wind exposure 1 or an active water advisory) is **gone with its axes**. What replaces it is narrower and is not a safety claim: a launch-ease floor, so convenience axes cannot average away a put-in that barely exists. If a spot is under an active health advisory, that belongs in `notes` as a fact, or the spot gets `hidden`. It is not the score's job.
 
 ### 1.4 Storage
 
-Rubric doc (source of truth, auditable): `docs/rubrics/paddle-score-rubric.md`, with a version number and changelog. Bump the version on any axis or weight change and note which spots need re-scoring. A rubric that lives only in someone's head is not auditable; this file is what a second researcher, the owner, or the lawyer gate checks a score against.
+Rubric doc (auditable source of truth): `docs/rubrics/paddle-score-rubric.md`, versioned, with a changelog. Bump the version on any axis or weight change and record which spots need re-scoring.
 
-Score data: a `paddle_score` object per spot in `data/spots.json`. Absent key = unscored, matching the `has_fee` tri-state precedent (no value is not zero value).
+Score data: a `paddle_score` object per spot in `data/spots.json`. Absent key = unscored, matching the `has_fee` tri-state precedent. **Insert it as text, never by JSON round-trip** (a reserialization silently reformats coordinates; see CLAUDE.md).
 
 ```json
 "paddle_score": {
-  "value": 4.2,
+  "value": 4.1,
   "capped": false,
-  "cap_reason": null,
-  "summary": null,
   "axes": {
-    "wind_exposure": { "level": 4, "note": "Enclosed cove, ~0.4mi fetch" },
-    "boat_traffic":  { "level": 5, "note": "Human-powered only, posted" },
-    "launch_ease":   { "level": 3, "note": "Gravel beach, ~120ft carry" },
-    "water_quality": { "level": 4, "note": "No HAB history on file" },
-    "parking":       { "level": 4, "note": "Free lot, rarely full" }
+    "launch_ease":     { "level": 4, "note": "Floating dock, ~80ft carry", "source": "<url>" },
+    "parking":         { "level": 4, "note": "Free lot, rarely full", "source": "<url>" },
+    "launch_traffic":  { "level": 5, "note": "Human-powered only, posted", "source": "<url>" },
+    "facility":        { "level": 3, "note": "Basic, no restroom", "source": "<url>" }
   },
   "sources": 3,
-  "rubric_version": "1.0",
-  "scored_at": "2026-07-20",
-  "scored_by": "owner"
+  "rubric_version": "2.0",
+  "scored_at": "2026-07-16",
+  "scored_by": "agent-pilot"
 }
 ```
 
-`sources` is a count of distinct references consulted, powering the "N sources" credibility line without implying reviewers. Compute the aggregate in one pure function (`lib/paddleScore.ts`, `computePaddleScore(axes)`) reading the same weights as the rubric doc, so the number can never silently drift from the documented formula.
+**Every axis carries its own `source`.** This is not bookkeeping. Spot 79 reached production because an unsourced claim looked plausible; a per-axis source is what makes the difference between an applied rubric and a decorated guess, and it is what the lawyer's "the rubric must actually be applied" requirement cashes out to.
 
-### 1.5 Reproducibility process
+Compute the aggregate in one pure function (`lib/paddleScore.ts`) reading the same weights as the rubric doc, so the number can never drift from the documented formula.
 
-Level definitions alone do not guarantee convergence, especially on wind exposure and parking. Before running all 142:
-1. **Calibration pass.** Two people independently score the same 5-10 spots. Where they land more than one level apart, tighten that axis's wording. The boundary numbers above are a starting point, not final.
-2. **Run by axis, not by spot.** Batching one axis across all spots reuses the same research method and lets water quality batch by water body.
-3. **QA.** Spot-check ~10% against the rubric before shipping.
+### 1.5 Effort, revised for v2
 
-### 1.6 Sequencing against item 40
-
-Launch ease and parking are graded against *where the pin sits*, and item 40 found 11 spots whose coordinates cannot be on the launch (two off by ~11km). **Score the 131 clean spots now; backfill the 11 once item 40 lands.** Do not block the whole pass.
-
-### 1.7 Effort, 142 spots
-
-| Task | Estimate |
-|---|---|
-| Wind exposure (map fetch check) | ~3.5 hrs |
-| Boat traffic (mostly derived) | ~2-3 hrs |
-| Launch ease (imagery + notes) | ~5-7 hrs |
-| Water quality (batched by ~60-80 water bodies) | ~4-6 hrs |
-| Parking (imagery + reviews) | ~5-7 hrs |
-| Calibration pass | ~1 hr |
-| QA sample | ~2-3 hrs |
-| **Total** | **~23-30 hrs, about 1 person-week** |
-
-This is the number that decides whether item 39 is real. Per §0.2, a rubric that is published but not actually applied is worse than no rubric.
-
----
+v1 priced ~23-30 hrs for 5 axes across 142 spots. v2 cuts the two most research-heavy axes (water quality needed a HAB-portal check per water body; wind needed a fetch estimate per spot), so a full pass is roughly **12-18 hrs**. But per the owner's 2026-07-16 decision, **the next step is a 10-spot pilot, not a full pass.** See §4.
 
 ## 2. The row, designed once for items 39 and 43
 
@@ -240,11 +211,13 @@ Axis rows: label left (`text-sm text-(--dark)`), five-dot indicator (decorative,
 
 | Level | Wind exposure | Boat traffic | Launch ease | Water quality | Parking |
 |---|---|---|---|---|---|
-| 5 | Sheltered | No motors allowed | Paved ramp, short carry | Clean, no history of issues | Plenty of free parking |
-| 4 | Mostly sheltered | Rare boat traffic | Improved access | Generally clean | Usually easy to find |
-| 3 | Moderate exposure | Moderate boat traffic | Natural shoreline | Can get stagnant in late summer | Can fill up on weekends |
-| 2 | Very exposed | Heavy boat traffic | Muddy or steep footing | History of algae blooms | Scarce parking |
-| 1 | Extreme exposure | Commercial traffic | Marginal put-in | Advisory in effect | Very limited parking |
+| Level | Launch ease | Parking | Launch-area traffic | Facility condition |
+|---|---|---|---|---|
+| 5 | Paved ramp, short carry | Plenty of free parking | Paddler access, no queue | Well maintained |
+| 4 | Improved access | Usually easy to find | Shared ramp, light use | Maintained |
+| 3 | Natural shoreline | Can fill up on weekends | Shared ramp, queues at peak | Basic |
+| 2 | Muddy or steep footing | Scarce parking | Busy ramp, trailer traffic | Neglected |
+| 1 | Marginal put-in | Very limited parking | Active marina fairway | Run down |
 
 A per-spot `note` replaces the generic word when one was authored during research ("Enclosed cove, ~0.4mi fetch" instead of "Mostly sheltered"). The generic word is the fallback, never the override.
 
@@ -284,3 +257,50 @@ Note the open `--muted` body-text contrast question raised by item 38: muted tex
 4. **Scope: defer the per-spot summary sentence to v2.** Recommended.
 5. **Sequencing: score the 131 clean spots now, backfill the 11 after item 40.** Recommended.
 6. **Process: run the 1-hour two-researcher calibration pass first.** Recommended. Wind exposure and parking are the two axes most exposed to individual judgment; catching divergence on 5-10 spots is cheap insurance against re-scoring 142.
+
+---
+
+## 4. The 10-spot pilot (owner decision, 2026-07-16)
+
+**The pilot is not a warm-up. It is the go/no-go**, and it answers two questions that decide whether item 39 exists at all.
+
+### 4.1 Question 1: does a put-in-only score discriminate?
+
+With wind and water quality cut, the score rests on launch ease, parking, launch-area traffic, and facility condition. **If Bay Area launches are broadly similar on those, every spot lands at 3.5-4.5 and the score is decoration** on a row that currently costs nothing. That is a real possible outcome and the pilot must be allowed to return it.
+
+Kill criterion, set BEFORE seeing results so it cannot be rationalized after: if 10 spots chosen to span the expected range produce a spread narrower than **1.5 points**, or if 7+ of 10 land in a single 1.0-wide band, the score does not discriminate and item 39 should be cut or rethought rather than shipped.
+
+### 4.2 Question 2: is agent-sourced research trustworthy here?
+
+Today's coordinate audit cuts both ways. Agent research found real DBW registry entries and OSM slipways and corrected my own bad heuristic. **And** the reason spot 79 was on the site at all is that an AI search summary laundered a permit-only trip report into a "kayak launch point", stripping its explicit warning. Scoring 142 spots means ~570 axis judgments from web sources, which is a lot of surface for that failure mode.
+
+Mitigations, mandatory in the pilot:
+- **Every axis carries a `source` URL.** No source, no level. An unsourced axis is reported as unknown, never guessed.
+- **Confidence per axis.** Low-confidence axes surface to the owner rather than shipping.
+- **Never infer a level from a search summary.** Cite the primary page (park/marina/agency/OSM/imagery), not an AI overview of it.
+- **Two-researcher calibration:** two agents score the same 10 spots independently. Where they diverge by more than one level, the rubric wording is the suspect, not the researcher.
+
+### 4.3 The 10 spots
+
+Chosen to span the expected range, not to flatter it. Excludes the two hidden spots (76, 79) and the three with pending coordinate repairs (88, 96, 102), because launch ease and parking are graded against where the pin sits.
+
+Selection intent: a mix of regions, an intentional spread of `has_fee` (free vs. paid correlates with maintained facilities), both `tide_sensitive` states, and at least two spots expected to score low, so a narrow spread is a real finding and not a selection artifact.
+
+| id | Region | Fee | Tide-sensitive | Water |
+|---|---|---|---|---|
+| 1 | South Bay | free | no | Alviso Marina / Alviso Slough |
+| 38 | North Bay | free | no | Miller Boat Launch |
+| 45 | North Bay | unknown | yes | China Camp |
+| 48 | North Bay | unknown | no | Santa Rosa Nagasawa Park |
+| 63 | East Bay | unknown | no | Berkeley Marina |
+| 84 | East Bay | free | yes | MLK Jr. Regional Shoreline |
+| 104 | Sierra Nevada | paid | no | Echo Lakes |
+| 112 | Central Coast | free | yes | Morro Bay |
+| 120 | Sacramento | paid | no | Folsom Lake |
+| 135 | East Bay | unknown | yes | Emeryville Marina |
+
+Five of these (38, 45, 84, 104, 112) had their coordinates independently confirmed by the 2026-07-16 audit, which matters: launch ease and parking are graded against where the pin sits, so a verified pin removes one source of error from the pilot.
+
+### 4.4 What ships out of the pilot
+
+Nothing user-facing. The pilot produces: 10 scored spots with per-axis sources and confidence, the inter-researcher agreement rate, the observed spread against the §4.1 kill criterion, and a recommendation to proceed, rethink, or cut. The owner reads it before any UI is built.
