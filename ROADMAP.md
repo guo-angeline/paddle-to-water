@@ -61,6 +61,107 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 (Item 38 shipped 2026-07-16, see Shipped.)
 
+---
+
+## Owner items, added 2026-07-16 (eight ideas; 7 and 8 merged into item 40)
+
+**Strategy note, read before promoting any of these.** Items 43 and 44 (reviews, accounts) are the "UGC content flywheel" and "optional sign-in" entries from the **Later** section at the bottom of this file, which says do not promote before retention is proven. The mid-July retention read is due now and unblocked (D9 closed 2026-07-15). Promoting 43/44 ahead of that read is a deliberate bet against this roadmap's own thesis (retention is the bottleneck, UGC needs retained users to generate content). That may be the right call, but it is an owner decision, not a default. Items 39, 40, 41, 42, 45 do not carry this tension and can proceed on their own.
+
+## 39. [proposed] A paddleability score for each spot (editorial, not crowd-sourced)
+
+**Why:** Owner idea 2026-07-16. Nothing ranks Bay Area launches on *paddleability* (wind exposure, wake, water quality, launch gradient, parking). Google rates restaurants-and-parks generally; nobody rates the put-in as a paddler experiences it. This is a genuine differentiator and it composes with the conditions engine (the one validated behavior).
+
+**Scope decision made at proposal time (owner-approved 2026-07-16):** the score is presented as **our assessment**, never as aggregated human reviews. The original idea paired the score with a fabricated review count (`★ 4.5 (233)`) sourced from search-result counts and styled as human ratings. That is cut. Reasons: it is a false statement to every visitor in an idiom with a specific meaning; the FTC fake-review rule (16 CFR Part 465, in force Oct 2024) reaches exactly this and carries per-violation civil penalties; this site already manages wrongful-death exposure via the lawyer gate; and a fake count becomes permanently load-bearing the moment item 43 lands real reviews (233 + 4 = ?), destroying both the metric and the ability to measure whether ratings drive engagement.
+
+**Acceptance:**
+- A 1.0 to 5.0 score per spot, stored in `data/spots.json`, derived from a documented rubric (wind exposure, wake/boat traffic, water quality, launch ease, parking). The rubric goes in the repo so the score is reproducible and auditable, not vibes.
+- Renders inline in the existing subtitle row (no extra row), in both list and spot sheet: `★ 4.5 · our take · Hayward · East Bay` or a named "Paddle score". Never a bare `(N)` count implying reviewers. If a credibility signal is wanted in that slot, "4 sources" is true and citable.
+- Spot sheet shows what drove the score (the per-axis breakdown), which is the actual reason to use this over Google Maps.
+- Depends on item 40 for any spot whose pin is wrong: assessing "easy to park" against a coordinate 11km off the launch produces a confidently wrong score.
+- Design the star row **jointly with item 43**, even if built separately: both occupy the same real estate and a solo-shipped "our take" row gets torn out when human reviews arrive.
+- Legal gate (marketing claims): the lawyer reviews the framing before deploy.
+- New user-facing surface: flag or staged tranche per the major-update directive.
+
+## 40. [proposed] Coordinate + directions accuracy audit (owner ideas 7 and 8, merged)
+
+**Why:** Owner ideas 2026-07-16, which are the same item from two ends. Idea 7 (directions should land on the actual boat launch) and idea 8 (7-digit lat/lng) both describe "the pin is not on the put-in."
+
+**The 7-digit premise does not hold, and is corrected here.** Precision is not accuracy. Six decimals is ~11cm; seven is ~1.1cm. No geocoder resolves a launch ramp to the centimeter, so adding a digit to a coordinate that is 40m off the water just makes it precisely wrong. 106 of 142 spots **already** carry 7+ decimals (inherited from the geocoder's float output) and that did not make them correct. The uniform-digit-count goal is dropped; correctness of the point is the goal.
+
+**The real defect, found 2026-07-16.** Eleven spots are too coarse for the pin to be on the launch (trailing zeros are dropped in JSON, so decimal count is a strong hint rather than proof; each needs per-spot verification):
+
+| id | Spot | Precision | Implied error |
+|---|---|---|---|
+| 38 | Miller Boat Launch, Marshall | 1 dp | ~11km |
+| 88 | Dutch Slough, Oakley | 1 dp | ~11km |
+| 102 | Donner Lake, Truckee | 2 dp | ~1.1km |
+| 45, 48, 76, 79, 84, 96, 104, 112 | China Camp, Nagasawa, Brisbane Marina, Coyote Creek, MLK Shoreline, Lake Merced, Echo Lakes, Morro Bay | 3 dp | ~110m |
+
+Miller Boat Launch and Dutch Slough point at open country. Donner is a kilometer out.
+
+**Acceptance:**
+- Verify each spot's coordinate sits on the actual put-in (not the park centroid, not the address centroid), starting with the three worst above, then sequenced by traffic (`spot_viewed` counts).
+- The Get Directions deep link resolves to that verified launch point.
+- **No spot is overwritten without owner manual review and approval** (already house rule in CLAUDE.md; restated here because this item edits coordinates in bulk). Where the launch point cannot be determined from sources, bring the owner a shortlist rather than guessing.
+- Precision is whatever the verified source gives; no padding to a fixed digit count.
+- Note: this is pin correctness, NOT optimizing directions-clicks as a conversion (owner removed that goal 2026-07-02; see memory `get-directions-not-a-goal`).
+- Blocks item 45 (do not expand coverage through a pipeline that produced 11km errors) and gates item 39 for the affected spots.
+
+## 41. [proposed] Rotating one-line pro-tip in each alert email
+
+**Why:** Owner idea 2026-07-16. Cheapest item on this list and it slots straight into the existing email creative rotation (shipped 2026-07-13, deterministic day-over-day variant rotation). Gives the email a reason to be opened beyond the window itself.
+
+**Acceptance:**
+- A pool of one-sentence technique tips, rotating deterministically like the existing copy variants, tagged on the deep link so per-tip engagement is readable.
+- **Tips teach skill, they never instruct action.** "You can carve a 180 in one stroke with a sweep on the outside rail" is fine; anything shaped like "go do this now" collides head-on with item 34 (which exists to strip inducement language out of exactly these emails). Editor writes them; light legal look given the surface.
+- Tips must be technically accurate; owner or a source verifies each before it ships.
+- Copy-only on an existing surface: A/B exempt per the D11 precedent (single-digit audience cannot power a test).
+
+## 42. [proposed] Spot sheet opens full-screen instead of half-screen
+
+**Why:** Owner idea 2026-07-16. Open question whether the peek height helps (keeps the map visible, cheaper to dismiss) or hurts (truncates the conditions payoff and hides the CTAs).
+
+**Acceptance:**
+- Partial precedent already exists: item 9 (shipped 2026-07-11) forces FULL height for `from=share` arrivals, on the finding that a truncated card shows a first-timer no conditions and no buttons. Read that arm's `spot_viewed source:"share"` behavior before designing this; it is a free head start.
+- This is a textbook A/B question (a core-flow change to the primary surface), so it ships behind a flag per the owner directive, not straight to 100%.
+- Traffic is thin (~14 users/day), so expect a long read window or a monitored rollout per the D2/D3/D6 precedent. Decide which at promotion.
+- Guardrails: `spot_sheet_dismissed`, `conditions_loaded`, `favorite_toggled`.
+
+## 43. [proposed] Reviews on the spot sheet (star + text + optional media)
+
+**Why:** Owner idea 2026-07-16. This is the UGC flywheel from the **Later** section, arriving early. See the strategy note at the top of this section.
+
+**Acceptance (to be sized before promoting):**
+- A "Review" button beside Share on the spot sheet. Tap-to-rate stars, optional free-text box, optional "Add photos & videos", and a submit path that works **anonymously** as well as signed-in.
+- **Item 35 (Terms) is a hard prerequisite, not a nice-to-have.** Accepting user photos without assented terms means no content license to display them, no content policy to enforce, and no takedown process. Ship the Terms first or ship the review feature without media.
+- Legal gate, and a heavy one: UGC moderation, defamation exposure on user text about named businesses/parks, media abuse surface (including CSAM reporting obligations once uploads are open), DMCA agent, and minors. Media is the entire legal weight here; text-only is materially cheaper.
+- Recommended split: **43a text reviews first (anonymous + rate-limited + moderated), 43b media as a separate item** once 43a proves anyone reviews at all.
+- Storage and moderation cost is real and ongoing; size it before promoting, not after.
+- Shares the star row with item 39: design together.
+- New surface: flag + full instrumentation.
+
+## 44. [proposed] Accounts / login (gates nothing at launch)
+
+**Why:** Owner idea 2026-07-16: build the login system, gate no functionality with it, keep the entrance small.
+
+**Acceptance (to be sized before promoting):**
+- Sign-in exists, occupies minimal header real estate, and blocks no existing function.
+- **Resolve the analytics identity collision BEFORE the first user signs in.** CLAUDE.md forbids `posthog.identify()`/`reset()` on the grounds that there is no login and identifying reshuffles experiment buckets. Accounts make that rule stale. Decide the identity model (identify on login? keep anon_id as the analytics key? how do pre-login and post-login sessions stitch?) up front; retrofitting it after signups exist means corrupting the experiment history that D2/D6 already fought for.
+- Legal gate: accounts are personal data (privacy policy scope, deletion/access rights under CCPA, auth security, breach exposure).
+- **Honest sequencing note:** auth that gates nothing is pure cost and pure risk until item 43 needs it. Its real justification is as the attributed-review path and the cross-device sync upgrade (the Later section's "optional Google sign-in"). Recommend sequencing it as a dependency of 43, not as a standalone build. If the owner wants it standalone anyway, that is a legitimate call, but it should be a conscious one.
+
+## 45. [proposed] Expand coverage to more of Northern California
+
+**Why:** Owner idea 2026-07-16. 142 spots today, weighted to the Bay; more coverage is more reasons to open the app and more SEO surface.
+
+**Acceptance:**
+- New spots flow through the existing pipeline (`raw-data/phase0_geocode.py` to `data/spots.json`), fully enriched (difficulty, fee tri-state, notes, amenities), not just geocoded.
+- **Blocked on item 40.** The audit found the current pipeline shipped 11km errors; do not run 40 more spots through it first and inherit the same defect at scale.
+- Notes follow the house rule: evergreen description of the spot, never a reply to whoever reported it.
+- Scope the tranche (which waters, how many) before promoting.
+
+---
+
 ## 31. [proposed] A picture for each spot
 
 **Why:** Owner idea 2026-07-13. Spot cards/sheets are text-only; a photo is the highest-impact visual upgrade for browse appeal and shared-link CTR.
@@ -354,8 +455,8 @@ Acceptance (owner OK needed on one judgment call: extending the calm->good frami
 
 ## Later (after retention is proven) — all [proposed], do not promote before the ~2026-07-15 funnel re-check
 
-- **UGC content flywheel:** ratings, photos, trip logs, user conditions reports. The long-term moat and SEO-acquisition engine, but it needs retained users to generate content first.
-- **Optional Google sign-in** to sync push subscriptions and saved spots across devices (the engine ships anonymous; this is the upgrade path).
+- **UGC content flywheel:** ratings, photos, trip logs, user conditions reports. The long-term moat and SEO-acquisition engine, but it needs retained users to generate content first. *(Owner raised the ratings/reviews half early on 2026-07-16; now item 43, with the tension flagged in that section's strategy note. Trip logs + user conditions reports remain here.)*
+- **Optional Google sign-in** to sync push subscriptions and saved spots across devices (the engine ships anonymous; this is the upgrade path). *(Owner raised this early on 2026-07-16; now item 44.)*
 - **PaddlePass premium tier:** alerts + multi-day forecast windows + offline, as the freemium paywall.
 - **Community spot submissions** with admin approval.
 - **Tide-window refinement** in the cron's "good window" evaluator (it ships wind-only).
