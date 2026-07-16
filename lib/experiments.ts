@@ -69,17 +69,6 @@ export const EXPERIMENTS = {
     primaryMetric: "alert_optin_result",
     guardrails: ["email_capture_submitted", "alert_optin_dismissed"],
   },
-  // Item 42: generalizes the item-9 shared-link full-height sheet to every
-  // mobile spot open (list/map/related/plain-deeplink). Alert/email arrivals
-  // stay excluded (they carry the interstitial, item 9's reason for excluding
-  // them); share arrivals stay unconditionally expanded, unaffected by this
-  // flag. Defaults to control so nothing changes until the owner flips it.
-  spot_sheet_full_height: {
-    flag: "spot-sheet-full-height",
-    variants: ["control", "treatment"],
-    primaryMetric: "spot_action",
-    guardrails: ["spot_sheet_dismissed", "conditions_loaded", "favorite_toggled"],
-  },
 } as const satisfies Record<string, ExperimentDef>;
 
 export type ExperimentName = keyof typeof EXPERIMENTS;

@@ -239,26 +239,24 @@ export function alertVariantForDay(nowMs: number): number {
 }
 
 // ── Pro-tip rotation (ROADMAP item 41, owner idea 2026-07-16) ──
-// Seven one-sentence paddleboard TECHNIQUE tips, editor-written. House rule:
-// tips teach skill, they never instruct action (no "head out now", no launch
+// One-sentence paddleboard TECHNIQUE tips, editor-written. House rule: tips
+// teach skill, they never instruct action (no "head out now", no launch
 // urgency, no safety guarantee): that collides with item 34, which strips
-// inducement language out of these exact emails. Tips marked VERIFY below are
-// general/standard SUP coaching claims the owner or a source must confirm
-// before this ships; do not treat a VERIFY tip as confidently correct.
+// inducement language out of these exact emails.
+//
+// EVERY TIP HERE MUST BE VERIFIED ACCURATE BEFORE IT SHIPS. This goes to real
+// paddlers as advice from the site. Two candidate tips were cut on 2026-07-16
+// rather than shipped unverified (owner call): a stroke-past-the-hip body
+// position claim, and a "switch sides every few strokes" claim whose cadence
+// varies by board type (all-around vs. displacement/touring with a skeg).
+// Both are recoverable from git if a source confirms them. The rotation does
+// not care about pool size, so adding a verified tip later is a one-line change.
 export const TECHNIQUE_TIPS: readonly string[] = [
   "Bending your knees a little and keeping your feet about hip-width apart keeps a board far steadier than standing stiff-legged.",
   "SUP paddle blades are angled on purpose: tilting the blade forward, away from you, catches more water than tilting it back toward your feet.",
   "A wide sweep stroke on one side turns the nose without switching hands or paddling on the other side.",
   "Most of a stroke's power comes from twisting your torso into it, not just pulling with your arms.",
   "Looking out at the horizon instead of down at your feet is one of the easiest ways to hold your balance.",
-  // VERIFY: the general "don't pull a stroke past your hip" principle is standard
-  // SUP coaching advice, but confirm this exact body-position framing (feet vs.
-  // ankle vs. hip) against a coaching source before shipping.
-  "A stroke does the most work near your feet; pulling it back past your hip mostly lifts water instead of moving the board forward.",
-  // VERIFY: switching cadence and need vary by board type (all-around boards
-  // need more frequent switches than displacement/touring boards with a skeg);
-  // confirm applicability before shipping.
-  "Switching paddle sides every few strokes keeps a board tracking straight without needing a J-stroke.",
 ];
 
 export const TECHNIQUE_TIP_COUNT = TECHNIQUE_TIPS.length;

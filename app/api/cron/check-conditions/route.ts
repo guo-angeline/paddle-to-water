@@ -3,13 +3,11 @@ import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { findGoodWindow, type GoodWindow } from "@/lib/alerts/conditions-window";
 import { selectAlertSpots, composeAlert, sentKey, type SpotWindow } from "@/lib/alerts/select";
 import { sendPush } from "@/lib/alerts/push-sender";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const ALL_SPOTS = spotsData as Spot[];
 const spotById = new Map(ALL_SPOTS.map((s) => [s.id, s]));
 
 export async function GET(req: Request) {

@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import spotsData from "@/data/spots.json";
+import { ALL_SPOTS } from "@/lib/spots";
 
 export const alt = "Paddle to Water: paddleboard and kayak launch spots across the Bay Area";
 export const size = { width: 1200, height: 630 };
@@ -43,7 +43,7 @@ export default function OGImage() {
             fontFamily: "sans-serif",
           }}
         >
-          {`${spotsData.length} paddleboard & kayak spots across the Bay Area`}
+          {`${ALL_SPOTS.length} paddleboard & kayak spots across the Bay Area`}
         </div>
       </div>
     ),

@@ -1,9 +1,6 @@
 import type { MetadataRoute } from "next";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 import { SITE_URL } from "@/lib/structured-data";
-
-const ALL_SPOTS = spotsData as Spot[];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

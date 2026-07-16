@@ -301,8 +301,12 @@ describe("technique tip rotation (item 41)", () => {
   };
   const DAY_MS = 86_400_000;
 
-  it("has exactly 7 tips, one per copy-rotation slot", () => {
-    expect(TECHNIQUE_TIP_COUNT).toBe(7);
+  it("has a non-empty tip pool, decoupled from the copy-variant count", () => {
+    // Started at 7; two unverified tips were cut 2026-07-16 rather than ship
+    // unconfirmed technique advice (owner call). The rotation is a modulo over
+    // the pool, so the pool size is deliberately NOT pinned to
+    // ALERT_VARIANT_COUNT: adding a verified tip must not break this test.
+    expect(TECHNIQUE_TIP_COUNT).toBeGreaterThan(0);
     expect(TECHNIQUE_TIPS.length).toBe(TECHNIQUE_TIP_COUNT);
   });
 
@@ -346,14 +350,24 @@ describe("technique tip rotation (item 41)", () => {
   });
 
   it("out-of-range techniqueTipIndex wraps instead of crashing", () => {
-    expect(composeAlertEmail({ ...base, techniqueTipIndex: 7 }).text).toContain(TECHNIQUE_TIPS[0]);
+    // Pool-size-agnostic on purpose: an index one past the end wraps to the
+    // first tip whatever the pool size is. Hardcoding 7 here broke when two
+    // unverified tips were cut on 2026-07-16.
+    expect(
+      composeAlertEmail({ ...base, techniqueTipIndex: TECHNIQUE_TIP_COUNT }).text
+    ).toContain(TECHNIQUE_TIPS[0]);
     expect(() => composeAlertEmail({ ...base, techniqueTipIndex: -1 })).not.toThrow();
   });
 
   it("tags the deep link with pt=<index> so opens can be segmented by tip, only when set explicitly", () => {
-    const msg = composeAlertEmail({ ...base, techniqueTipIndex: 5 });
-    expect(msg.html).toContain("&pt=5");
-    expect(msg.text).toContain("&pt=5");
+    // Use an in-range index: the only producer is techniqueTipForDay, which is
+    // always in range, and pt carries the raw index while the rendered tip is
+    // the wrapped one. Those agree only in range.
+    const idx = TECHNIQUE_TIP_COUNT - 1;
+    const msg = composeAlertEmail({ ...base, techniqueTipIndex: idx });
+    expect(msg.html).toContain(`&pt=${idx}`);
+    expect(msg.text).toContain(`&pt=${idx}`);
+    expect(msg.text).toContain(TECHNIQUE_TIPS[idx]);
     expect(emailOpenUrl(7, "tok")).not.toContain("&pt=");
   });
 });

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 import HomeClient from "@/components/HomeClient";
 import { SITE_NAME, spotUrl, spotDescription, spotJsonLd } from "@/lib/structured-data";
 
-const ALL_SPOTS = spotsData as Spot[];
 
 export function generateStaticParams() {
   return ALL_SPOTS.map((s) => ({ id: String(s.id) }));

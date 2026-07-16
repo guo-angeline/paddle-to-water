@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useState, useMemo, useEffect, useRef } from "react";
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LEGEND } from "@/lib/types";
-import spotsData from "@/data/spots.json";
+import { ALL_SPOTS } from "@/lib/spots";
 import FilterBar, { type Filters } from "@/components/FilterBar";
 import SpotList from "@/components/SpotList";
 import SpotDrawer from "@/components/SpotDrawer";
@@ -17,15 +17,13 @@ import { trackIntent, trackSystem, setPersona, type SpotViewedSource } from "@/l
 import { useSavedConditions } from "@/components/useSavedConditions";
 import { syncWatchedSpots, reportAlertOpen } from "@/lib/push";
 import { reportEmailOpen } from "@/lib/email/client";
-import { useExperiment, getVariant } from "@/lib/experiments";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
-const ALL_SPOTS = spotsData as Spot[];
 
-// Same breakpoint SpotDrawer uses for its own mobile/desktop split. The
-// spot_sheet_full_height flag (item 42) only changes anything on mobile: the
-// desktop drawer is a persistent, always-fully-visible sidebar.
+// Same breakpoint SpotDrawer uses for its own mobile/desktop split. Item 42's
+// full-height open only changes anything on mobile: the desktop drawer is a
+// persistent, always-fully-visible sidebar.
 function isMobileViewport(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 }
@@ -52,13 +50,9 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   const [selected, setSelected] = useState<Spot | null>(null);
   // Item 9: one-shot hint to open the mobile sheet expanded, set only for a
   // shared-link arrival (from=share). Item 42 generalizes this to every
-  // other mobile spot open, gated on the spot_sheet_full_height flag; alert/
-  // email arrivals stay excluded (see the deep-link effect below).
+  // other mobile spot open; alert/email arrivals stay excluded (see the
+  // deep-link effect below).
   const [startExpanded, setStartExpanded] = useState(false);
-  // Item 42: control ships live by default (owner directive: a core-flow
-  // change to the primary surface never goes straight to 100%). Desktop is
-  // unaffected either way.
-  const spotSheetExp = useExperiment("spot_sheet_full_height");
   const [activeTab, setActiveTab] = useState<"map" | "list">("map");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -135,27 +129,21 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         if (from === "share") {
           // Shared-link arrival: open the mobile sheet at full height so the
           // conditions view and the CTA row are visible without a drag (item 9).
-          // Unconditional, unaffected by the item-42 flag (both arms already
-          // behave identically here, so share opens are excluded from that
-          // experiment's exposed cohort). SpotDrawer reads this once on
-          // mount; harmless on desktop.
+          // Kept as its own branch even though item 42 now expands every open:
+          // this one is not gated on the mobile breakpoint. SpotDrawer reads
+          // this once on mount; harmless on desktop.
           setStartExpanded(true);
         } else if (from !== "alert" && from !== "email") {
           // Item 42: generalizes item 9 to every other spot open (plain
           // deeplink here; list/map/related opens are handled in
-          // handleSelect below), gated on spot_sheet_full_height. Alert and
-          // email arrivals are excluded on purpose, same reason item 9
-          // excluded them: they carry the interstitial (from=alert) or ride
-          // the same deep-link shape (from=email), and a force-expanded sheet
-          // layers badly under it. Imperative getVariant() read: this mount
-          // effect runs once, before PostHog flags are guaranteed ready, so
-          // it can race to "control" for a treatment-bucketed user on a very
-          // early deep-link open; that fails closed to current behavior, the
-          // same tradeoff useExperiment's own doc accepts elsewhere.
-          if (isMobileViewport()) {
-            setStartExpanded(getVariant("spot_sheet_full_height") === "treatment");
-            spotSheetExp.logExposure();
-          }
+          // handleSelect below). Shipped at 100%, no flag, per owner
+          // direction 2026-07-16 (D13): the D3/D6/D11 precedent, a
+          // single-digit daily audience cannot power an A/B.
+          // Alert and email arrivals stay excluded on purpose, same reason
+          // item 9 excluded them: they carry the interstitial (from=alert)
+          // or ride the same deep-link shape (from=email), and a
+          // force-expanded sheet layers badly under it.
+          if (isMobileViewport()) setStartExpanded(true);
         }
         if (from === "alert") {
           trackIntent("alert_clicked", {
@@ -398,14 +386,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
   function handleSelect(spot: Spot, source: SpotViewedSource = "list") {
     setSelected(spot);
-    // Item 9 default: in-app selections (list/map/related) open at the peek
-    // height. Item 42 generalizes item 9's expanded sheet to these opens too,
-    // gated on spot_sheet_full_height; no alert/email exclusion needed here,
-    // those sources only ever arrive via the deep-link effect above, never
-    // through this in-app path.
-    const mobile = isMobileViewport();
-    setStartExpanded(mobile && spotSheetExp.variant === "treatment");
-    if (mobile) spotSheetExp.logExposure();
+    // Item 9 default was peek height for in-app selections (list/map/related).
+    // Item 42 generalizes item 9's expanded sheet to these opens too, at 100%
+    // per owner direction 2026-07-16 (D13). No alert/email exclusion needed
+    // here: those sources only ever arrive via the deep-link effect above,
+    // never through this in-app path.
+    setStartExpanded(isMobileViewport());
     if (alertBanner && alertBanner.spotId !== spot.id) setAlertBanner(null);
     trackIntent("spot_viewed", {
       spot_id: spot.id,

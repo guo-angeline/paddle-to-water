@@ -17,6 +17,18 @@ export interface Spot {
   dog_friendly: boolean;
   rentals_available: boolean;
   inspection_required: boolean;
+  /**
+   * Withhold this spot from every surface: list, map, /spot/[id], sitemap,
+   * JSON-LD, and BOTH alert crons. Absent/false = visible (the default).
+   *
+   * Set when a record cannot be trusted, not merely when it needs a fix. The
+   * 2026-07-16 coordinate audit found records that describe put-ins which do
+   * not appear to exist (see reports/coord-audit-2026-07-16.md). Filtering
+   * lives in lib/spots.ts; never read data/spots.json directly.
+   */
+  hidden?: boolean;
+  /** Why this spot is hidden, and what would un-hide it. Required when hidden. */
+  hidden_reason?: string;
 }
 
 export const REGIONS = [

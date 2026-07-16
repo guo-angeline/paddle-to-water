@@ -1313,6 +1313,8 @@
   },
   {
     "water": "Brisbane Marina Ramp",
+    "hidden": true,
+    "hidden_reason": "2026-07-16 audit: no public launch ramp could be confirmed to exist. City of Brisbane's marina page lists no ramp; DBW types the facility Marina, not Launch; SFBAMA's launch guide never mentions Brisbane or Sierra Point; not a Water Trail trailhead; OSM maps no slipway at Sierra Point. The stored coordinate is byte-identical to an unsourced fishing.org entry that itself asserts no physical ramp, and it lands on the Sierra Point Parkway roadway. Hidden pending a harbormaster call (650-583-6975) or an owner-supplied pin. See reports/coord-audit-2026-07-16.md.",
     "region": "Peninsula",
     "city": "Brisbane",
     "difficulty": "bay",
@@ -1347,6 +1349,8 @@
   },
   {
     "water": "Coyote Creek Tidal Launch",
+    "hidden": true,
+    "hidden_reason": "2026-07-16 audit: no designated or legally sanctioned public put-in could be found on Coyote Creek off McCarthy Boulevard in FWS, Santa Clara Valley Water, City of Milpitas, County Parks, or SF Bay Water Trail sources; OSM has no slipway within 6km; the stored coordinate reverse-geocodes to the Nimitz Freeway. The matching address is a hiking and biking trailhead. The one documented paddle from it was a permit-only trip into a normally closed section of Don Edwards NWR, whose own trip report tells readers not to paddle there because it is unsafe, illegal, and disruptive to wildlife. The notes also cite the wrong closure months and the wrong species. Hidden on safety and legal grounds pending lawyer-gate review. See reports/coord-audit-2026-07-16.md.",
     "region": "South Bay",
     "city": "Milpitas",
     "difficulty": "bay",

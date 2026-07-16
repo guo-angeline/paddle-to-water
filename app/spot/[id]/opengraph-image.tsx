@@ -1,9 +1,7 @@
 import { ImageResponse } from "next/og";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 
-const ALL_SPOTS = spotsData as Spot[];
 
 export const alt = "Paddleboard and kayak launch spot details on Paddle to Water";
 export const size = { width: 1200, height: 630 };

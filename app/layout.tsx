@@ -4,11 +4,9 @@ import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import PostHogProvider from "@/components/PostHogProvider";
 import { SITE_URL, SITE_NAME, directoryJsonLd } from "@/lib/structured-data";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 import "./globals.css";
 
-const ALL_SPOTS = spotsData as Spot[];
 const SPOT_COUNT = ALL_SPOTS.length;
 
 export const viewport: Viewport = {

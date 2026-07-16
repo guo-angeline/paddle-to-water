@@ -4,13 +4,11 @@ import { findGoodWindow, type GoodWindow } from "@/lib/alerts/conditions-window"
 import { selectAlertSpots, sentKey, type SpotWindow } from "@/lib/alerts/select";
 import { composeAlertEmail, alertVariantForDay, techniqueTipForDay } from "@/lib/email/templates";
 import { sendEmail, emailAlertsEnabled } from "@/lib/email/sender";
-import spotsData from "@/data/spots.json";
-import type { Spot } from "@/lib/types";
+import { ALL_SPOTS } from "@/lib/spots";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const ALL_SPOTS = spotsData as Spot[];
 const spotById = new Map(ALL_SPOTS.map((s) => [s.id, s]));
 
 // Email twin of check-conditions. Same evaluator (findGoodWindow), same 1/UTC-day
