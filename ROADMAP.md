@@ -132,7 +132,7 @@ The decimal-count screen that produced the original 11-spot list **was a weak he
 - Tips must be technically accurate; owner or a source verifies each before it ships.
 - Copy-only on an existing surface: A/B exempt per the D11 precedent (single-digit audience cannot power a test).
 
-## 42. [proposed] Spot sheet opens full-screen instead of half-screen
+## 42. [in-progress] 2026-07-16 Spot sheet opens full-screen instead of half-screen
 
 **Why:** Owner idea 2026-07-16. Open question whether the peek height helps (keeps the map visible, cheaper to dismiss) or hurts (truncates the conditions payoff and hides the CTAs).
 
@@ -141,6 +141,8 @@ The decimal-count screen that produced the original 11-spot list **was a weak he
 - This is a textbook A/B question (a core-flow change to the primary surface), so it ships behind a flag per the owner directive, not straight to 100%.
 - Traffic is thin (~14 users/day), so expect a long read window or a monitored rollout per the D2/D3/D6 precedent. Decide which at promotion.
 - Guardrails: `spot_sheet_dismissed`, `conditions_loaded`, `favorite_toggled`.
+
+**Built (2026-07-16, worktree branch, not yet merged/deployed):** generalizes item 9's `from=share` full-height open to every mobile spot open (list/map/related/plain-deeplink), behind the new `spot_sheet_full_height` flag (`lib/experiments.ts`, `flag: "spot-sheet-full-height"`, `variants: ["control", "treatment"]`, control ships live by default per the owner directive). Reuses the existing one-shot `startExpanded` prop from item 9 (no parallel mechanism); `SpotDrawer`'s prop surface is unchanged. Alert (`from=alert`) and email (`from=email`) arrivals stay excluded in both arms, same reason item 9 excluded them (the alert interstitial layers badly under a force-expanded sheet); the item-9 `from=share` open itself stays unconditional and flagless, unaffected by this flag. Desktop is unaffected either way. `experiment_exposed` (`experiment: "spot_sheet_full_height"`) is logged symmetrically for both arms at every eligible mobile open. Primary metric: `spot_action` rate per exposed user; guardrails as listed above, all pre-existing events. Doc: `docs/experiments/spot-sheet-full-height.md`; changelog: `analytics/INSTRUMENTATION_CHANGELOG.md` 2026-07-16 entry. Verified: 139 unit tests pass (incl. 2 new test files), lint clean (0 errors, 1 pre-existing unrelated warning), build clean, and visually verified at 390px with Playwright (control peek unchanged, share full unchanged, treatment full for deep-link/list-click paths via a mocked PostHog flag response, alert arrival stays excluded even under treatment). Not yet merged to main or deployed; owner flips the flag in PostHog when ready to widen exposure.
 
 ## 43. [proposed] Reviews on the spot sheet (star + text + optional media)
 

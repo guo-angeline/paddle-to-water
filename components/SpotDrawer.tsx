@@ -13,7 +13,10 @@ interface Props {
   onToggleFavorite?: (id: number) => void;
   // Item 9: open the mobile sheet at full height instead of the peek height.
   // Set for shared-link arrivals so the recipient sees the conditions view and
-  // the CTA row without having to discover the drag.
+  // the CTA row without having to discover the drag. Item 42 reuses this same
+  // one-shot prop to generalize the expanded open to every other mobile spot
+  // open, behind the spot_sheet_full_height flag (HomeClient decides the
+  // value; this component stays a dumb consumer either way).
   startExpanded?: boolean;
 }
 
