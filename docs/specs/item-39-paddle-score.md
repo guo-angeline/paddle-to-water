@@ -1,4 +1,4 @@
-# Item 39: Paddle score — rubric + row design
+# Item 39: Paddle score, rubric + row design
 
 Status: **spec, not built. One BLOCKING conflict unresolved (§0.1).** Read alongside ROADMAP.md items 39, 40, 43, and the legal gate summary in DECISIONS.md.
 
