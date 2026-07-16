@@ -6,7 +6,7 @@ import { REGIONS, DIFFICULTY_LABEL } from "./types";
  *
  * Metric we optimize for (per query q):
  *   - Relevant set R(q): region query -> spots in that region; water-type query
- *     (the words shown on the filter: Flatwater / Ocean / River) -> spots of that
+ *     (the words shown on the filter: Flatwater / Open water / River) -> spots of that
  *     type; name/city query -> those spots; else -> spots whose text contains all
  *     query words.
  *   - Precision = |returned ∩ R| / |returned|, Recall = |returned ∩ R| / |R|.
@@ -22,7 +22,7 @@ import { REGIONS, DIFFICULTY_LABEL } from "./types";
  */
 
 // Search synonyms per water type, anchored on the UI's own difficulty labels so a
-// user can type what they see on the filter ("Ocean", "Flatwater", "River").
+// user can type what they see on the filter ("Open water", "Flatwater", "River").
 const TYPE_TERMS: Record<Difficulty, string[]> = {
   flatwater: ["flatwater", "flat", "calm", "lake", "reservoir", "pond", "lagoon", "slough"],
   bay: ["ocean", "bay", "sea", "saltwater", "tidal", "coast", "coastal", "surf", "pacific"],

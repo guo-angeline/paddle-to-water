@@ -35,7 +35,7 @@ export const DIFFICULTIES: Difficulty[] = ["flatwater", "bay", "river"];
 
 export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
   flatwater: "Flatwater",
-  bay: "Ocean",
+  bay: "Open water",
   river: "River",
   unknown: "Unknown",
 };
