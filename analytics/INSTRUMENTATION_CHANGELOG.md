@@ -14,6 +14,42 @@ without touching this file.
 
 ---
 
+## 2026-07-16 (item 42): Mobile spot sheet full-height open behind `spot_sheet_full_height` (added, dormant)
+
+`components/HomeClient.tsx` gained an experiment branch that generalizes item
+9's shared-link full-height sheet to every other mobile spot open (list/map/
+related/plain-deeplink), behind `lib/experiments.ts` `spot_sheet_full_height`
+(`flag: "spot-sheet-full-height"`, `variants: ["control", "treatment"]`, live
+control-default per the owner's core-flow-change-never-goes-straight-to-100%
+directive). CONTROL is the exact current behavior: the mobile sheet opens at
+the 0.58vh peek for every open except a shared-link arrival, which item 9
+already forces to 0.92vh full height unconditionally and flaglessly.
+TREATMENT opens the sheet at full height for every mobile spot open except a
+shared-link, alert (`from=alert`), or email (`from=email`) arrival; the last
+two stay excluded in both arms, same reason item 9 excluded them (they carry
+the alert interstitial, which layers badly under a force-expanded sheet).
+Desktop (the persistent sidebar) is unaffected in either arm. No new prop was
+added to `SpotDrawer`; the flag decision reuses the existing one-shot
+`startExpanded` prop from item 9.
+
+`experiment_exposed` (`experiment: "spot_sheet_full_height"`) is a new value
+of the existing event, logged for BOTH arms (symmetric pattern) at every
+mobile, non-share, non-alert, non-email spot open, via `useExperiment`'s
+`logExposure()` (no-ops until flags are ready, dedupes once per session per
+variant). See `docs/experiments/spot-sheet-full-height.md` for the full
+hypothesis, primary metric (`spot_action` rate per exposed user), and
+guardrails (`spot_sheet_dismissed`, `conditions_loaded`, `favorite_toggled`,
+all pre-existing events, no schema change to any of them).
+
+- **Comparability:** `experiment_exposed` gains a new `experiment` value from
+  2026-07-16 forward; no prior series for it. The flag ships OFF (control
+  live) in this change, so production behavior, and every other event's rate,
+  is unaffected until the owner flips the flag in PostHog: this entry
+  documents dormant instrumentation, not a live behavior change. Once the
+  owner flips it, segment any `spot_action` / `spot_sheet_dismissed` /
+  `conditions_loaded` / `favorite_toggled` read by `experiment_exposed`
+  (`experiment: "spot_sheet_full_height"`) variant, the same requirement as
+  `enrollment_dual_cta` below.
 ## 2026-07-15 (item 37 part 3, ROADMAP item 12): Viewport diagnostic added, no PostHog event
 
 **No event added.** Shipped `components/ViewportDiagnostic.tsx`, a device-only
