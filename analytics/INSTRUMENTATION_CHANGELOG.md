@@ -14,6 +14,14 @@ without touching this file.
 
 ---
 
+## 2026-07-17 (item 52): tide fetch moved to a same-origin proxy; conditions_loaded `has_tides` availability RISES (no event/props change, semantics-note)
+
+**No event added, no props change, no `lib/analytics.ts` edit.** This is a reliability fix, recorded here because it moves a metric an analyst reads. The browser used to fetch NOAA tide predictions directly; NOAA sends the CORS header only intermittently, so on `tide_sensitive` spots the tide fetch was silently CORS-blocked roughly half the time and `fetchTides` rejected, making the `conditions_loaded` event carry `has_tides: false` even though a station existed. From this date tides go through `/api/tides` (server-side, no CORS, with a timeout + one retry), so the fetch succeeds whenever NOAA is up.
+
+- **Comparability: `conditions_loaded`'s `has_tides: true` rate STEPS UP on tide_sensitive spots from 2026-07-17, and this is availability recovering, not users changing behavior or the tide data changing.** `has_wind` is unaffected (weather.gov always sent CORS). Any downstream cut of "conditions completeness", "% of opens with tides", or the `had_data`/`paddleability` mix on tidal spots is discontinuous at this date: do not read the rise as more/newer tide-having spots or more user interest. `failed` (both sources down) should also tick slightly lower since one whole failure mode is removed. The fix does not change WHEN `conditions_loaded` fires (still once per drawer fetch settle, SYSTEM), only how often tides are present in it.
+
+---
+
 ## 2026-07-17 (item 7): filter_changed reused for the two new scoped empty-state clears (no new event, no props-change)
 
 **No new event added, no props change.** Defect C's scoped clear buttons (`clearSearchOnly` in `components/HomeClient.tsx`, fired by the "Clear search" empty-state button, and `clearStructuredFilters`, fired by "Clear filters" when search is empty) both call `trackIntent("filter_changed", { cleared: true })`, the exact same event name and payload `handleClearAll` already emits for the full clear.

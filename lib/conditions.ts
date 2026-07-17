@@ -2,14 +2,20 @@
  * Live conditions (tides + wind) for a spot. Fully client-side: the app is
  * static with no backend, so every fetch runs in the browser at runtime.
  *
- * Data sources (both free, no API key, CORS `access-control-allow-origin: *`):
- * - Tides: NOAA CO-OPS. We bundle a small set of NorCal harmonic ("reference")
- *   tide stations and pick the nearest one to the spot by great-circle distance,
- *   then hit the predictions datagetter for today's hi/lo events. Bundling beats
- *   querying the 3,450-station metadata list on every load: it's a fixed, tiny
- *   region (Monterey to Mendocino, Bay + Delta) and avoids an extra round trip.
- * - Wind: US National Weather Service. `/points/{lat},{lng}` resolves a forecast
- *   gridpoint, then the gridpoint `/forecast` gives wind speed + direction.
+ * Data sources (both free, no API key):
+ * - Tides: NOAA CO-OPS, reached through our OWN same-origin route
+ *   `/api/tides` (see app/api/tides/route.ts), NOT a direct browser fetch.
+ *   NOAA sends `access-control-allow-origin: *` only intermittently, so a direct
+ *   browser call was silently CORS-blocked about half the time and dropped the
+ *   tide panel; the server-side proxy removes CORS from the path. We still bundle
+ *   a small set of NorCal harmonic ("reference") tide stations and pick the
+ *   nearest one to the spot by great-circle distance, then ask the proxy for
+ *   today's hi/lo events. Bundling beats querying the 3,450-station metadata list
+ *   on every load: it's a fixed, tiny region (Monterey to Mendocino, Bay + Delta).
+ * - Wind: US National Weather Service, fetched directly from the browser.
+ *   weather.gov DOES send `access-control-allow-origin: *` reliably, so it needs
+ *   no proxy. `/points/{lat},{lng}` resolves a forecast gridpoint, then the
+ *   gridpoint `/forecast` gives wind speed + direction.
  *
  * Results are cached per session (module-level Map) so reopening the same spot
  * doesn't refetch.
@@ -149,20 +155,16 @@ async function fetchTides(
   // even late in the evening. Local station time, hi/lo only, feet, MLLW.
   const today = new Date();
   const end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  // Go through our same-origin proxy, never NOAA directly: a direct browser
+  // fetch is CORS-blocked whenever NOAA omits the header (about half the time).
+  // The proxy owns the fixed NOAA params, timeout, retry, and caching; we pass
+  // only the station and the 2-day (today + tomorrow) window.
   const params = new URLSearchParams({
-    product: "predictions",
-    application: "paddle-to-water",
+    station: station.id,
     begin_date: ymd(today),
     end_date: ymd(end),
-    datum: "MLLW",
-    station: station.id,
-    time_zone: "lst_ldt",
-    interval: "hilo",
-    units: "english",
-    format: "json",
   });
-  const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${params.toString()}`;
-  const res = await fetch(url, { signal });
+  const res = await fetch(`/api/tides?${params.toString()}`, { signal });
   if (!res.ok) throw new Error(`tides ${res.status}`);
   const data = (await res.json()) as {
     predictions?: { t: string; v: string; type: "H" | "L" }[];
