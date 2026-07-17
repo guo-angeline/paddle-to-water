@@ -108,6 +108,8 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     // directly rather than waiting on a server round trip that would only
     // tell us what being on this URL already proves.
     cacheEmailSubscriptionState({ known: true, confirmed: true });
+    // SpotList listens for this to re-sync its "alerts on" header state.
+    window.dispatchEvent(new Event("ptw:alertsenabled"));
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setEmailConfirmed(true);
     const t = setTimeout(() => setEmailConfirmed(false), 5000);
@@ -121,31 +123,13 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = initialSpotId ?? Number(params.get("spot") || 0);
+    const from = params.get("from");
+    // The subscription/open token. Read once up front so both the alert and
+    // email pings below, and the single strip at the end of this effect, all
+    // see the same value even after `params` is mutated by the strip.
+    const token = params.get("t");
     if (id) {
       const found = ALL_SPOTS.find((s) => s.id === id);
-      const from = params.get("from");
-      if (from === "email") {
-        // Item 47 legal gate (D18 action 2): the token must never linger in
-        // window.location, where PostHogProvider's $current_url capture (and
-        // browser history) would carry a live unsubscribe key. This runs
-        // BEFORE the `found` check on purpose: ALL_SPOTS filters out hidden
-        // spots (lib/spots.ts), so a spot hidden after the alert/email send
-        // would otherwise leave `t` live in the URL forever. Fire the open
-        // ping, then strip `t` synchronously right after, before
-        // PostHogProvider's own mount effect runs (it renders after
-        // {children} in app/layout.tsx, so its effect fires later in this
-        // same commit). Caching the resolved state is async and does not
-        // block the strip.
-        const token = params.get("t");
-        if (token) {
-          reportEmailOpen(token, found?.id).then((state) => {
-            if (state) cacheEmailSubscriptionState(state);
-          });
-          params.delete("t");
-          const qs = params.toString();
-          window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-        }
-      }
       if (found) {
         // Deferred to an effect on purpose: the spot id comes from window /
         // the URL, so resolving it during render would break SSR hydration.
@@ -181,14 +165,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           // Durable, server-side return signal for long-horizon subscriber
           // retention. The token rode the deep link, so this works even after
           // ITP has purged client storage. See /api/alerts/opened.
-          const token = params.get("t");
           if (token) reportAlertOpen(token, found.id);
           const windowLabel = params.get("window");
           if (windowLabel) setAlertBanner({ spotId: found.id, windowLabel });
         } else if (from === "email") {
-          // Email twin of the alert-open path. The durable open-ping + `t`
-          // strip (D18 action 2) already ran above, unconditionally on
-          // `found`; this branch is just the resolved-spot analytics.
+          // Email twin of the alert-open path. The durable open-ping fires
+          // below, once, for both the resolved and hidden-spot case.
           // `v` is the email copy-variant index (0-6 rotation, lib/email/templates.ts).
           // `pt` is the pro-tip pool index (0-6, TECHNIQUE_TIPS, item 41).
           const v = params.get("v");
@@ -208,6 +190,36 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           source,
         });
       }
+      // Durable, server-side open ping for an email arrival. Fires even when
+      // `found` is undefined (ALL_SPOTS filters out hidden spots, lib/spots.ts,
+      // so a spot hidden after the send would otherwise never ping or strip).
+      // Not awaited: caching the resolved subscription state and telling
+      // SpotList to re-sync must not block the token strip below.
+      if (from === "email" && token) {
+        void reportEmailOpen(token, found?.id).then((state) => {
+          if (state) {
+            cacheEmailSubscriptionState(state);
+            window.dispatchEvent(new Event("ptw:alertsenabled"));
+          }
+        });
+      }
+    }
+    // Item 47 legal gate (D18 action 2): strip `t` from the URL AFTER both
+    // the from=alert branch (reportAlertOpen) and the from=email branch
+    // (reportEmailOpen) above have fired their pings, and before this effect
+    // returns. The strip is synchronous and NOT gated on either promise: a
+    // slow or failed ping must never leave a live unsubscribe token sitting
+    // in window.location. This also runs before PostHogProvider's own mount
+    // effect can capture $current_url, because React runs child effects
+    // before parent effects and PostHogProvider wraps HomeClient (its
+    // posthog.init() at components/PostHogProvider.tsx:63 has not run yet).
+    // Covers both paths, same defect, same one line. Mirrors the
+    // replaceState idiom used by the email-confirm landing effect above.
+    // `spot`, `from`, `v`, and `pt` are left alone.
+    if ((from === "alert" || from === "email") && token) {
+      params.delete("t");
+      const qs = params.toString();
+      window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
