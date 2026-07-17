@@ -14,9 +14,18 @@ export interface Spot {
   has_fee: boolean | null;
   power_boats: boolean | null;
   tide_sensitive: boolean;
-  dog_friendly: boolean;
+  /**
+   * Tri-state like `has_fee`: true (dogs confirmed OK) | false (confirmed not) |
+   * null (unknown). 26 records hold null and this was typed `boolean`, so the
+   * unchecked `spotsData as Spot[]` cast in lib/spots.ts made TypeScript believe
+   * a lie. Both call sites use truthiness, so null already behaves as "no badge",
+   * which is the right render for unknown but is indistinguishable from a
+   * confirmed no. Do not add a `=== false` branch without deciding what null means.
+   */
+  dog_friendly: boolean | null;
   rentals_available: boolean;
-  inspection_required: boolean;
+  /** Tri-state; 1 record holds null. Same reasoning as `dog_friendly`. */
+  inspection_required: boolean | null;
   /**
    * Withhold this spot from every surface: list, map, /spot/[id], sitemap,
    * JSON-LD, and BOTH alert crons. Absent/false = visible (the default).

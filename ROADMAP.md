@@ -196,9 +196,36 @@ The decimal-count screen that produced the original 11-spot list **was a weak he
 - Legal gate: accounts are personal data (privacy policy scope, deletion/access rights under CCPA, auth security, breach exposure).
 - **Honest sequencing note:** auth that gates nothing is pure cost and pure risk until item 43 needs it. Its real justification is as the attributed-review path and the cross-device sync upgrade (the Later section's "optional Google sign-in"). Recommend sequencing it as a dependency of 43, not as a standalone build. If the owner wants it standalone anyway, that is a legitimate call, but it should be a conscious one.
 
-## 45. [proposed] Expand coverage to more of Northern California
+## 45. [blocked(no-source)] Expand coverage to more of Northern California (RESCOPED 2026-07-16: the first task is finding a registry, not running the pipeline)
 
-**Why:** Owner idea 2026-07-16. 142 spots today, weighted to the Bay; more coverage is more reasons to open the app and more SEO surface.
+**RESCOPED 2026-07-16 after a verified Water Trail gap analysis (`reports/item-45-watertrail-gap.md`). This item's premise did not survive it.**
+
+All 47 SF Bay Water Trail designated trailheads were classified, none guessed:
+
+| Verdict | Count | Meaning |
+|---|---|---|
+| **CARRIED** | **34 (72%)** | already a record |
+| **MERGED** | **10 (21%)** | described inside another spot's notes, no record of its own. **This is item 40 work (split the record), not item 45 work (add a spot).** |
+| **GENUINE GAP** | **3 (6%)** | real item 45 scope |
+| UNVERIFIABLE | 0 | |
+
+**Three things this establishes:**
+
+1. **You cannot expand coverage from a source you have already ingested.** The app carries 72% of the Bay's authoritative registry. It yields three candidates, and one of them (Pier 39) is not a launch: the Water Trail itself says it is "anticipated to serve primarily as a destination site for paddlers starting elsewhere." Shipping it as a put-in would be the 47/120 defect committed knowingly.
+2. **10 of the 13 non-carried sites are item 40 in disguise, a 10:3 ratio.** Four host records hold all ten: spot 70 hides 3 Richmond trailheads; spots 68, 18, and 63 hide 2 each. Spot 63 is the Richmond pattern again, a marina-complex pin sitting *between* two trailheads 760m apart. **Splitting those four records is simultaneously the cheapest coverage in the backlog and item 40 work.** Do that before adding anything.
+3. **The registry stops at the Bay, and that is the real blocker.** No authoritative, field-complete equivalent has been identified for the Sierra, the Delta, the Central Valley, or the coast, and DBW is disqualified (it registers motorized/trailered facilities; see item 40). Absent a source, expansion falls back to the geocode-and-trust step that produced spot 79.
+
+**The parking-vs-dock trap fired live during this analysis**, which is the best evidence that the method matters: the Water Trail's published coordinate for Baylands Sailing Station reverse-geocodes to `amenity/parking`, 60m from a gravel lot. Ingesting it as published would have produced a fourth 127/130/132.
+
+**Acceptance, rewritten:**
+- **Step 1 is to identify an authoritative, field-complete registry for the target region** (one that publishes dock type, parking, fees, and hazards, as the Water Trail does), NOT to run `phase0_geocode.py`. If no such registry exists for a region, that region is not expandable at acceptable quality yet, and saying so is the correct outcome.
+- Split the four merged host records (70, 68, 18, 63) first. That is ~10 real launches, already sourced, and it fixes wrong pins at the same time.
+- Every new record carries **per-field provenance**. A guessed boolean is worse than an absent one: `tide_sensitive` gates the conditions engine, and the sweep found spot 64 with three booleans wrong at once.
+- Coordinates are the put-in, never the published parking coordinate.
+- Notes say what the source says. Do not upgrade a beach launch into a "paved ramp".
+- Only the Downtown Suisun City candidate is recommended to take as-is (high confidence, 27m from an OSM pier, tide hazard quoted from source).
+
+**Why (original):** Owner idea 2026-07-16. 142 spots today, weighted to the Bay; more coverage is more reasons to open the app and more SEO surface.
 
 **Acceptance:**
 - New spots flow through the existing pipeline (`raw-data/phase0_geocode.py` to `data/spots.json`), fully enriched (difficulty, fee tri-state, notes, amenities), not just geocoded.
