@@ -55,6 +55,44 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner items, added 2026-07-16 (evening; both [ready], queued top-most on purpose)
+
+## 47. [ready] Bug: email subscribers get re-prompted to subscribe, forever
+
+**Reported by the owner 2026-07-16:** subscribed by email, received the email, tapped the button in it to return to the site, browsed other spots, and got the email enrollment prompt again.
+
+**Root cause found at report time (2026-07-16), and it is broader than the symptom.** Every prompt-suppression gate asks `readStashedSubscription()` (`lib/push.ts:50`), which reads `localStorage["ptw-push-subscription"]`. That is **push state only**. Nothing persists email-subscribed state on the client. So an email subscriber has no stashed subscription, every gate concludes "not subscribed yet", and the prompt fires again.
+
+Five call sites all inherit the bug (`components/InstallPrompt.tsx:162, 201, 217, 235, 251`): `first_save`, `standalone_relaunch`, `return_session`, and `conditions_interest`.
+
+**This lands hardest on exactly the people it should never hit.** Desktop and iOS Safari *lead with email* (item 23), so email subscribers are the majority of the enrolled population on those platforms, and they are the cohort re-prompted on every visit.
+
+**Second symptom, same cause:** `components/SpotList.tsx:50` drives the "alerts on" indicator off the same push-only read, so an email subscriber is shown alerts as OFF while they are actively receiving emails.
+
+**Acceptance:**
+- An email subscriber is never shown the enrollment prompt again on that device, through any of the four triggers.
+- The SpotList "alerts on" indicator reads true for an email subscriber.
+- The email confirm landing (`/?email_confirmed=1`, `components/HomeClient.tsx:100`) is the natural place to persist the state, but **it is not sufficient on its own**: the reported path was a *return* from an alert email (`from=email`, carrying `t=<token>`), not the confirm link. Suppress on that path too, or the bug survives for anyone who confirmed on a different device.
+- Consider whether the server ledger (Supabase `email_subscribers`) should be the source of truth rather than localStorage, given the whole point is a cross-device return. A client-only fix leaves the desktop-confirm/phone-return case broken. Weigh against: the app has no login, and `posthog.identify()` is forbidden (it reshuffles experiment buckets).
+- Decide what happens when someone is subscribed by email and *could* also enable push. Today the dual-CTA card (item 32, `enrollment_dual_cta`) treats them as unenrolled. Re-offering push to an email subscriber may be legitimate; re-offering *email* to an email subscriber is the bug. Do not collapse the two.
+- Analytics: this inflates `alert_optin_shown` with impressions that should never have fired, which means the email enrollment funnel's denominator is wrong for the whole period the bug has existed. Changelog entry required, with a Comparability note, since fixing it will *drop* `alert_optin_shown` and that drop is the fix working, not a regression.
+- Regression test. Per the house rule, the test must prove the guard bites: assert an email-subscribed client is suppressed on all four triggers, not just that one flag flips.
+
+## 48. [ready] Desktop buttons are too wide
+
+**Reported by the owner 2026-07-16.** Buttons render wider than they should on desktop.
+
+**Unscoped on purpose: the report names no specific button.** Start by finding which ones are wrong rather than restyling every button in the app. The likely suspects are full-width CTAs that are correct on the mobile bottom sheet and inherit that width into the 320px desktop drawer (for example "Watch this spot" in `components/SpotDrawer.tsx`, the enrollment card CTAs in `components/InstallPrompt.tsx`).
+
+**Acceptance:**
+- Identify the specific offending buttons at desktop widths and state which they are before changing any of them.
+- Fix without regressing mobile: the same components render in the mobile bottom sheet, where full-width is deliberate.
+- Verify at both 1280px and 390px on the rendered surface, not in the code (the `verify` skill drives both).
+- Pure visual polish with no new interaction, so it is exempt from the A/B directive (small fixes and copy tweaks are exempt). No new analytics events.
+- Check against item 37 (visual-polish pass, also `[ready]`): if 37 is still open, these may be the same work and should be merged rather than done twice.
+
+---
+
 ## Owner items, added 2026-07-13 (board-directed; the two [ready] items are queued top-most on purpose)
 
 (Item 36 launch-direction tip shipped 2026-07-15, see Shipped. Item 37 visual-polish pass is the next [ready], below.)
@@ -67,7 +105,17 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Strategy note, read before promoting any of these.** Items 43 and 44 (reviews, accounts) are the "UGC content flywheel" and "optional sign-in" entries from the **Later** section at the bottom of this file, which says do not promote before retention is proven. The mid-July retention read is due now and unblocked (D9 closed 2026-07-15). Promoting 43/44 ahead of that read is a deliberate bet against this roadmap's own thesis (retention is the bottleneck, UGC needs retained users to generate content). That may be the right call, but it is an owner decision, not a default. Items 39, 40, 41, 42, 45 do not carry this tension and can proceed on their own.
 
-## 39. [cut] 2026-07-16 A paddleability score for each spot (editorial, not crowd-sourced)
+## 39. [done] 2026-07-16 A paddleability score for each spot (editorial, not crowd-sourced)
+
+**Resolution: the computed rubric was CUT and stays cut. What shipped in this slot is a different feature: the owner's own hand-entered rating.** (D16, owner-directed 2026-07-16.) Deployed behind the `owner-rating` flag in `7dfd227` + `99a2aa6`; the flag does not exist in PostHog yet, so nothing renders until the owner creates it. Docs: `docs/experiments/owner-rating.md`, analysis in `reports/paddle-score-owner-ratings-2026-07-16.md`.
+
+**The two are not interchangeable and must never be blended.** The rubric (D15) scored the PUT-IN; the owner rating rates THE PADDLE. They correlate at 0.04 against researcher A and -0.10 against B, while A and B correlate 0.52 with each other. China Camp is 3.6 on the rubric and 5.0 from the owner, and both are right.
+
+**Read before analysing the experiment:** the owner ratings clear the same pre-committed 1.5 threshold pooled (spread 2.0), but that is an artifact of averaging regions with different means. Within-region only North Bay passes (n=45, spread 1.9); all 29 East Bay ratings sit inside a 0.4-wide band. **A flat pooled result is the predicted outcome, not a finding.** The owner was shown this and directed the full-scope ship anyway.
+
+**Legal gate outcome:** spot 92's rating was dropped (private business dock, possible trespass, see D14 addendum), the qualifier's contrast was raised to AA (6.59:1), and the copy names the axis ("One paddler's take on the paddle"). Spots 47 and 134 had their notes repaired as a condition of keeping their ratings.
+
+**The original cut still stands on its own terms, and the reasoning below is worth keeping.**
 
 **CUT 2026-07-16 after a 10-spot pilot met its pre-set kill criterion.** Full result: `docs/specs/item-39-paddle-score.md` §5. Two agents scored the same 10 spots blind: spread **1.1 and 0.8 points** against a 1.5 threshold set BEFORE the run, with 8/9 and 9/9 spots inside a single 1.0-wide band. Every Bay Area launch is "about a 4".
 
