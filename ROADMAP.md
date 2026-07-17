@@ -119,7 +119,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Legal gate (marketing claims): the lawyer reviews the framing before deploy.
 - New user-facing surface: flag or staged tranche per the major-update directive.
 
-## 40. [ready] Record-accuracy audit (owner ideas 7 and 8, merged; RESCOPED 2026-07-16 from coordinates to record truth)
+## 40. [in-progress] 2026-07-17T10:57:46Z Record-accuracy audit (owner ideas 7 and 8, merged; RESCOPED 2026-07-16 from coordinates to record truth)
 
 **OWNER DIRECTION 2026-07-17: spend 80% of the effort on latitude/longitude verification.** This is a deliberate re-inversion of the 2026-07-16 rescope below, made by the owner with that rescope in front of them. Follow it. The owner has personally paddled 117 of these 142 spots, which is ground truth the sweep never had: if they say the pins are the problem, they have stood at the launches. Do not re-litigate this split.
 
