@@ -252,7 +252,12 @@ Analysis: `reports/paddle-score-owner-ratings-2026-07-16.md`. The owner ratings 
 
 Two things this decision does NOT resolve, tracked below: spot 92 (see D14 addendum) and the fact that the ratings were never gated on "have I been here" (see the note in D14).
 
-## D17 [RESOLVED] 2026-07-16 · paddletowater.com receives no mail, and no DMARC record is published
+## D17 [OPEN, reopened] 2026-07-16 · paddletowater.com receives no mail, and no DMARC record is published
+
+**REOPENED 2026-07-17: the DNS half is done, but end-to-end receiving FAILS, so hello@ still does not work.** I marked this RESOLVED on green DNS (MX live, DMARC published, both verified via dig). That was premature. The owner then sent test emails to hello@ from BOTH qiguo1102@live.com AND qiguo1102@gmail.com; neither landed. Both failing identically, including the clean external gmail send, points at the destination: the Email Routing rule forwards hello@ to **qiguo1102@live.com**, and Microsoft (live/outlook/hotmail) aggressively silently-drops forwarded mail (forwarding breaks SPF; Cloudflare SRS-rewrites the envelope but Outlook still black-holes forwards). The Cloudflare Activity Log will confirm (Forwarded = Cloudflare did its job, Microsoft ate it). **Fix: point the destination at a non-Microsoft inbox (the owner's gmail).** Add qiguo1102@gmail.com as a Destination Address, verify it, retarget the hello@ rule to it. Until a test email actually lands, hello@ is not a working contact channel and the privacy policy still promises a remedy it cannot deliver. Do NOT re-close D17 on DNS state alone; close it only when a real message arrives.
+
+---
+
 
 Context: the privacy policy (item 44 step 1) promises access, correction, and deletion via `hello@paddletowater.com`, which is already the `EMAIL_REPLY_TO` fallback on every alert email. The lawyer gate flagged that a reply-to on a sending domain does not prove inbound mail is configured. It is not. Verified against three resolvers (local, 8.8.8.8, 1.1.1.1) with working controls:
 
