@@ -227,7 +227,7 @@ Consequences recorded:
 
 Still open, tracked in the spec §3: never emit schema.org `aggregateRating` for the editorial score (recommendation: no structured data in v1; an implementer will reach for it because it is what makes the star show in search).
 
-## D16 [OPEN] 2026-07-16 · Item 39 pilot met its kill criterion: confirm the cut
+## D16 [RESOLVED] 2026-07-16 · Item 39 pilot met its kill criterion: confirm the cut
 
 Context: D15 resolved item 39's scope to put-in only and directed a 10-spot pilot before any full pass. The spec (§4.1) set a kill criterion BEFORE the run, specifically so it could not be rationalized afterward: spread under 1.5 points, or 7+ of 10 spots inside a single 1.0-wide band, means a put-in-only score does not discriminate and item 39 gets cut rather than shipped.
 

@@ -1,7 +1,7 @@
 # Roadmap
 
 **The single home for vision, strategy, and the backlog.** Do not create separate plan/roadmap/strategy docs; fold new product thinking into this file. (IMPROVEMENT-PLAN.md, ux-mobile-findings.md, and docs/strategy/ were consolidated here 2026-07-02 and deleted; full text in git history.) Implementation specs under `docs/superpowers/` are historical execution artifacts for shipped work, not roadmaps. This file is also the studio backlog.
-<!-- studio:paused  (paused 2026-07-15 by owner: the loop orphaned an interactive session's commit onto its own branch and reverted a live change. Unpause by changing this marker back to studio:v1.)  statuses: proposed | ready | in-progress | blocked(D<n>) | parked | done -->
+<!-- studio:v1  (unpaused 2026-07-16 by owner, SCOPED: the loop runs in ONE thread at a time and nowhere else. It was paused 2026-07-15 for orphaning an interactive session's commit onto its own branch and reverting a live change; the mitigation is that constraint plus these rules, which are not optional: do ALL item work in a git worktree, never run checkout/switch/reset/stash in the repo root, never stash or drop a change you did not make, and never deploy a ref that does not contain everything already on main. Re-pause by changing this marker back to studio:paused.)  statuses: proposed | ready | in-progress | blocked(D<n>) | parked | done -->
 <!-- The studio loop works the top-most [ready] item. Steer by editing statuses: promote [proposed] to [ready], demote to [parked], reorder. Shipped items move to the Shipped section with date + commit + deploy refs. -->
 <!-- Pause everything by changing the marker above to studio:paused -->
 
@@ -57,7 +57,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Owner items, added 2026-07-16 (evening; both [ready], queued top-most on purpose)
 
-## 47. [ready] Bug: email subscribers get re-prompted to subscribe, forever
+## 47. [in-progress] 2026-07-17T05:48:32Z Bug: email subscribers get re-prompted to subscribe, forever
 
 **Reported by the owner 2026-07-16:** subscribed by email, received the email, tapped the button in it to return to the site, browsed other spots, and got the email enrollment prompt again.
 
