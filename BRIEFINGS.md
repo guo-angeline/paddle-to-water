@@ -1,5 +1,21 @@
 # Briefings: the board log
 
+## 2026-07-17 · Item 53 (tide fast-fail slice) · SHIPPED + DEPLOYED
+
+**Your move:** nothing needed. Item 53 stays `[ready]` for its structural latency work; the acute hang you measured is fixed and live.
+
+**TL;DR:** Acted on your item-53 note. The tide fetch that could hang the conditions panel 6-13s during NOAA flakiness is now bounded to ~4s, deployed and measured on prod.
+
+**Item 53 (fast-fail slice):** the conditions panel waits on both tide and wind together, so a hung tide call skeletoned the whole panel even though wind resolves in ~100ms. Two bounds shipped: the client aborts the tide fetch at 4s, and the `/api/tides` per-attempt timeout dropped 6s to 2.5s. Graceful degradation and the happy path are unchanged. Deployed `8538e40`. I scoped this to the acute fix you flagged and left the structural latency work (NWS two-hop precompute, a cached wind path, decoupling wind from tide) under item 53, which stays `[ready]`.
+
+**Appendix (evidence):**
+- Prod timing: raw `/api/tides` ~5.5s (3 samples, was up to 13s); client-capped tide fetch aborts at ~4.85s on prod (`AbortError`) vs waiting the full server time before.
+- Local: panel resolves fast, wind renders, no crash; 324 tests green, lint clean, build shows `/api/tides` as a server function.
+- Verification was behavioral (timing is the point) plus the existing 8 route unit tests; NOAA was mid-outage (502/504 all stations) and the sandboxed dev server has no NOAA network, so the live NOAA-200 path is still pending NOAA's recovery.
+- Instrumentation: no logging code changed; changelog notes `conditions_loaded.latency_ms` p95/p99 tail shrinks on tidal spots from today (upstream wait capped, not a happy-path speedup).
+- Flagged for item 53's remainder: during a NOAA outage a failed tide fetch shows "No tide station near this spot," which is false when a station exists. Pre-existing, not introduced here.
+- Process note: your uncommitted ROADMAP edit to item 53 was preserved as its own commit (`c4e864a`) before I built on it; nothing of yours was altered or absorbed.
+
 ## 2026-07-17 · Item 52: NOAA tide fetch proxied · SHIPPED + DEPLOYED (one live path pending NOAA outage)
 
 **Your move:** nothing needed.
