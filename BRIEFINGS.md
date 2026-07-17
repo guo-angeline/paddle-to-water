@@ -1,5 +1,20 @@
 # Briefings: the board log
 
+## 2026-07-17 · Item 55: P0 mobile NaN crash · FIXED + VERIFIED · DEPLOY COUPLED TO D22
+
+**Your move:** answer D22 (one line, DECISIONS.md). It now releases both spot 150 and this P0 fix in one deploy. Recommended: approve.
+
+**TL;DR:** The P0 mobile crash is fixed and verified on main, but it can't reach production on its own: spot 150's un-reviewed coordinate shares the tree, so the D19 predeploy gate holds every deploy until you read D22.
+
+**Item 55 (P0 mobile `Invalid LatLng (NaN)`):** On mobile the map panel is `display:none` while the List tab is active but stays mounted, so tapping a list spot fired `map.flyTo` on a 0x0 container, producing `(NaN, NaN)` and an uncaught throw that also blanked the conditions panel. Fixed by guarding the three fly effects (`FlyTo`, `FitBounds`, `FlyToUser`) to no-op at zero size, plus a `ResizeHandler` that `invalidateSize()`s and re-centers on the selection when the map becomes visible again. Map is never unmounted, so the single-canvas-renderer invariant holds. Verified in-browser at 390px: 6 fast taps on distinct spots gave 0 NaN (was 6/6) and conditions rendered 6/6 (was 1/6); Map-tab return re-centers with tiles loaded; desktop 0 errors. 316/316 tests, lint clean, build green. Merged to main (c24fef1). Not deployed: a deploy from main would trip the D22 coordinate gate and also ship the un-approved spot 150.
+
+**Appendix (evidence):**
+- Fast-tap harness (JS-driven, 40ms cadence, map confirmed 0-width): `totalNanErrors: 0`, `conditionsRenderedCount: 6/6`.
+- Return path: Map tab click -> `mapVisibleAfterReturn: true`, 15 tiles loaded, 0 NaN.
+- Desktop 1280px: 4 fast taps, 0 errors, list + map both visible, 22 tiles.
+- Deploy coupling: `git diff deployed-prod -- data/spots.json` shows 2 new lat/lng lines (spot 150), which the predeploy gate blocks; item 55 rides the same deploy.
+- Worktree build used the node_modules copy per the studio.md note; branch fast-forwarded to main then removed; no orphaned commits, no deploy.
+
 ## 2026-07-17 · Item 54: spot 150 (Guerneville River Park) · BUILT + VERIFIED · DEPLOY BLOCKED ON D22
 
 **Your move:** answer D22 (one line, in DECISIONS.md). Approve to ship spot 150 live; the recommended answer is approve, it's your own verified coordinate.

@@ -96,7 +96,10 @@ The "See photos" CTA uses the regular derived Google Maps search URL (`SpotDrawe
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
-## 55. [ready] P0 mobile: tapping a list spot throws `Invalid LatLng (NaN, NaN)` and the conditions panel intermittently fails to render
+## 55. [blocked(D22)] P0 mobile: tapping a list spot throws `Invalid LatLng (NaN, NaN)` and the conditions panel intermittently fails to render
+
+**Fixed and verified on `main` (commit c24fef1). Deploy coupled to D22: spot 150's un-reviewed coordinate shares the tree, so the predeploy gate blocks ANY deploy until you answer D22. Approving D22 ships this P0 fix and spot 150 together.**
+
 
 **Found by the 2026-07-17 verify loop (mobile-priority pass).** On mobile, the Map panel is CSS-hidden (`display:none` via class `hidden`) while the List tab is active, but `MapView` stays mounted (`components/HomeClient.tsx:664`). Tapping a spot in the list changes `selected`, which fires `map.flyTo([spot.lat, spot.lng], ...)` in the `FlyTo` effect (`components/MapView.tsx:21`). Leaflet's `flyTo` derives the target center from the container's pixel size; on a zero-sized (hidden) map that math divides by zero and produces `(NaN, NaN)`, which Leaflet throws as an uncaught exception.
 

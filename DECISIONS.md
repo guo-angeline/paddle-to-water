@@ -417,7 +417,10 @@ Shipped: "star + number" inline in the subtitle row in SpotDrawer and SpotCard (
 
 Answer: bare star + number, both views, no qualifier (owner override of the lawyer's needs-changes).
 
-## D22 [OPEN] 2026-07-17 · Item 54: deploy spot 150 (Guerneville River Park), a new owner-supplied coordinate reaching prod and the alert crons
+## D22 [OPEN] 2026-07-17 · Items 54 + 55: one deploy gated on your read of spot 150's coordinate (now also holds a P0 mobile fix)
+
+**Update (2026-07-17, second loop iteration):** this gate now also holds item 55, a verified P0 mobile fix (commit c24fef1), off production. Spot 150's un-reviewed coordinate sits in the same tree, and the predeploy gate blocks any `vercel --prod` while a new spots.json lat/lng is unread. So both changes ship together the moment you approve below. The P0: on mobile, tapping a list spot threw `Invalid LatLng (NaN)` (6/6 fast trials) and blanked the conditions panel (5/6); the fix guards the map's fly effects against a hidden zero-size container. Nothing is live yet; nothing reverts.
+
 
 Item 54 is built and verified on `main` (commit bb65416), not yet live. Spot 150 "Russian River - Guerneville River Park" renders at `/spot/150` with the 4.8 owner rating inline, difficulty flatwater, `tide_sensitive: false`, the evergreen notes you drafted, and the regular derived Maps photos CTA. It flows into the sitemap, OG image, `generateStaticParams`, JSON-LD, and both alert crons via `ALL_SPOTS`. Build, lint, and all 316 unit tests pass; no existing coordinate churned (`git diff data/spots.json` shows only the two new lat/lng lines).
 
