@@ -41,10 +41,12 @@
 --         crosses devices looks like two people here, same as the mechanism
 --         would treat them as two devices to re-prompt.
 --
--- Owner exclusion (analytics/EXCLUDED_PERSONS.md): ON by default. The only
--- observable subject on deploy day IS the owner, so to see the owner's own
--- rows, comment out the exclusion clause below (search
--- "TOGGLE: lift owner exclusion").
+-- Owner exclusion (analytics/EXCLUDED_PERSONS.md): ON by default, applied to
+-- BOTH the goal-metric CTE (confirms) and the guardrail SELECT (the events
+-- scan feeding shown_* and suppressed_*), since the owner is the only
+-- confirmed subscriber on deploy day and would otherwise dominate all three.
+-- To see the owner's own rows, comment out each exclusion clause below
+-- (search "TOGGLE: lift owner exclusion", two occurrences).
 WITH confirms AS (
   SELECT
     person_id,
@@ -89,9 +91,14 @@ SELECT
   (SELECT count(*) FROM confirms) AS confirmed_persons,
   (SELECT count(*) FROM returned) AS returned_persons,
   (SELECT count(*) FROM reprompted) AS reprompted_persons,
+  -- nullif, not greatest(...,1): a 0 denominator (the documented ex-owner
+  -- state today) must read NULL, not 0.0. 0.0 is indistinguishable from
+  -- "target met" on a dashboard tile, and this file's own header says the
+  -- ex-owner denominator IS 0 on deploy day. Same pattern as
+  -- enrollment_return_funnel.sql's reachable_pct / return_pct.
   round(
     100.0 * (SELECT count(*) FROM reprompted)
-    / greatest((SELECT count(*) FROM returned), 1),
+    / nullif((SELECT count(*) FROM returned), 0),
     1
   ) AS repeat_prompt_rate_pct,
   -- Guardrail 1: alert_optin_shown segmented by trigger, so a specific
@@ -114,3 +121,14 @@ FROM events
 WHERE event IN ('alert_optin_shown', 'enrollment_prompt_suppressed')
   AND timestamp >= {filters.dateRange.from}
   AND timestamp <  {filters.dateRange.to}
+  -- TOGGLE: lift owner exclusion by commenting out the next clause. Both
+  -- guardrails scan `events` unfiltered otherwise, and the owner is the
+  -- only confirmed subscriber on deploy day, so an unfiltered
+  -- suppressed_count / suppressed_persons would be entirely owner rows
+  -- with no way to read the ex-owner drop the header caveat requires.
+  AND person_id NOT IN (
+    '11a83b86-4d73-565f-8b70-2f2847d865be',
+    '0faaad14-aa87-5cda-a76c-a3f59e0fa4d1',
+    '21e77b69-f479-5130-9696-e386ad7f9aa0',
+    'f38f6a31-bb18-525d-9d49-8e7194442d2b'
+  )
