@@ -1,5 +1,19 @@
 # Briefings: the board log
 
+## 2026-07-17 · Item 53 COMPLETE (NWS two-hop collapse) · SHIPPED + DEPLOYED
+
+**Your move:** nothing needed.
+
+**TL;DR:** Conditions loads faster on three fronts now: tides can't hang the panel, the wind verdict paints in ~330ms instead of waiting on tides, and the wind lookup is one network hop instead of two. Item 53 is done.
+
+**Item 53 (two-hop collapse, final slice):** every spot open used to make a two-hop NWS wind call (resolve a gridpoint, then fetch it). That resolution is fixed per location, so I precomputed it for all 140 spots into a bundled `data/gridpoints.json` and the runtime now does one hop. Verified live: a spot open makes 0 `/points` calls (was 1-2). This completes item 53, which also shipped a tide fast-fail and a wind/tide decouple earlier today. Deployed `b88c13f`.
+
+**Appendix (evidence):**
+- Live prod: 0 `/points`, one `/forecast` (wind) + one `/forecast/hourly` (next-window), wind renders, no console errors. `deployed-prod` -> `b88c13f` (== main).
+- 327 tests (new `lib/conditions.test.ts` asserts full 140/140 precompute coverage, which also guards against a JS/Python key-rounding mismatch); lint clean; build green.
+- Both wind consumers (`fetchWind`, `getNextWindow`) fall back to the live two-hop for any spot missing from the bundle; `fetchWind` self-heals a stale gridpoint. Refresh the bundle by re-running `scripts/precompute_gridpoints.py`; NWS gridpoints rarely move.
+- One acceptance point left unshipped on purpose: a cached same-origin *wind* proxy. It's now marginal, the precompute removed the slow hop and weather.gov (unlike NOAA tides) has no CORS problem, so the only benefit left is a shared cross-viewer cache, not worth it at current traffic. Noted in the Shipped entry; re-file if traffic grows.
+
 ## 2026-07-17 · Item 53 (wind/tide decouple + honesty fix) · SHIPPED + DEPLOYED
 
 **Your move:** nothing needed. Item 53 stays `[ready]` for its last structural piece (the NWS two-hop precompute).
