@@ -119,7 +119,18 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Legal gate (marketing claims): the lawyer reviews the framing before deploy.
 - New user-facing surface: flag or staged tranche per the major-update directive.
 
-## 40. [proposed] Record-accuracy audit (owner ideas 7 and 8, merged; RESCOPED 2026-07-16 from coordinates to record truth)
+## 40. [ready] Record-accuracy audit (owner ideas 7 and 8, merged; RESCOPED 2026-07-16 from coordinates to record truth)
+
+**OWNER DIRECTION 2026-07-17: spend 80% of the effort on latitude/longitude verification.** This is a deliberate re-inversion of the 2026-07-16 rescope below, made by the owner with that rescope in front of them. Follow it. The owner has personally paddled 117 of these 142 spots, which is ground truth the sweep never had: if they say the pins are the problem, they have stood at the launches. Do not re-litigate this split.
+
+Three guardrails on the 80%, none of them optional:
+
+1. **Do not reuse a discredited screen.** Decimal-place counting is dead (~36% false positives, understated the two worst cases, missed the worst defect entirely). DBW is dead as anything but a narrow ramp-claim check (75% false positives on a 38-spot run, right once, nearly hid McNears Beach which is an official Water Trail launch). A DBW hit is NEVER grounds to hide a spot. Reverse-geocoding is real but is at least 20% false-positive at scale, because the SF Bay Water Trail publishes the PARKING, not the dock: spots 127, 130 and 132 match a published trailhead coord to 6+ decimals, reverse-geocode to a car park, and are correct as stored. Fingerprint for that batch: exactly 6 decimals on both lat and lng, on the contiguous high-id block (62, 66, 67, 126, 127, 129-133, 136-138, 140, 141, 144-146), and their notes already disclose the walk. **Never let one screen alone move a coordinate.**
+2. **Precision is not accuracy, and a JSON round-trip is not a diff.** Never alter lat/lng without a verified source, and verify at the git-diff level, not numerically: `json.load` then `json.dump` silently reformats `-121.1729010` to `-121.172901`, so a float comparison reports "nothing changed" while the file churns. `git diff data/spots.json | grep -E '^[+-].*"(lat|lng)"'` must show ONLY the coordinates you intended to move. Prefer text-level edits.
+3. **The 20% is not a leftover, it is `tide_sensitive`.** It gates `lib/savedConditions.ts`, i.e. the conditions engine, which is the app's differentiator. Verified 2026-07-17: **36 of 68 visible bay spots say `tide_sensitive: false`**, and **14 records describe tides in their own notes while the flag says false** (ids include 1, 25, 27, 29, 38, 39, 40, 41). A wrong flag here means the app tells someone a tidal launch is not tide-dependent. If the 80% consumes the iteration, `tide_sensitive` gets split into its own `[ready]` item rather than deferred silently. It does not get dropped.
+
+**Sequencing:** spots 76, 79 and 92 are OUT of scope here; their disposition is DECISIONS.md D14, still open. Everything else in this item is unblocked.
+
 
 **Why:** Owner ideas 2026-07-16, which are the same item from two ends. Idea 7 (directions should land on the actual boat launch) and idea 8 (7-digit lat/lng) both describe "the pin is not on the put-in."
 
@@ -464,7 +475,7 @@ Owner answered D2 (a): the two live A/B tests are underpowered at ~14 users/day 
 
 This sits against the board directive "every major update behind an A/B flag, never straight to 100%", but D2(a) is the owner's explicit exception for the interstitial, with rationale documented. No new user-facing surface: the card already shipped and was already shown to 50%.
 
-## 7. [proposed] Mobile polish leftovers (deferred from the Jun 2026 mobile UX pass)
+## 7. [ready] Mobile polish leftovers (deferred from the Jun 2026 mobile UX pass)
 
 Carried over when IMPROVEMENT-PLAN.md was retired; verify each still reproduces before working it.
 
@@ -542,7 +553,7 @@ Attempts 2026-07-09 in the `app/globals.css` shell, none cleared it on-device: (
 - No new client events required (existing series only); if any prop is added, an `INSTRUMENTATION_CHANGELOG.md` entry. Analytics contract only, no protected surface touched.
 - Delivered before the read window opens so the early-August numbers are interpretable.
 
-## 26. [proposed] Cold-open return surface: your recently-checked spots, with conditions now
+## 26. [ready] Cold-open return surface: your recently-checked spots, with conditions now
 
 **Why:** Conditions checking is the one validated, repeated behavior (89 of 100 openers genuinely view the dwell-gated conditions panel; the ~16% who return come back to re-check, per `reports/analytics-2026-07-09.md`), and it is the only reason-to-return not gated on the unproven alert loop or an install. A returner today lands on a bare map and must re-find their spots. Give cold opens a personal strip of the spots they recently viewed with live paddleability: a pull-based return reason that needs no push, no email, no install.
 
