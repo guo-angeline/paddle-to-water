@@ -198,6 +198,17 @@ Question for the owner:
 
 Answer: 
 
+### Addendum, 2026-07-16: spot 92 joins this memo, and one process fact about 79
+
+**Spot 92 (San Rafael Canal) is now the loudest open record, and it is NOT hidden.** The item 39 legal gate escalated it: 92 is 101 Surf Sports' private business dock, and the 127-spot sweep (`reports/data-quality-sweep-2026-07-16.md` row 0) says a user who drives there may have no right to launch. It is live and listed today.
+
+- The owner rated it 4.3. **That rating was dropped before flag-on** (`lib/spots.test.ts` guards it). The gate's reasoning: `/disclaimer` covers a spot *"appearing"* on the site, and a favorable rating is not appearing, it is vouching, which exceeds the clause we rely on. The aggravator is that our own sweep is dated the same day and discoverable.
+- **Owner confirmed no relationship with 101 Surf Sports** (2026-07-16), so no FTC Endorsement Guides material-connection disclosure is needed.
+- The notes now say plainly that this is a private business dock rather than a public launch. They deliberately do **not** assert a rental/storage-only access policy: the sweep rates the exact policy only "medium" (the shop's storage/contact pages 404'd) and the shop's own site says "come on down and go for a paddle", so a stated access rule would be inventing a fact.
+- **Still open:** whether 92 should remain listed at all, or be replaced with a Water-Trail-confirmed public launch. The sweep declines to propose a replacement coordinate and will not guess Buck's Landing. Un-hiding/delisting is an owner decision by the same rule as 76 and 79.
+
+**Process fact recorded from the item 39 rating pass (relevant to 79):** the owner's blank rating sheet was generated over `ALL_SPOTS_INCLUDING_HIDDEN`, so it asked the owner to rate spot 79, a place established that morning not to exist. The owner rated it 3.9 and, when shown, called it a slip. The row structure supports that reading (79 sits in no fill-down run; its neighbours vary), and the rating was dropped. The narrower point worth keeping: **the sheet never gated on "have I been here"**, so "these are places I paddled" is an after-the-fact reconstruction rather than a per-row recorded fact. Any future rating sheet gets a "been here" column and is generated from `ALL_SPOTS`.
+
 ## D15 [RESOLVED] 2026-07-16 · Item 39 (Paddle score): scope + how the research gets done
 
 Context: item 39 was blocked on two things. (1) The design agent's rubric weighted wind exposure 0.30 and water quality 0.15, so 45% of the score was about the water, while the lawyer gate called "rate the put-in, not the paddle" the highest-leverage decision in the whole reviews/accounts block (an average the site computes is arguably first-party speech with no Section 230 protection; *Lemmon v. Snap* and progeny let negligent-design claims past 230 when they target the platform's own design choice). (2) A full 142-spot pass was priced at 23-30 hours, and the lawyer was explicit that a published rubric decorating an unresearched score is deception.
@@ -233,7 +244,13 @@ This is filed as OPEN rather than RESOLVED because item 39 was the owner's idea 
 
 Question for the owner: confirm item 39 is cut, or override the kill criterion and say what would make the score worth shipping at a 1.1-point spread?
 
-Answer: 
+Answer: **Overridden, and the premise moved.** (2026-07-16, owner.) The owner supplied their OWN hand-entered 1-5 rating for 119 of 142 spots, which reframed the decision: the question was never "ship the weighted score at a 1.1 spread", it was "is there a different source for this number".
+
+**The computed rubric stays cut. D16's recommendation is upheld on its own terms and is not what was overridden.** What ships is a different feature that reuses the item 39 slot: an editorial owner rating, not a score. The two are not interchangeable and must never be blended. The rubric (D15) scored the PUT-IN; the owner rating rates THE PADDLE. They correlate at 0.04 against researcher A and -0.10 against B, while A and B correlate 0.52 with each other, so they answer different questions rather than estimating one quantity. China Camp is 3.6 on the rubric and 5.0 from the owner, and both are correct.
+
+Analysis: `reports/paddle-score-owner-ratings-2026-07-16.md`. The owner ratings clear the same pre-committed 1.5 threshold pooled (**spread 2.0**), but that is an artifact of averaging regions with different means. Within-region, only North Bay passes (n=45, spread 1.9); all 29 East Bay ratings sit inside a 0.4-wide band. **The owner was shown this and directed the full-scope ship anyway** (recorded so the predicted-flat East Bay is never later reported as a discovery). Shipped behind the `owner-rating` flag in `7dfd227`.
+
+Two things this decision does NOT resolve, tracked below: spot 92 (see D14 addendum) and the fact that the ratings were never gated on "have I been here" (see the note in D14).
 
 ## D17 [OPEN] 2026-07-16 · paddletowater.com receives no mail, and no DMARC record is published
 

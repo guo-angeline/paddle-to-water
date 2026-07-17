@@ -1,6 +1,6 @@
 # Experiment: owner_rating
 
-Item 39. Ships the owner's 118 hand-entered spot ratings into the spot drawer.
+Item 39. Ships the owner's 117 hand-entered spot ratings into the spot drawer.
 
 ## Hypothesis
 
@@ -15,7 +15,7 @@ Showing the owner's own 1-5 rating of the paddle will raise `spot_action` (direc
 
 - Exposure event: `experiment_exposed` (`experiment: "owner_rating"`).
 - Fires from a `useEffect` gated on `showOwnerRating` in `components/SpotDrawer.tsx`, which requires flags ready **and** `treatment` **and** the spot actually carrying a rating.
-- **24 of 142 spots are deliberately unrated.** A bucketed user who only ever opens unrated spots renders nothing and is correctly never exposed. Do not analyse on bucketing.
+- **25 of 142 spots carry no rating.** 24 are deliberately blank (the owner has not paddled them); spot 92's was removed by the legal gate. A bucketed user who only ever opens unrated spots renders nothing and is correctly never exposed. Do not analyse on bucketing.
 
 ## Primary metric (exactly one)
 
@@ -41,11 +41,11 @@ The ratings only discriminate in one region. Within-region spread against the pr
 
 | region | n | spread | |
 |---|---|---|---|
-| North Bay | 46 | 1.9 | **PASS** |
+| North Bay | 45 | 1.9 | **PASS** |
 | East Bay | 29 | **0.4** | FAIL |
 | Sierra Nevada | 8 | 1.3 | FAIL |
 | all others | ≤7 each | n/a | n too thin to judge |
-| **pooled** | **118** | **2.0** | PASS, but see below |
+| **pooled** | **117** | **2.0** | PASS, but see below |
 
 The pooled 2.0 is an artifact of averaging regions with different means. It does not survive decomposition.
 
@@ -55,7 +55,7 @@ The pooled 2.0 is an artifact of averaging regions with different means. It does
 2. **The East Bay arm is close to a null treatment.** All 29 East Bay ratings sit inside a 0.4-wide band (3.8-4.2). Treatment there shows a number that is nearly constant across every spot a user compares. If East Bay traffic dominates the sample, the experiment is substantially measuring nothing, and it will read as "no effect" regardless of whether the idea is good.
 3. **Power.** This app's traffic is low (see D2, 2026-07-07: two experiments were recalibrated for exactly this). 300 exposed per variant is the floor for the *pooled* read; a North-Bay-only segment will take considerably longer to reach it. Low traffic means a longer read window, not an excuse to read early.
 
-**The owner directed the full 118-spot ship on 2026-07-16 after reading the analysis.** That is recorded so a later analyst does not mistake the flat East Bay for a discovery: it was known and predicted before launch.
+**The owner directed the full-scope ship on 2026-07-16 after reading the analysis.** Spot 92 was then dropped by the legal gate (private business dock, possible trespass), taking North Bay from 46 to 45. That is recorded so a later analyst does not mistake the flat East Bay for a discovery: it was known and predicted before launch.
 
 ## Result (fill in at the end)
 

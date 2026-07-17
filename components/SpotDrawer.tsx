@@ -248,9 +248,23 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
                   <span aria-hidden className="text-(--accent) text-sm leading-none">&#9733;</span>
                   <span className="text-sm font-semibold text-(--dark)">
                     {spot.owner_rating!.toFixed(1)}
-                    <span className="sr-only"> out of 5, rated by one paddler</span>
+                    <span className="sr-only"> out of 5 on the paddle, rated by one paddler</span>
                   </span>
-                  <span className="text-xs text-(--muted)">One paddler&rsquo;s take</span>
+                  {/*
+                    --ink-2 (#42607A), not --muted (#6E8598). This qualifier is the
+                    element carrying the legal weight: it is what makes the number an
+                    opinion about a day out rather than an implied claim that the spot
+                    suits you. --muted renders 3.84:1 on this white panel, under the
+                    4.5:1 AA floor, which put the claim at 14.6:1 and the disclosure
+                    below legibility. --ink-2 is 6.59:1. Do not "harmonize" this back
+                    to --muted to match the line above it.
+
+                    "on the paddle" names the axis. The rating scores the PADDLE, not
+                    the put-in (D15 scoped the cut rubric to the put-in, and the two
+                    correlate at 0.04). Without the axis a bare 5.0 reads as a verdict
+                    on suitability, which is a representation we are not making.
+                  */}
+                  <span className="text-xs text-(--ink-2)">One paddler&rsquo;s take on the paddle</span>
                 </p>
               )}
             </div>
