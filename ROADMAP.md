@@ -36,6 +36,8 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Shipped
 
+- 2026-07-17 [done] Item 48: desktop filter pills no longer stretch to a fifth of the viewport (1ca79a3, deployed). FilterBar row 2 was `grid grid-cols-5` + `w-full` at every width, with no breakpoint: 278px pills on a 1408px bar vs 119px content-sized region pills one row up. Below md unchanged; from md it is a flex of content-sized pills. Row-2 class was duplicated 3x, extracted to `pillSm`. Measured before and after at 1440px and 390px.
+
 - 2026-07-17 [done] Item 47: email subscribers no longer re-prompted to subscribe (f8322ed, deployed). Suppresses the email enrollment prompt at all 5 gates once the server ledger confirms the subscription; also strips the subscription token from the URL (it was leaking to PostHog on every email arrival) and widens the privacy purpose sentence. D18 resolved: shipped 100% unflagged as a bugfix, button allowed to hide (push dead-end deferred to item 49). Eligible population is 1 (the owner); shipped for denominator integrity, not user impact.
 
 - 2026-07-16 [done] Item 38: fixed the app-wide Tailwind v4 bracket CSS-variable bug. Converted every `{prop}-[--token]` to the working parens form `{prop}-(--token)` across 10 component files (0 bracket forms remain in `.tsx`); legitimate arbitrary values like `z-[1200]` left untouched. Corrected the CLAUDE.md Theme section (it documented the broken bracket syntax as canonical) and a matching globals.css comment. Result: `text-(--muted)` now renders `#6E8598` (was dark `#0B2A47`), accent borders/text/backgrounds render azure `#0E6FD1`. Verified live: home 200, subtitle muted-gray and Feedback border azure on prod, 186 tests, build green, no layout shift (color tokens only). Shipped ISOLATED via cherry-pick onto a clean branch off main, because the working branch was entangled with a concurrent session's unrelated commits (see BRIEFINGS 2026-07-16). Deployed. A follow-up `--muted` body-text contrast question was raised (see below).
@@ -58,19 +60,6 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 ---
 
 ## Owner items, added 2026-07-16 (evening; both [ready], queued top-most on purpose)
-
-## 48. [in-progress] 2026-07-17T09:10:52Z Desktop buttons are too wide
-
-**Reported by the owner 2026-07-16.** Buttons render wider than they should on desktop.
-
-**Unscoped on purpose: the report names no specific button.** Start by finding which ones are wrong rather than restyling every button in the app. The likely suspects are full-width CTAs that are correct on the mobile bottom sheet and inherit that width into the 320px desktop drawer (for example "Watch this spot" in `components/SpotDrawer.tsx`, the enrollment card CTAs in `components/InstallPrompt.tsx`).
-
-**Acceptance:**
-- Identify the specific offending buttons at desktop widths and state which they are before changing any of them.
-- Fix without regressing mobile: the same components render in the mobile bottom sheet, where full-width is deliberate.
-- Verify at both 1280px and 390px on the rendered surface, not in the code (the `verify` skill drives both).
-- Pure visual polish with no new interaction, so it is exempt from the A/B directive (small fixes and copy tweaks are exempt). No new analytics events.
-- Check against item 37 (visual-polish pass, also `[ready]`): if 37 is still open, these may be the same work and should be merged rather than done twice.
 
 ## 49. [proposed] Email subscribers on Android have no path to push
 
