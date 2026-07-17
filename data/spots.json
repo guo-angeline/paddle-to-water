@@ -2640,5 +2640,24 @@
     "dog_friendly": null,
     "rentals_available": false,
     "inspection_required": false
+  },
+  {
+    "owner_rating": 4.8,
+    "id": 150,
+    "region": "North Bay",
+    "city": "Guerneville",
+    "water": "Russian River - Guerneville River Park",
+    "notes": "A dedicated concrete boat ramp drops straight from the parking lot to the water, so the carry is short and easy. Through summer the Russian River here runs high and settles into a lake-like calm, one of the mellower flatwater stretches around Guerneville.",
+    "lat": 38.5001973,
+    "lng": -122.9957117,
+    "geocode_display": null,
+    "difficulty": "flatwater",
+    "fee_amount": null,
+    "has_fee": null,
+    "power_boats": null,
+    "tide_sensitive": false,
+    "dog_friendly": null,
+    "rentals_available": false,
+    "inspection_required": null
   }
 ]

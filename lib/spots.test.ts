@@ -7,7 +7,7 @@ const ROOT = path.resolve(__dirname, "..");
 
 describe("hidden spots are withheld everywhere (2026-07-16 coordinate audit)", () => {
   it("filters hidden spots out of ALL_SPOTS but keeps the records", () => {
-    expect(ALL_SPOTS_INCLUDING_HIDDEN.length).toBe(142);
+    expect(ALL_SPOTS_INCLUDING_HIDDEN.length).toBe(143);
     expect(ALL_SPOTS.length).toBe(ALL_SPOTS_INCLUDING_HIDDEN.length - HIDDEN_SPOTS.length);
     expect(ALL_SPOTS.every((s) => !s.hidden)).toBe(true);
   });
@@ -61,8 +61,8 @@ describe("hidden spots are withheld everywhere (2026-07-16 coordinate audit)", (
 describe("owner ratings (item 39, 2026-07-16)", () => {
   const rated = ALL_SPOTS_INCLUDING_HIDDEN.filter((s) => typeof s.owner_rating === "number");
 
-  it("carries the owner's 117 hand-entered ratings", () => {
-    expect(rated.length).toBe(117);
+  it("carries the owner's 118 hand-entered ratings", () => {
+    expect(rated.length).toBe(118);
   });
 
   it("delists spot 92, where the user may have no right to launch", () => {
