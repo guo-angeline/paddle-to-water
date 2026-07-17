@@ -1,5 +1,20 @@
 # Briefings: the board log
 
+## 2026-07-17 · Item 54: spot 150 (Guerneville River Park) · BUILT + VERIFIED · DEPLOY BLOCKED ON D22
+
+**Your move:** answer D22 (one line, in DECISIONS.md). Approve to ship spot 150 live; the recommended answer is approve, it's your own verified coordinate.
+
+**TL;DR:** Spot 150 is built, verified, and merged to main. The only thing left is the deploy, which your standing D19 coordinate gate holds for your read. Nothing is live yet and nothing reverted.
+
+**Item 54 (add Guerneville River Park):** Added spot 150 "Russian River - Guerneville River Park" as a single additive record. Owner-supplied verified coordinate (38.5001973, -122.9957117), `owner_rating` 4.8 rendering inline as the bare star+number, difficulty flatwater, `tide_sensitive: false`, evergreen third-person notes from your draft, regular derived Maps photos CTA (no custom field). Text-level edit to spots.json, no reserialization, `git diff` shows only the two new lat/lng lines, zero churn on existing coordinates. Flows to `/spot/150`, sitemap, OG image, JSON-LD, and both alert crons via `ALL_SPOTS`. Gates green: 316/316 unit tests, lint clean (one pre-existing warning), production build generates `/spot/150` + its OG image. Merged to main (bb65416 + state commit 6274c38). Not deployed: the predeploy gate holds new spots.json lat/lng per D19 for your review, so this is escalated as D22, not auto-shipped.
+
+**Appendix (evidence):**
+- Build: `✓ Compiled successfully`, 303 static pages, `/spot/150.html` + `/spot/150/opengraph-image` prerendered; sitemap contains spot/150.
+- Rendered page checks (prerendered HTML): rating 4.8 present, name + notes present, JSON-LD carries the water name, difficulty renders "Flatwater".
+- Coordinate review artifact: `git diff deployed-prod -- data/spots.json` shows only id 150 and its lat/lng.
+- All work done in a scratchpad git worktree; branch fast-forwarded to main then removed; no orphaned commits, no root-branch switch, no deploy so no live change to revert.
+- Next loop fire (~30 min cadence, session cron): item 55, the P0 mobile `Invalid LatLng (NaN)` bug, gets its own iteration with browser verification.
+
 ## 2026-07-17 · Item 48: desktop filter pills · SHIPPED · LOOP STOPPED (backlog dry)
 
 **What:** The filter row (Flatwater / Open water / River / Free only / Near me) stretched each pill to 278px on desktop, so an 11px "River" label sat in a quarter-viewport slab while the region pills above it were content-sized. From md up the row is now content-sized pills. Mobile is untouched by construction.
