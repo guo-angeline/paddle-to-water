@@ -163,8 +163,9 @@ export default function PrivacyPage() {
           <Section title="Why we collect it">
             <p>
               Analytics tell us which parts of the site actually get used, so we fix the parts that do not.
-              Email and push details exist for one purpose: to send you the alert you asked for, and to let you
-              stop it. We do not use any of it for anything else.
+              Email and push details exist to send you the alert you asked for, to manage your subscription
+              (including not asking again for an address we already have), and to let you stop it. We do not
+              use any of it for anything else.
             </p>
           </Section>
 

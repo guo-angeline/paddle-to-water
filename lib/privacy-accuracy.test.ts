@@ -140,4 +140,19 @@ describe("privacy policy matches what the code actually does", () => {
   it("follows house style: no em dashes", () => {
     expect(policy).not.toContain("—");
   });
+
+  it("names subscription management as a purpose, since the app reads subscription state to decide whether to prompt", () => {
+    expect(policy).toMatch(/manage your subscription/i);
+    expect(policy).toMatch(/not asking again for an address we already have/i);
+    expect(policy).toMatch(/to let you stop it/i);
+    expect(policy).toMatch(/We do not use any of it for anything else/i);
+    // "exist for one purpose" is now false: there are three. Do not let it come back.
+    expect(policy).not.toMatch(/exist for one purpose/i);
+  });
+
+  it("claims the email address is never returned to the browser, so the open-ping route must never send it back", () => {
+    const route = read("app/api/email/opened/route.ts");
+    expect(route).not.toContain('.select("email"');
+    expect(route).not.toMatch(/json\(\{[^}]*email/i);
+  });
 });
