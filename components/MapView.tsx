@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, CircleMarker, ZoomControl, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { Spot } from "@/lib/types";
@@ -18,7 +18,14 @@ function FlyTo({ spot }: { spot: Spot | null }) {
     // to zoom 13, so a Bay-overview browser got yanked in 7 levels each tap and
     // gave up for the list. Keep their zoom (floor of 11 so a far-out view still
     // gets close enough to read context).
-    if (spot) map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), 11), { duration: 0.4 });
+    // Guard against a hidden (zero-size) container. On mobile the map panel is
+    // display:none while the List tab is active but MapView stays mounted, so a
+    // list tap changes `selected` and fires flyTo on a 0x0 map. Leaflet derives
+    // the target center from the container's pixel size; dividing by zero yields
+    // (NaN, NaN), which it throws as an uncaught "Invalid LatLng". That throw also
+    // blanked the conditions panel on the same commit. When the Map tab becomes
+    // visible, ResizeHandler re-centers on the current selection.
+    if (spot && map.getSize().x > 0) map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), 11), { duration: 0.4 });
   }, [spot, map]);
   return null;
 }
@@ -38,6 +45,9 @@ function FitBounds({ spots, hasSelection, enabled }: { spots: Spot[]; hasSelecti
     if (!enabled) return;
     // Don't fight FlyTo when a spot is selected (e.g. landing on a /spot URL).
     if (hasSelection) return;
+    // Hidden container (mobile List tab): flyToBounds divides by a 0x0 size and
+    // throws Invalid LatLng, same as FlyTo above. Skip; ResizeHandler recomputes.
+    if (map.getSize().x === 0) return;
     if (spots.length === 0) return;
     if (spots.length === 1) {
       map.flyTo([spots[0].lat, spots[0].lng], 13, { duration: 0.4 });
@@ -55,8 +65,40 @@ type UserLocation = { lat: number; lng: number };
 function FlyToUser({ location }: { location: UserLocation | null }) {
   const map = useMap();
   useEffect(() => {
-    if (location) map.flyTo([location.lat, location.lng], 11, { duration: 0.6 });
+    if (location && map.getSize().x > 0) map.flyTo([location.lat, location.lng], 11, { duration: 0.6 });
   }, [location, map]);
+  return null;
+}
+
+// When the map container transitions from hidden (0x0, the mobile List tab) to
+// visible (Map tab shown), Leaflet still holds the stale zero size and paints
+// gray tiles. Recompute the size, then re-center on the current selection so the
+// "tap a spot in the List, switch to Map" path lands on that spot instead of the
+// default Bay overview. `selected` is read through a ref so the observer is set
+// up once per map, not re-subscribed on every selection change.
+function ResizeHandler({ selected }: { selected: Spot | null }) {
+  const map = useMap();
+  const selectedRef = useRef(selected);
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+  const wasHidden = useRef(true);
+  useEffect(() => {
+    const el = map.getContainer();
+    const ro = new ResizeObserver(() => {
+      const visible = map.getSize().x > 0;
+      if (visible && wasHidden.current) {
+        wasHidden.current = false;
+        map.invalidateSize();
+        const spot = selectedRef.current;
+        if (spot) map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), 11), { duration: 0 });
+      } else if (!visible) {
+        wasHidden.current = true;
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [map]);
   return null;
 }
 
@@ -99,6 +141,7 @@ export default function MapView({ spots, selected, onSelect, userLocation, fitTo
       />
 
       <FlyTo spot={selected} />
+      <ResizeHandler selected={selected} />
       <FitBounds spots={spots} hasSelection={!!selected} enabled={fitToSpots} />
       <FlyToUser location={userLocation ?? null} />
 
