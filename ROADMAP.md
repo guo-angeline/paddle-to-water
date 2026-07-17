@@ -88,13 +88,26 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 - Legal gate (marketing claims): the lawyer reviews the framing before deploy.
 - New user-facing surface: flag or staged tranche per the major-update directive.
 
-## 40. [proposed] Coordinate + directions accuracy audit (owner ideas 7 and 8, merged)
+## 40. [proposed] Record-accuracy audit (owner ideas 7 and 8, merged; RESCOPED 2026-07-16 from coordinates to record truth)
 
 **Why:** Owner ideas 2026-07-16, which are the same item from two ends. Idea 7 (directions should land on the actual boat launch) and idea 8 (7-digit lat/lng) both describe "the pin is not on the put-in."
 
 **The 7-digit premise does not hold, and is corrected here.** Precision is not accuracy. Six decimals is ~11cm; seven is ~1.1cm. No geocoder resolves a launch ramp to the centimeter, so adding a digit to a coordinate that is 40m off the water just makes it precisely wrong. 106 of 142 spots **already** carry 7+ decimals (inherited from the geocoder's float output) and that did not make them correct. The uniform-digit-count goal is dropped; correctness of the point is the goal.
 
-**AUDITED 2026-07-16. Full report + sources: `reports/coord-audit-2026-07-16.md`. `data/spots.json` untouched, pending owner approval per the house rule.**
+**RESCOPED 2026-07-16 by the 127-spot sweep (`reports/data-quality-sweep-2026-07-16.md`).** This item was written as a coordinate audit. That framing is too narrow and would leave the worst defects in production: the sweep's four biggest findings are in `notes` and the boolean fields, not the pin. **Acceptance widens from "the pin is on the put-in" to "the record is true."**
+
+The sweep also corrected this item's own method, which is the most important thing in it:
+- **DBW is the wrong registry, and using it as a screen was a category error.** It registers motorized/trailered facilities, not paddleboard put-ins. It lists "Devils Nose Put-in" as `NoFacility`, and McNears Beach is `NoFacility` while being an official Water Trail launch. 75% false-positive rate on a 38-spot run. A DBW hit disproves a **ramp claim** and nothing more, and **must never be grounds to hide a spot**. (Checked: neither the 76 nor the 79 hide rested on DBW type, so both stand.) Use the **SF Bay Water Trail** instead: it publishes dock type, parking, fees, and hazards.
+- **The reverse-geocode screen is not zero-false-positive either** (at least 20% at scale). The pipeline ingested Water Trail trailhead coordinates, and the Water Trail publishes the **parking, not the dock**. 18 spots carry that provenance fingerprint (exactly 6dp, contiguous high-id block); several fire the screen and are correct.
+- **No second spot 79 exists.** Every launch the sweep verified is real and legal. The failure mode is not invention, it is **ingesting a good source and losing what it meant**: a parking coord stored as a put-in, a beach written up as a "paved ramp" (47, 120), a private shop's dock sold as a public launch (92), published closure dates dropped (134).
+
+**Highest-value fix in the sweep, and it is not a coordinate: `tide_sensitive` is systematically wrong and it gates the conditions engine** (`lib/savedConditions.ts` passes it into every conditions fetch), which is the app's differentiator. 36 of 68 bay spots say `false`; 14 records describe tides in their own notes while the flag says `false`.
+
+**Owner-decision queue from the sweep (nothing edited):** 92 San Rafael Canal (a private business dock presented as a public put-in; a user may have no right to launch), 47 McNear's (ramp claim false + `has_fee` wrong), 70 Richmond (pin on a neighbourhood centroid, merges 4 launches), 64 Del Valle (`has_fee` + `inspection_required` + `rentals_available` all three wrong), 134 Eden Landing (lng corrupted ~193m + omits ~10 published closure dates), 54 Russian River (pinned 24-33km from both put-ins its own notes name; duplicates 33 and 35).
+
+**Not covered, stated plainly:** 37 screen-1 fires and 70 auto-passed spots were not carried to primary sources, and 5 spots (24, 148, 136, 97, 27) were unresolved at cutoff.
+
+**Prior pass (coordinates only). Full report + sources: `reports/coord-audit-2026-07-16.md`. `data/spots.json` untouched, pending owner approval per the house rule.**
 
 The decimal-count screen that produced the original 11-spot list **was a weak heuristic and is superseded by the audit below.** It had a ~36% false-positive rate, it understated both real worst cases, and it missed the most serious defect entirely (which is not a coordinate problem). Do not re-run it; use the two tests in the "systemic finding" note below instead.
 
