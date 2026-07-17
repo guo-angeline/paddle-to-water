@@ -1,5 +1,29 @@
 # Briefings: the board log
 
+## 2026-07-16 · Item 47: email subscribers re-prompted to subscribe forever · SHIPPED
+
+What: Every suppression gate read push state only, so an email subscriber got asked to enroll on every visit. Fixed, deployed, verified live. Lead honestly: the eligible population is 1 and it is you. 2 email submits, 0 confirmed ex-owner in 14 days. This was funnel-denominator integrity ahead of the August retention read, not user impact. The loop spent an iteration on a one-person bug while D17, which blocks every enrollment from ever existing, sits unanswered.
+
+Bigger find: the subscription token was going to PostHog. The email return URL carried `t=<token>`, nothing stripped it, `before_send` scrubs nothing, so a live unsubscribe key landed in a third-party analytics store and browser history. Pre-existing, caught by the legal gate, now stripped via replaceState and proven in a real browser (`/?spot=45&from=email&t=SECRET` becomes `/?spot=45`, strips even when the ping fails).
+
+Evidence: 292 tests pass, up 59. Build clean. Differential browser proof the guard bites only when it should: confirmed subscriber sees no enrollment card and no alerts button, same user with email state cleared sees both. Live on paddletowater.com: API returns `{"known":false,"confirmed":false}` (was a bare 204), widened privacy sentence renders, new events present in the live bundle. Adversarial verification earned its keep: pass one passed its own tests while being dead code (zero production callers, guard did nothing), plus two phantom events.
+
+Measure: no A/B flag. Bugfix exemption, recorded as exempt because it is a bugfix, not because traffic is thin. `enrollment_prompt_suppressed` is now the only signal that would catch an over-broad suppression, so it is required, not optional.
+
+Deployed: production, commit 57d0bc6, verified live today. 19 commits, 21 files, +1122.
+
+Decisions raised: D18 raised and resolved by you in-session. You took Q2(c), letting the alerts button hide, against my recommendation and against your own item-47 text, with the tradeoff in front of you. Cost contained: item 49 filed for the Android push dead-end, gated behind D17 so nobody builds for an empty cohort. Legal gate: needs-changes, zero blockers, all three actions done. Parked: none.
+
+Correction: I wrote item 47's roadmap text claiming the bug "lands hardest" on "the majority of the enrolled population." True as a share, vacuous at a count of 1. The repo forbids overstated stats and I broke it. Fixed in ROADMAP.md, recorded in D18.
+
+Process: loop unpaused this session, scoped to one thread. Worktree only, root never left main, deploy ref confirmed to contain origin/main, worktree removed, nothing orphaned.
+
+Owed by you: D17 (minutes in Cloudflare, blocks every email enrollment and leaves the live privacy policy pointing at a bouncing address that is also the COPPA child-report channel), D10 (3 days old), D14. Also the owner-rating flag in PostHog, or item 39's shipped ratings render to nobody.
+
+Next up: item 48, desktop buttons too wide. The loop wakes for it.
+
+---
+
 ## 2026-07-16 (evening) · Items 34 + 39 + 40 + 44 + 45 · 1 SHIPPED (undeployed), 1 CUT, 2 RESCOPED, 1 BLOCKED ON YOU
 
 What happened, in one line: **the day's real output was finding out that four of your eight ideas were built on premises that do not hold, and proving it cheaply instead of shipping them.**
