@@ -13,6 +13,7 @@ import FeedbackModal from "@/components/FeedbackModal";
 import ViewportDiagnostic from "@/components/ViewportDiagnostic";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
+import { emptyStateCopy } from "@/lib/emptyStateCopy";
 import { trackIntent, trackSystem, setPersona, type SpotViewedSource } from "@/lib/analytics";
 import { useSavedConditions } from "@/components/useSavedConditions";
 import { syncWatchedSpots, reportAlertOpen } from "@/lib/push";
@@ -329,6 +330,18 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   // full set, fitting all 140 spans the whole state; keep the Bay default instead.
   const isFiltered = !!(filters.region || filters.difficulty || filters.freeOnly || filters.search.trim());
 
+  // Defect C: empty-state copy and clear scope both need to know which axis
+  // (search vs structured filters vs both) actually produced zero results, so
+  // "Clear filters" never silently also wipes a typed search without saying so.
+  const filtersActive = !!(filters.region || filters.difficulty || filters.freeOnly);
+  const emptyState = emptyStateCopy(filters.search, filtersActive);
+  const onEmptyClear =
+    emptyState.clearKind === "search"
+      ? clearSearchOnly
+      : emptyState.clearKind === "filters"
+      ? clearStructuredFilters
+      : handleClearAll;
+
   const filtered = useMemo(() => applyFilters(ALL_SPOTS, filters), [filters]);
 
   const sortedFiltered = useMemo(() => {
@@ -485,6 +498,22 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     trackIntent("filter_changed", { cleared: true });
   }
 
+  // Defect C: scoped clears so the empty-state "Clear search" / "Clear filters"
+  // buttons only touch the axis their own copy named, instead of handleClearAll's
+  // full reset silently also wiping whichever half the user didn't ask to clear.
+  function clearSearchOnly() {
+    setFilters((f) => ({ ...f, search: "" }));
+    deselect();
+    trackIntent("filter_changed", { cleared: true });
+  }
+
+  function clearStructuredFilters() {
+    setFilters((f) => ({ region: "", difficulty: "", freeOnly: false, search: f.search }));
+    setUserLocation(null);
+    deselect();
+    trackIntent("filter_changed", { cleared: true });
+  }
+
   function setSearch(value: string) {
     setFilters((f) => ({ ...f, search: value }));
     deselect();
@@ -620,7 +649,8 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             selected={selected}
             onSelect={handleSelect}
             distanceMap={distanceMap}
-            onClearFilters={handleClearAll}
+            onClearFilters={onEmptyClear}
+            emptyState={emptyState}
             savedSpots={savedSpots}
             favorites={favorites}
             onToggleFavorite={toggleFavorite}
@@ -639,12 +669,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
               so an over-filtered user would otherwise just see a blank map. */}
           {sortedFiltered.length === 0 && (
             <div className="absolute inset-0 z-[400] flex flex-col items-center justify-center bg-(--bg)/80 backdrop-blur-sm text-center px-4">
-              <p className="text-(--dark) font-semibold">No spots match your filters</p>
+              <p className="text-(--dark) font-semibold">{emptyState.title}</p>
               <button
-                onClick={handleClearAll}
+                onClick={onEmptyClear}
                 className="mt-3 px-4 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-(--muted) hover:border-(--accent) hover:text-(--dark) transition-colors bg-white"
               >
-                Clear filters
+                {emptyState.clearLabel}
               </button>
             </div>
           )}

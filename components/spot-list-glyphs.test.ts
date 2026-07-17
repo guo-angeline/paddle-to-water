@@ -22,14 +22,13 @@ describe("spot list glyph removal", () => {
     expect(spotListSrc).not.toContain("🏄");
     expect(spotListSrc).not.toContain("🔔");
     expect(spotListSrc).toContain("Turn on alerts");
-    expect(spotListSrc).toContain("No spots match your filters");
+    expect(spotListSrc).toContain("emptyState");
     expect(spotListSrc).toContain("♥");
   });
 
-  it("HomeClient.tsx has no 🏄 glyph but keeps its empty-state copy", () => {
+  it("HomeClient.tsx has no 🏄 glyph and uses the shared empty-state copy helper", () => {
     expect(homeClientSrc).not.toContain("🏄");
-    expect(homeClientSrc).toContain("No spots match your filters");
-    expect(homeClientSrc).toContain("Clear filters");
+    expect(homeClientSrc).toContain("emptyStateCopy");
   });
 
   it("SpotCard.tsx retains the functional favorite toggle control", () => {

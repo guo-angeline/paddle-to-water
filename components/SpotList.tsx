@@ -20,11 +20,12 @@ interface Props {
   favorites?: Set<number>;
   onToggleFavorite?: (id: number) => void;
   condBySpot?: Record<number, SavedConditionState>;
+  emptyState?: { title: string; clearLabel: string };
 }
 
 export default function SpotList({
   spots, selected, onSelect, onClearFilters, distanceMap,
-  savedSpots = [], favorites = new Set(), onToggleFavorite, condBySpot = {},
+  savedSpots = [], favorites = new Set(), onToggleFavorite, condBySpot = {}, emptyState,
 }: Props) {
   const selectedRef = useRef<HTMLDivElement>(null);
 
@@ -78,12 +79,12 @@ export default function SpotList({
   if (mainSpots.length === 0 && savedSpots.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-        <p className="text-(--dark) font-semibold">No spots match your filters</p>
+        <p className="text-(--dark) font-semibold">{emptyState?.title ?? "No spots match your filters"}</p>
         <button
           onClick={onClearFilters}
           className="mt-3 px-4 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-(--muted) hover:border-(--accent) hover:text-(--dark) transition-colors"
         >
-          Clear filters
+          {emptyState?.clearLabel ?? "Clear filters"}
         </button>
       </div>
     );

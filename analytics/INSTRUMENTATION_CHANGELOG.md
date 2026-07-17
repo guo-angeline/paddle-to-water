@@ -14,6 +14,14 @@ without touching this file.
 
 ---
 
+## 2026-07-17 (item 7): filter_changed reused for the two new scoped empty-state clears (no new event, no props-change)
+
+**No new event added, no props change.** Defect C's scoped clear buttons (`clearSearchOnly` in `components/HomeClient.tsx`, fired by the "Clear search" empty-state button, and `clearStructuredFilters`, fired by "Clear filters" when search is empty) both call `trackIntent("filter_changed", { cleared: true })`, the exact same event name and payload `handleClearAll` already emits for the full clear.
+
+- **Comparability: `filter_changed` with `cleared: true` now fires from three call sites instead of one, same event, same props, no new field to segment by.** A row can no longer be read as "the user cleared everything": before this date it always meant a full clear (region + difficulty + freeOnly + search all reset), from this date it can also mean a search-only or filters-only scoped clear. This is a real ambiguity for anyone trying to measure "full reset" volume specifically, but it does not create a discontinuity in the raw `filter_changed`/`cleared:true` count, a search-only clear that previously would NOT have fired this event (the old single "Clear filters" button used to wipe search silently as part of one `handleClearAll` call) now generates its own event where before it was folded into whatever click preceded it. Net effect is a small, expected VOLUME INCREASE from this date, not a semantics break: do not read a `cleared:true` uptick after 2026-07-17 as more people resetting their whole search, it is finer-grained scope on the same underlying gesture.
+
+---
+
 ## 2026-07-17 (item 7): near_me_toggled outcome path documented as the denied-message impression signal (semantics-note)
 
 **No new event added. `lib/analytics.ts` was not touched.** This is a documentation-only entry: it records that the existing `near_me_toggled` event, with `outcome: "denied"` or `outcome: "unsupported"`, is now ALSO read as the impression signal for the new visible location-denied recovery banner added by the filterbar-denied-message task (Defect A).
