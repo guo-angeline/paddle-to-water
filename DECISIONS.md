@@ -449,3 +449,24 @@ What went wrong: the standing D19 gate (`scripts/predeploy-gate.py`) fired on AN
 Fix (shipped this iteration): the gate now fires ONLY when an EXISTING spot's coordinate is changed or removed (a `-` lat/lng line in the diff), which is the real risk D19 was built for: a pin silently moving under live users and the alert crons (the item-40 machine-audit scenario). A purely ADDED lat/lng (a new spot) no longer gates: a new spot is already reviewed by the act of adding it, and letting it through also removes the coupling that stranded the P0. Non-coordinate deploys are never gated. D19's protection for coordinate CHANGES stays fully intact.
 
 Answer: gate only modified/removed existing coordinates, not new-spot additions (owner directive). Implemented in `scripts/predeploy-gate.py`; D19 and `.claude/studio.md` notes updated to match.
+
+## D24 [OPEN] 2026-07-17 · Item 43 (user reviews): three decisions gate the build before any review can post
+
+The lawyer gate returned **escalate** on item 43 (crowd reviews). It is buildable, but publishing the first user review turns the static site into a UGC platform that hosts stranger-written text about named private businesses, on a site that already carries drowning-risk/wrongful-death exposure. Before the first review renders, four legal artifacts must exist and three questions are yours to decide. Nothing is illegal to build; it is illegal-shaped to publish before the gating pieces exist. Item 43 is blocked on your answers below.
+
+**What an implementer will just do correctly once you answer (no decision needed):** DMCA designated-agent registration + a takedown route; standard community guidelines; a binary publish/reject moderation queue with a reason log (never rewriting user text, which forfeits §230 protection); the safe aggregate display + threshold; withholding schema.org `aggregateRating` until moderation is real; a privacy-policy UGC section shipped in the same commit; an 18+ age statement; and anti-fraud rate-limiting (one review per spot per identity). The recommended aggregate display (already legally cleared): show a crowd rating only past ~5 genuine moderated reviews, as a plain arithmetic fact ("4.3 average from 12 paddler reviews"), visually distinct from item 39's owner "our take," never blended, never labeled as a safety verdict, kept near the existing guidance-only disclaimer.
+
+**Q1 (spend / counsel).** The UGC Terms of Service + content license + liability limitation is one document that combines an IP license, a liability cap, and a disclaimer that must interlock with the safety disclaimer, on this site's heaviest legal surface. The lawyer flags this specific document as the "expensive if wrong, hard to reverse" zone and recommends a licensed attorney draft or review it (a bounded, one-time spend). Engage an attorney for the UGC terms before the first review posts, yes or no?
+- Recommended: **yes.** If no, the studio can ship an implementer-authored template, but that carries real residual risk against the wrongful-death backdrop.
+
+**Q2 (identity).** Require sign-in (item 44's Google auth) before a review, or allow anonymous submission with email-verify? Legal-risk lens: anonymous+email-verify minimizes PII/COPPA/breach surface and ships independently of item 44, while still giving enough anti-fraud to keep "real counts only" true under the FTC fake-review rule; required sign-in strengthens fake-review defensibility and traceability but pulls in item 44, more personal data, and sharper COPPA. §230 shields you either way.
+- Recommended: **anonymous + email-verify**, so item 43 can ship without waiting on item 44, unless you'd rather sequence 44 first.
+
+**Q3 (moderation commitment).** Moderation is the legal control the whole FTC/§230 posture depends on, and you are the sole moderator. If the queue backs up, the pressure to auto-publish defeats the gate. What is the commitment (who moderates, and a rough SLA), and do you expect volume to stay within it? A soft launch (reviews enabled on a handful of spots first) is a safe way to bound the queue.
+- Recommended: **binary queue + email-on-submit + no auto-publish ever**, soft-launched to a few spots until volume is known.
+
+If silent: item 43 stays blocked and nothing builds, because the identity answer determines the data model and the counsel/moderation answers gate the first publish. Also worth noting: you promoted this as a deliberate bet against the retention-first thesis, and it carries a counsel spend, so deferring it behind retention work is a legitimate answer too.
+
+Blocks: item 43.
+
+Answer:

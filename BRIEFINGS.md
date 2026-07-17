@@ -1,5 +1,18 @@
 # Briefings: the board log
 
+## 2026-07-17 · Item 43 (user reviews) · LEGAL GATE ESCALATED · BLOCKED on D24
+
+**Your move:** answer D24 (three questions, in DECISIONS.md) to unblock user reviews. Recommended answers are in the memo; the honest short version is Q1 yes (engage counsel for the UGC terms), Q2 anonymous+email-verify, Q3 binary moderation soft-launched.
+
+**TL;DR:** Reviews is the heaviest legal surface in the backlog. The lawyer gate says it's fine to build but not to publish a first review until three decisions of yours are made and four legal artifacts exist. I stopped at the gate rather than autonomously deciding your content-moderation policy or FTC-facing review display.
+
+**Item 43 (crowd reviews):** ran the mandatory legal gate first (its own acceptance predicted this). Verdict `escalate`. Blockers before the first review posts: UGC Terms + content license, a DMCA designated agent, a content/moderation policy, and a privacy-policy UGC section. Owner decisions: (Q1) pay for counsel to draft the UGC terms given the wrongful-death interlock; (Q2) anonymous+email-verify vs require item 44 sign-in; (Q3) your moderation commitment as sole moderator. All captured in D24 with recommendations and if-silent defaults. Item 43 → `[blocked(D24)]`.
+
+**Appendix (evidence):**
+- The lawyer cleared the aggregate display in advance: show a crowd rating only past ~5 genuine moderated reviews, as a plain "4.3 average from 12 paddler reviews," distinct from item 39's owner rating, never blended, never a safety verdict, no schema.org `aggregateRating` until moderation is real.
+- Everything else is implementer-can-do once you answer (DMCA reg, guidelines, binary queue, anti-fraud rate-limit, privacy section, 18+ statement), so the build is unblocked the moment D24 lands.
+- No code shipped this iteration; nothing deployed; production unchanged (`b88c13f`). Reviews is a deliberate bet against retention-first and carries a counsel spend, so deferring it behind retention work is a valid answer to D24.
+
 ## 2026-07-17 · Item 53 COMPLETE (NWS two-hop collapse) · SHIPPED + DEPLOYED
 
 **Your move:** nothing needed.

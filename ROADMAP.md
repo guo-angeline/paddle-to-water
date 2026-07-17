@@ -128,7 +128,10 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Owner promoted both to `[ready]` on 2026-07-17, with the tension above understood.** This is the owner exercising the call the note reserves, not a default. Recorded so a later reader does not mistake it for the thesis changing: retention is still the bottleneck; the retention read is still the number that matters. Both items carry a lawyer gate before deploy (43: FTC fake-review rule + UGC moderation + Section 230; 44: personal data + OAuth + privacy-policy update). Items 39, 40, 41, 42, 45 never carried this tension.
 
-## 43. [ready] Real user reviews on a spot (the crowd-sourced half of ratings)
+## 43. [blocked(D24)] Real user reviews on a spot (the crowd-sourced half of ratings)
+
+**Lawyer gate returned `escalate` (2026-07-17). Blocked on D24: three owner decisions (counsel spend for the UGC terms, identity model, moderation commitment) plus four legal artifacts must land before the first review can post. The implementer-can-do list and the cleared aggregate-display design are captured in D24.**
+
 
 **Promoted by the owner 2026-07-17** (see strategy note above; a bet against the retention-first thesis, made deliberately). This is the UGC ratings/reviews half. Item 39 shipped the owner's own "one paddler's take"; item 43 lets visitors add theirs, which is the SEO-acquisition and content-moat play.
 
