@@ -234,3 +234,32 @@ This is filed as OPEN rather than RESOLVED because item 39 was the owner's idea 
 Question for the owner: confirm item 39 is cut, or override the kill criterion and say what would make the score worth shipping at a 1.1-point spread?
 
 Answer: 
+
+## D17 [OPEN] 2026-07-16 · paddletowater.com receives no mail, and no DMARC record is published
+
+Context: the privacy policy (item 44 step 1) promises access, correction, and deletion via `hello@paddletowater.com`, which is already the `EMAIL_REPLY_TO` fallback on every alert email. The lawyer gate flagged that a reply-to on a sending domain does not prove inbound mail is configured. It is not. Verified against three resolvers (local, 8.8.8.8, 1.1.1.1) with working controls:
+
+```
+MX  paddletowater.com                       -> NONE      => hello@ bounces
+TXT _dmarc.paddletowater.com                -> NONE      => no DMARC published
+TXT _dmarc.alerts.paddletowater.com         -> NONE
+TXT resend._domainkey.alerts.paddletowater  -> DKIM ok   => SENDING works
+TXT send.alerts.paddletowater.com           -> "v=spf1 include:amazonses.com ~all"
+NS  paddletowater.com                       -> Cloudflare (dion/rihana.ns)
+```
+
+So outbound alerts are properly authenticated; inbound mail does not exist. Two consequences:
+
+1. **The privacy policy cannot ship pointing at `hello@`.** Every remedy on the page routes through a dead address, which is the FTC Act §5 shape the page was written to avoid. The page is committed but NOT deployed pending this.
+2. **No DMARC record is published at all**, which contradicts the standing note that the email channel launched at `p=none` on 2026-07-11 with a follow-up to tighten to quarantine ~2026-07-24. There is nothing to tighten. No DMARC is weaker than `p=none`, and the "first send hit Outlook spam" symptom is consistent with its absence. The 07-24 follow-up is based on a false premise.
+
+Options for the contact address:
+- **(a) Enable Cloudflare Email Routing for `hello@paddletowater.com`** and forward it to a real inbox. The domain is already on Cloudflare nameservers, so this is a few minutes in the dashboard and no code change. **Recommended.** It also makes the alert emails' existing reply-to work, which it currently does not.
+- (b) Point the privacy contact at the in-app Feedback form (Formspree `xdajvagj`), which demonstrably works today. Deploys immediately, but a form buried behind a header button is a worse contact channel for a privacy remedy than an address, and it does not fix the dead reply-to on alert emails.
+- (c) Use a personal address directly. Works, but publishes it on a public page.
+
+Questions for the owner:
+1. Which contact option? (Recommend (a).) The privacy policy stays undeployed until this is settled, and it is the CalOPPA gap that is live today, so this is worth minutes rather than days.
+2. Was DMARC ever actually published? If it was, something removed it. If it was not, the 2026-07-24 "tighten to quarantine" follow-up should become "publish p=none, then tighten".
+
+Answer: 
