@@ -84,7 +84,9 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
   const tip = nextWindow ? launchDirectionTip(nextWindow.windDirection, nextWindow.maxWindMph) : null;
 
   const title = day ? `${spot.water} looks good ${day}` : `${spot.water} has a good window`;
-  const subline = range ? `Good window ${range}.` : `${windowLabel}.`;
+  // Item 34: attribute to the forecast. "Good window 7 to 10am." asserts a
+  // fact about the water; ", per the forecast" makes it a report of a model.
+  const subline = range ? `${range}, per the forecast.` : `${windowLabel}, per the forecast.`;
 
   function handleDismiss() {
     trackIntent("alert_interstitial_result", { spot_id: spot.id, outcome: "dismissed" });
@@ -119,8 +121,15 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
     }
   }
 
+  // Item 34: "Remind me at launch time" / "when it's time to launch" are the
+  // same sentence as the killed "Time to launch", in the future tense. Name
+  // the forecast event (the window opening), not the act (launching).
   const ctaLabel =
-    status === "setting" ? "Setting reminder..." : status === "error" ? "Could not set reminder, tap to retry" : "Remind me at launch time";
+    status === "setting"
+      ? "Setting reminder..."
+      : status === "error"
+        ? "Could not set reminder, tap to retry"
+        : "Remind me when the window opens";
 
   return (
     <div
@@ -134,6 +143,11 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
             <p className="font-['Newsreader'] text-white text-base font-bold leading-tight mt-0.5">{title}</p>
             <p className="text-white/85 text-sm mt-0.5">{subline}</p>
             {tip && <p className="text-white/85 text-sm mt-0.5">{tip}</p>}
+            {/* Item 34: the canonical line, verbatim from ConditionsPanel. One
+                wording across the whole site; never write a second one. */}
+            <p className="text-white/70 text-xs mt-1.5">
+              Guidance only, not a safety guarantee. Conditions shift fast on the water.
+            </p>
           </div>
           <button
             onClick={handleDismiss}
@@ -146,7 +160,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
         {canRemind &&
           (status === "done" ? (
             <p className="mt-3 flex items-center justify-center w-full py-2.5 text-sm font-semibold text-white/90">
-              Reminder set. We&apos;ll ping you when it&apos;s time to launch.
+              Reminder set. We&apos;ll ping you when the window opens.
             </p>
           ) : (
             <button

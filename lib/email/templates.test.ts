@@ -90,8 +90,8 @@ describe("composeAlertEmail", () => {
 
   it("leads with good-to-paddle, the weekday, and the exact hours (no 'calm')", () => {
     const msg = composeAlertEmail(base);
-    expect(msg.subject).toBe("Richardson Bay is good to paddle Saturday");
-    expect(msg.html).toContain("is good to paddle Saturday, 7 to 10am");
+    expect(msg.subject).toBe("Richardson Bay looks good to paddle Saturday");
+    expect(msg.html).toContain("looks good to paddle Saturday, 7 to 10am");
     expect(msg.html).not.toMatch(/calm/i);
     expect(msg.text).not.toMatch(/calm/i);
   });
@@ -125,7 +125,7 @@ describe("composeAlertEmail", () => {
       ...base,
       extras: [{ name: "Foster City Lagoons", windowKey: "2026-07-11", startHour: 8, endHour: 11 }],
     });
-    expect(msg.subject).toBe("2 spots good to paddle Saturday");
+    expect(msg.subject).toBe("2 spots look good to paddle Saturday");
     expect(msg.text).toContain("Also good: Foster City Lagoons, Saturday 8 to 11am.");
     expect(msg.html).not.toMatch(/\+\d+ more/);
   });
@@ -135,7 +135,7 @@ describe("composeAlertEmail", () => {
       ...base, // primary is Saturday
       extras: [{ name: "Shoreline Lake", windowKey: "2026-07-12", startHour: 9, endHour: 13 }],
     });
-    expect(msg.subject).toBe("2 spots good to paddle soon");
+    expect(msg.subject).toBe("2 spots look good to paddle soon");
     // body stays day-accurate per spot
     expect(msg.text).toContain("Shoreline Lake, Sunday 9am to 1pm");
   });
@@ -168,21 +168,21 @@ describe("composeAlertEmail", () => {
 
   it("includes the launch direction tip in both html and text when the wind qualifies", () => {
     const msg = composeAlertEmail({ ...base, windDirection: "WNW", maxWindMph: 12 });
-    expect(msg.html).toContain("Head out toward the west-northwest so the wind helps push you back.");
-    expect(msg.text).toContain("Head out toward the west-northwest so the wind helps push you back.");
+    expect(msg.html).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back.");
+    expect(msg.text).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back.");
   });
 
   it("omits the tip cleanly when direction is missing, with no doubled blank line in text", () => {
     const msg = composeAlertEmail({ ...base, windDirection: "", maxWindMph: 12 });
-    expect(msg.html).not.toContain("Head out toward");
-    expect(msg.text).not.toContain("Head out toward");
+    expect(msg.html).not.toContain("Wind is from the");
+    expect(msg.text).not.toContain("Wind is from the");
     expect(msg.text).not.toContain("\n\n\n");
   });
 
   it("omits the tip cleanly when wind is under 5 mph", () => {
     const msg = composeAlertEmail({ ...base, windDirection: "WNW", maxWindMph: 3 });
-    expect(msg.html).not.toContain("Head out toward");
-    expect(msg.text).not.toContain("Head out toward");
+    expect(msg.html).not.toContain("Wind is from the");
+    expect(msg.text).not.toContain("Wind is from the");
   });
 });
 
@@ -203,7 +203,7 @@ describe("copy rotation", () => {
     expect(ALERT_VARIANT_COUNT).toBe(7);
     const original = composeAlertEmail(base);
     const explicit = composeAlertEmail({ ...base, variant: 0 });
-    expect(explicit.subject).toBe("Richardson Bay is good to paddle Saturday");
+    expect(explicit.subject).toBe("Richardson Bay looks good to paddle Saturday");
     expect(explicit.text).toContain("about a 3-hour window, with wind topping out at 6 mph");
     // omitting variant defaults to the same message apart from the v= URL tag
     expect(original.subject).toBe(explicit.subject);

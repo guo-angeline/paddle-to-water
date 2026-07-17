@@ -473,6 +473,13 @@ export default function InstallPrompt() {
           <p style={{ ...muted, color: "#FCA5A5" }}>Something went wrong. Try again.</p>
         )}
         <p style={{ ...muted, fontSize: 11 }}>One email a day, max. Only when a spot you watch looks good. Unsubscribe in one tap.</p>
+        {/* Item 34: the canonical safety line at the consent moment, so enrolling
+            is informed. Deliberately here, in the slot that already holds the
+            standing terms, and NOT between the headline and the button: a caveat
+            above the CTA reads as a warning about the CTA, and this card is the
+            conversion path for the whole retention loop. Next to "Unsubscribe in
+            one tap" it reads as terms, which is what it is. */}
+        <p style={{ ...muted, fontSize: 11 }}>Guidance only, not a safety guarantee. Conditions shift fast on the water.</p>
       </>
     );
   }

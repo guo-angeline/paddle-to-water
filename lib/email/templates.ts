@@ -53,11 +53,23 @@ function shell(bodyHtml: string, unsubUrl: string, preheader: string): string {
   <div style="max-width:480px;margin:0 auto;padding:24px">
     ${bodyHtml}
     <hr style="border:none;border-top:1px solid #DCE7F0;margin:24px 0 12px">
+    <p style="font-size:12px;color:#6E8598;line-height:1.5;margin:0 0 8px">
+      Guidance only, not a safety guarantee. Conditions shift fast on the water.
+    </p>
     <p style="font-size:12px;color:#6E8598;line-height:1.5;margin:0">
       You're getting this because you signed up for paddle alerts at paddletowater.com.<br>
       <a href="${unsubUrl}" style="color:#6E8598">Unsubscribe</a> &middot; Paddle to Water, ${POSTAL_ADDRESS}
     </p>
   </div></body></html>`;
+}
+
+// The text/plain twin of shell()'s footer. shell() renders HTML only, so every
+// text part shipped without the safety line, the CAN-SPAM postal address, or a
+// visible unsubscribe (the RFC 8058 List-Unsubscribe header is set in sender.ts,
+// but a header is not a visible opt-out). Caught by the legal gate 2026-07-16.
+// Keep this in sync with shell(): if one footer gains a line, so does the other.
+function textFooter(unsubUrl: string): string {
+  return `\n\nGuidance only, not a safety guarantee. Conditions shift fast on the water.\n\nYou're getting this because you signed up for paddle alerts at paddletowater.com.\nUnsubscribe: ${unsubUrl}\nPaddle to Water, ${POSTAL_ADDRESS}`;
 }
 
 export function composeConfirmEmail(confirmToken: string, token: string): EmailMessage {
@@ -72,7 +84,9 @@ export function composeConfirmEmail(confirmToken: string, token: string): EmailM
     unsubscribeUrl(token),
     "Confirm to start getting paddle alerts for your spots."
   );
-  const text = `Confirm your Paddle to Water alerts.\n\nYou asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle:\n${url}\n\nOne email a day at most, only when a spot's good to paddle. Unsubscribe any time in one tap.\n\nDidn't sign up? Ignore this email and nothing happens.`;
+  const text =
+    `Confirm your Paddle to Water alerts.\n\nYou asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle:\n${url}\n\nOne email a day at most, only when a spot's good to paddle. Unsubscribe any time in one tap.\n\nDidn't sign up? Ignore this email and nothing happens.` +
+    textFooter(unsubscribeUrl(token));
   return { subject, html, text };
 }
 
@@ -140,87 +154,87 @@ interface AlertVariant {
 export const ALERT_VARIANTS: readonly AlertVariant[] = [
   {
     name: "baseline",
-    subjectSingle: "{spot} is good to paddle {weekday}",
-    subjectMultiSameDay: "{count} spots good to paddle {weekday}",
-    subjectMultiSoon: "{count} spots good to paddle soon",
-    headline: "{spot} is good to paddle {weekday}, {hours}.",
-    bodyNoWind: "That's about a {lengthHours}-hour window.",
-    bodyWithWind: "That's about a {lengthHours}-hour window, with wind topping out at {wind} mph.",
+    subjectSingle: "{spot} looks good to paddle {weekday}",
+    subjectMultiSameDay: "{count} spots look good to paddle {weekday}",
+    subjectMultiSoon: "{count} spots look good to paddle soon",
+    headline: "{spot} looks good to paddle {weekday}, {hours}.",
+    bodyNoWind: "The forecast shows about a {lengthHours}-hour window.",
+    bodyWithWind: "The forecast shows about a {lengthHours}-hour window, with wind topping out at {wind} mph.",
     cta: "See the forecast",
     preheaderNoWind: "{hours}, about a {lengthHours}-hour window.",
     preheaderWithWind: "{hours}, about a {lengthHours}-hour window, with wind topping out at {wind} mph.",
   },
   {
     name: "plain-report",
-    subjectSingle: "Calm window: {spot}, {weekday}",
-    subjectMultiSameDay: "Calm windows {weekday} at {count} spots",
-    subjectMultiSoon: "Calm windows ahead at {count} spots",
-    headline: "{spot}: calm {weekday}, {hours}.",
-    bodyNoWind: "About {lengthHours} hours of calm.",
-    bodyWithWind: "About {lengthHours} hours of calm; wind peaks at {wind} mph.",
+    subjectSingle: "Good window: {spot}, {weekday}",
+    subjectMultiSameDay: "Good windows {weekday} at {count} spots",
+    subjectMultiSoon: "Good windows ahead at {count} spots",
+    headline: "{spot}: good window {weekday}, {hours}.",
+    bodyNoWind: "About {lengthHours} hours, per the forecast.",
+    bodyWithWind: "About {lengthHours} hours, per the forecast; wind peaks at {wind} mph.",
     cta: "Check conditions",
-    preheaderNoWind: "Calm {weekday} {hours}, about {lengthHours} hours.",
-    preheaderWithWind: "Calm {weekday} {hours}, about {lengthHours} hours; wind peaks at {wind} mph.",
+    preheaderNoWind: "Good window {weekday} {hours}, about {lengthHours} hours.",
+    preheaderWithWind: "Good window {weekday} {hours}, about {lengthHours} hours; wind peaks at {wind} mph.",
   },
   {
     name: "friendly-local",
     subjectSingle: "{weekday} looks good at {spot}",
     subjectMultiSameDay: "{weekday} looks good at {count} of your spots",
     subjectMultiSoon: "{count} of your spots look good soon",
-    headline: "Good news: {spot} looks calm {weekday}, {hours}.",
-    bodyNoWind: "You've got a {lengthHours}-hour stretch of calm water.",
-    bodyWithWind: "You've got a {lengthHours}-hour stretch of calm water, with wind no higher than {wind} mph.",
-    cta: "Plan your paddle",
-    preheaderNoWind: "Calm water {hours}, a {lengthHours}-hour stretch.",
-    preheaderWithWind: "Calm water {hours}, a {lengthHours}-hour stretch, wind no higher than {wind} mph.",
+    headline: "{spot} looks good {weekday}, {hours}.",
+    bodyNoWind: "The forecast has a {lengthHours}-hour stretch there.",
+    bodyWithWind: "The forecast has a {lengthHours}-hour stretch there, with wind no higher than {wind} mph.",
+    cta: "See the hours",
+    preheaderNoWind: "Looks good {hours}, a {lengthHours}-hour stretch.",
+    preheaderWithWind: "Looks good {hours}, a {lengthHours}-hour stretch, wind no higher than {wind} mph.",
   },
   {
-    name: "water-first",
-    subjectSingle: "Calm water at {spot} {weekday} 🌊",
-    subjectMultiSameDay: "Calm water {weekday} at {count} spots",
-    subjectMultiSoon: "Calm water coming at {count} spots",
-    headline: "Calm water at {spot} {weekday}, {hours}.",
-    bodyNoWind: "Roughly {lengthHours} hours of it.",
-    bodyWithWind: "Roughly {lengthHours} hours of it, and wind stays at or below {wind} mph.",
+    name: "hours-first",
+    subjectSingle: "{spot}, {weekday} {hours} \u{1F30A}",
+    subjectMultiSameDay: "{weekday} windows at {count} spots \u{1F30A}",
+    subjectMultiSoon: "Windows coming at {count} spots \u{1F30A}",
+    headline: "{spot}, {weekday} {hours}.",
+    bodyNoWind: "That's the good window in the forecast, roughly {lengthHours} hours of it.",
+    bodyWithWind: "That's the good window in the forecast, roughly {lengthHours} hours of it, wind at or below {wind} mph.",
     cta: "See the window",
-    preheaderNoWind: "{weekday} {hours}: roughly {lengthHours} hours of calm water.",
-    preheaderWithWind: "{weekday} {hours}: roughly {lengthHours} hours of calm water, wind at or below {wind} mph.",
+    preheaderNoWind: "{weekday} {hours}: roughly {lengthHours} hours in the forecast.",
+    preheaderWithWind: "{weekday} {hours}: roughly {lengthHours} hours, wind at or below {wind} mph.",
   },
   {
-    name: "window-scarcity",
-    subjectSingle: "{spot} has a window {weekday}",
-    subjectMultiSameDay: "{count} spots have windows {weekday}",
-    subjectMultiSoon: "{count} spots have windows coming up",
-    headline: "Your window at {spot}: {weekday}, {hours}.",
-    bodyNoWind: "You get about {lengthHours} hours before it closes.",
-    bodyWithWind: "You get about {lengthHours} hours before it closes, wind up to {wind} mph.",
-    cta: "See when to go",
-    preheaderNoWind: "Your window: {weekday} {hours}, about {lengthHours} hours.",
-    preheaderWithWind: "Your window: {weekday} {hours}, about {lengthHours} hours, wind up to {wind} mph.",
+    name: "your-watchlist",
+    subjectSingle: "A spot you watch: {spot}, {weekday}",
+    subjectMultiSameDay: "{count} spots you watch look good {weekday}",
+    subjectMultiSoon: "{count} spots you watch look good soon",
+    headline: "You watch {spot}. It has a good window {weekday}, {hours}.",
+    bodyNoWind: "The forecast gives it about {lengthHours} hours.",
+    bodyWithWind: "The forecast gives it about {lengthHours} hours, with wind up to {wind} mph.",
+    cta: "Open the spot",
+    preheaderNoWind: "{weekday} {hours} at a spot you watch, about {lengthHours} hours.",
+    preheaderWithWind: "{weekday} {hours} at a spot you watch, about {lengthHours} hours, wind up to {wind} mph.",
   },
   {
     name: "weather-nerd",
-    subjectSingle: "Forecast: calm at {spot} {weekday}",
-    subjectMultiSameDay: "Forecast: {count} spots calm {weekday}",
-    subjectMultiSoon: "Forecast: calm at {count} spots soon",
-    headline: "Forecast says {spot} is calm {weekday}, {hours}.",
-    bodyNoWind: "A {lengthHours}-hour calm stretch.",
-    bodyWithWind: "A {lengthHours}-hour calm stretch, peak wind {wind} mph.",
+    subjectSingle: "Forecast: {spot} good to paddle {weekday}",
+    subjectMultiSameDay: "Forecast: {count} spots good to paddle {weekday}",
+    subjectMultiSoon: "Forecast: {count} spots good to paddle soon",
+    headline: "Forecast says {spot} is good to paddle {weekday}, {hours}.",
+    bodyNoWind: "A {lengthHours}-hour run in the hourly forecast.",
+    bodyWithWind: "A {lengthHours}-hour run in the hourly forecast, peak wind {wind} mph.",
     cta: "See the numbers",
-    preheaderNoWind: "{weekday} {hours}, a {lengthHours}-hour calm stretch.",
-    preheaderWithWind: "{weekday} {hours}, a {lengthHours}-hour calm stretch, peak wind {wind} mph.",
+    preheaderNoWind: "{weekday} {hours}, a {lengthHours}-hour run in the hourly forecast.",
+    preheaderWithWind: "{weekday} {hours}, a {lengthHours}-hour run, peak wind {wind} mph.",
   },
   {
     name: "pencil-it-in",
-    subjectSingle: "Pencil in {spot} for {weekday}",
-    subjectMultiSameDay: "Pencil in {weekday}: {count} spots look calm",
+    subjectSingle: "Worth penciling in: {spot}, {weekday}",
+    subjectMultiSameDay: "Worth penciling in {weekday}: {count} spots",
     subjectMultiSoon: "{count} spots worth penciling in",
-    headline: "Pencil it in: {spot}, {weekday}, {hours}.",
-    bodyNoWind: "That's a {lengthHours}-hour window to work with.",
-    bodyWithWind: "That's a {lengthHours}-hour window to work with, with wind maxing out at {wind} mph.",
+    headline: "Worth penciling in: {spot}, {weekday}, {hours}.",
+    bodyNoWind: "That's a {lengthHours}-hour window in the forecast to work with.",
+    bodyWithWind: "That's a {lengthHours}-hour window in the forecast to work with, with wind maxing out at {wind} mph.",
     cta: "See spot details",
-    preheaderNoWind: "{weekday} {hours} is yours: a {lengthHours}-hour window.",
-    preheaderWithWind: "{weekday} {hours} is yours: a {lengthHours}-hour window, wind maxing out at {wind} mph.",
+    preheaderNoWind: "Worth penciling in: {weekday} {hours}, a {lengthHours}-hour window.",
+    preheaderWithWind: "Worth penciling in: {weekday} {hours}, a {lengthHours}-hour window, wind maxing out at {wind} mph.",
   },
 ];
 
@@ -356,7 +370,9 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
     preheader
   );
 
-  const text = `${headline}\n\n${lengthLine}\n${tip ? `${tip}\n` : ""}${proTipLine}\n${extras.length ? `\n${extrasLine(extras)}\n` : ""}${notes ? `\n${notes}\n` : ""}\n${v.cta}: ${openUrl}`;
+  const text =
+    `${headline}\n\n${lengthLine}\n${tip ? `${tip}\n` : ""}${proTipLine}\n${extras.length ? `\n${extrasLine(extras)}\n` : ""}${notes ? `\n${notes}\n` : ""}\n${v.cta}: ${openUrl}` +
+    textFooter(unsubscribeUrl(token));
   return { subject, html, text, tipIncluded: tip !== null };
 }
 

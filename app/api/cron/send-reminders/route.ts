@@ -61,11 +61,32 @@ export async function GET(req: Request) {
       // long-horizon return signal (/api/alerts/opened), same as the evening
       // alert. No `window` param on purpose, so the interstitial does not re-show.
       const tokenParam = sub.token ? `&t=${encodeURIComponent(sub.token)}` : "";
+      // Item 34: this fires the moment a window opens, so it is the closest the
+      // site ever gets to arranging a launch, and it was the most inducement-like
+      // copy we shipped ("Time to launch" / "Go while it lasts"). Both are gone:
+      // the alert now reports the forecast and lets the paddler decide.
+      //
+      // KNOWN GAP, deliberately not fixed here (tracked as item 46). This link
+      // omits `window`, so the interstitial does NOT render (HomeClient only
+      // sets the banner when a window param is present). The interstitial is the
+      // only surface carrying the full safety line + the launch-direction tip,
+      // so a reminder tap lands on a peek sheet with the caveat below the fold.
+      // Passing the param needs a human window label ("Sat 7 to 10am") that no
+      // layer currently stores: launch_reminders has window_key (a date, for
+      // dedup) and fire_at, and /api/alerts/remind is never sent one. Plumbing
+      // it through client -> API -> schema -> cron is a real change, not a copy
+      // change, so it does not ride item 34. The body below carries the safety
+      // half-line so the no-tap path (lock screen, swipe away) is still covered,
+      // which is the majority path for a notification.
       const result = await sendPush(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         {
-          title: "Time to launch",
-          body: `${name} looks good right now. Go while it lasts.`,
+          title: "Your window is opening",
+          // Safety half-line goes LAST on purpose: if a long spot name clips the
+          // body, it clips the caveat, not the hours. A truncated disclaimer
+          // ("...not a safety gu") is worse than none, because conspicuousness
+          // is the test and a clipped one proves you knew it was needed.
+          body: `The forecast has ${name} good to paddle starting now. Conditions shift fast on the water.`,
           url: `/?spot=${r.spot_id}&from=alert${tokenParam}`,
         }
       );

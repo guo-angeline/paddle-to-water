@@ -53,14 +53,23 @@ export function composeAlert(
   if (spots.length === 0) throw new Error("composeAlert requires at least one spot");
   const first = spots[0];
   const extra = spots.length - 1;
-  const tail = extra > 0 ? ` +${extra} more` : "";
+  // "spots" is not padding: without a verb near it, "Sat 7 to 10am, +2 more"
+  // reads as two more hours.
+  const tail = extra > 0 ? `, +${extra} more spots` : "";
   // window carries the label through the deep link so the alert interstitial
   // (item 1) can show the same "when" the notification body already named,
   // without a second fetch.
   const tokenParam = token ? `&t=${encodeURIComponent(token)}` : "";
+  // Item 34: the title names the FORECAST, not an instruction. That attribution
+  // does the "not a guarantee" work for free, in the title, at zero body cost;
+  // what it does not cover is the failure-to-warn half, which is the 35-char
+  // sentence appended below. Deliberately NOT the full canonical line: it would
+  // push the window hours out of the ~120 visible chars, and losing the hours is
+  // worse for safety than losing half the caveat. The full line is on the
+  // interstitial one tap away, and this alert DOES carry the window param.
   return {
-    title: "Good paddling ahead",
-    body: `${first.spotName} looks good ${first.label}${tail}.`,
+    title: "A good window in the forecast",
+    body: `${first.spotName} looks good ${first.label}${tail}. Conditions shift fast on the water.`,
     url: `/?spot=${first.spotId}&from=alert&window=${encodeURIComponent(first.label)}${tokenParam}`,
   };
 }

@@ -207,7 +207,11 @@ The decimal-count screen that produced the original 11-spot list **was a weak he
 **Sourcing plan sized 2026-07-14 (studio); decision open at DECISIONS.md D10.** Feasibility probe found: Google Places Photos can't be self-hosted (ToS bars caching, photo names expire, so re-fetch + pay per view + a render-path dependency); free self-hostable CC sources (Wikimedia Commons + Flickr CC) cover ~55-75% of spots after human curation (36-spot probe: 78% have a geo-tagged Commons file within 500m, 22% none). Recommended path (D10 option a): tiered hybrid, harvest + curate CC-BY/BY-SA/CC0 photos self-hosted with attribution, static-map-thumbnail fallback for gaps, owner photos backfill, ship the curated tranche behind the flag. Effort ~2.5 eng days + ~1 day curation. **Blocked on D10** before build (which sourcing approach, fallback treatment, tranche scope, UGC defer). Stays `[proposed]` until the owner answers D10 and promotes to `[ready]`.
 
 
-## 34. [proposed] Reframe alert copy so it can't read as a safety guarantee (legal gate)
+## 34. [done] 2026-07-16 Reframe alert copy so it can't read as a safety guarantee (legal gate)
+
+**Shipped 2026-07-16.** All directive and urgency copy is gone from every alert surface. The launch-reminder push ("Time to launch" / "{spot} looks good right now. Go while it lasts.") was the named worst offender and fired at the moment of the decision; it now reads "Your window is opening" / "The forecast has {spot} good to paddle starting now." The evening push title names the forecast rather than instructing. All 7 email variants rewritten (the editor found "calm" leaked as the promise in 4 of them, violating item 28, not the 1 the acceptance assumed). The interstitial's "Remind me at launch time" and "when it's time to launch" were the killed sentence in future tense; both now name the window opening. The canonical safety line is quoted verbatim from `ConditionsPanel.tsx` onto the email footer, the interstitial, and the enrollment card; pushes carry only its second sentence, LAST, because the full line would push the window hours out of the ~120 visible chars and losing the hours is worse for safety than losing half the caveat. `lib/alerts/no-inducement.test.ts` (11 tests) asserts the INTENT, not the wording: no directive, no urgency, one safety wording site-wide, and item 27's exact hours + peak wind survive the reframe. Verified to fail when the old copy is restored. A/B exempt per D11. Changelog: per-variant reads do not cross 2026-07-16.
+
+**Two things the acceptance criteria got wrong, corrected in flight:** (1) it suggested reframing to "{spot} is showing a calm forecast window", which is itself the item-28 "calm" leak; (2) "copy-only" was not achievable for the stated goal, see item 46.
 
 **Why:** Lawyer legal-gate review 2026-07-14. The alerts are the site's one affirmative "conditions are good" representation, which is exactly what a negligent-misrepresentation / failure-to-warn claim would aim at. `send-reminders/route.ts:68` ("looks good right now. Go while it lasts.") is a time-pressured directive to launch now, the most inducement-like line on the site. Cheap fix, meaningfully lowers wrongful-death defense exposure. (The disclaimer half of the lawyer's finding, matching the /disclaimer copy to the conditions+alerts reality, shipped 2026-07-14.)
 
@@ -215,6 +219,16 @@ The decimal-count screen that produced the original 11-spot list **was a weak he
 - Drop the urgency directive; reframe every alert as informational ("`{spot}` is showing a calm forecast window `{when}`") across `lib/alerts/select.ts`, `app/api/cron/send-reminders/route.ts`, and the email body in `app/api/cron/send-email-alerts/route.ts`.
 - Append a standing safety line to every alert body, the alert interstitial, and the email footer: estimate only, not a safety guarantee, check conditions yourself, wear a life jacket. Same line at enrollment (`InstallPrompt.tsx`) so consent is informed.
 - Copy-only change; verify wording against the house voice (no em dashes) and keep funnel/alert events comparable (changelog entry if any event semantics move). Exempt from the A/B flag rule as a safety/legal copy fix.
+
+## 46. [proposed] The launch-reminder tap shows no safety line (item 34's one uncovered surface)
+
+**Why:** surfaced by the editor during item 34, 2026-07-16. `app/api/cron/send-reminders/route.ts` deep-links to `/?spot=X&from=alert` with **no `window` param**, originally on purpose so the interstitial would not re-show. But `HomeClient` only sets the alert banner when a window param is present, so a reminder tap renders no interstitial, and the interstitial is the only surface carrying the full canonical safety line plus the launch-direction tip (item 36). The tap lands on a peek-height sheet with `ConditionsPanel`'s line below the fold. **This is the push that fires at window open, the exact moment someone decides to get on the water, and it is the one alert whose entire journey shows no full safety line.** Item 34 covered the no-tap path (the body carries the safety half-line) but could not close this, because it is not a copy change.
+
+**Acceptance:**
+- A reminder tap surfaces the full safety line and the launch-direction tip, i.e. the interstitial renders.
+- Needs a human window label ("Sat 7 to 10am") that no layer stores today: `launch_reminders` has `window_key` (a date, for dedup) and `fire_at`; `/api/alerts/remind` is never sent one. So this is client -> API -> schema -> cron, not copy.
+- Raises `alert_interstitial_shown` (a fix, not a behavior change) and re-shows a card the user saw ~12h earlier. The card is arguably more useful the second time: the window it describes is now open. Changelog entry required.
+- Alternative if the schema change is unwanted: render the safety line above the fold on the peek sheet.
 
 ## 35. [proposed] Terms of Service + assented assumption-of-risk waiver (legal gate)
 
