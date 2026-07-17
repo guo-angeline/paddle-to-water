@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import posthog from "posthog-js";
 import { trackIntent, trackSystem } from "@/lib/analytics";
+
+const analyticsSrc = fs.readFileSync(
+  path.resolve(__dirname, "analytics.ts"),
+  "utf-8"
+);
 
 // ready() only needs `window` to exist; a bare stub keeps this in the default
 // node environment (jsdom is not a dependency).
@@ -136,5 +143,51 @@ describe("pre-init event queue", () => {
       reconciled_this_session: false,
       event_category: "system",
     });
+  });
+});
+
+/**
+ * Vitest strips types via esbuild and `next build` does not typecheck test
+ * files, so a call-site test that only exercises the compiled runtime proves
+ * nothing about which union `enrollment_prompt_suppressed` lives in: the
+ * capture-based tests above pass identically whether the string sits in
+ * SystemEventName or IntentEventName, because trackSystem/trackIntent are
+ * plain functions at runtime with no type enforcement once transpiled. Only
+ * `npx tsc --noEmit` catches a member moved to the wrong union, and no
+ * project gate (npm test, npm run lint, npm run build) runs bare tsc against
+ * test files. Sweep the source text directly so the guard bites under
+ * `npm test`, per the house rule "tests must grep the tree, not your memory".
+ */
+describe("enrollment_prompt_suppressed source placement", () => {
+  const systemBlock = analyticsSrc.slice(
+    analyticsSrc.indexOf("type SystemEventName ="),
+    analyticsSrc.indexOf("type IntentEventName =")
+  );
+  const intentBlock = analyticsSrc.slice(
+    analyticsSrc.indexOf("type IntentEventName ="),
+    analyticsSrc.indexOf("export type EventName =")
+  );
+
+  it("is a member of SystemEventName, not IntentEventName", () => {
+    expect(systemBlock).toMatch(/\|\s*"enrollment_prompt_suppressed"/);
+    expect(intentBlock).not.toMatch(/"enrollment_prompt_suppressed"/);
+  });
+
+  it("has an EventPropMap entry with trigger and platform (unknown included) and no channel prop", () => {
+    const propMapBlock = analyticsSrc.slice(
+      analyticsSrc.indexOf("interface EventPropMap"),
+      analyticsSrc.indexOf("type PropsFor<E")
+    );
+    const entryStart = propMapBlock.indexOf("enrollment_prompt_suppressed:");
+    expect(entryStart).toBeGreaterThan(-1);
+    const entryEnd = propMapBlock.indexOf("};", entryStart) + 2;
+    const entry = propMapBlock.slice(entryStart, entryEnd);
+
+    expect(entry).toMatch(/platform:\s*"standalone"\s*\|\s*"ios"\s*\|\s*"android"\s*\|\s*"desktop"\s*\|\s*"unknown"/);
+    expect(entry).toMatch(
+      /trigger:\s*"first_save"\s*\|\s*"standalone_relaunch"\s*\|\s*"manual"\s*\|\s*"return_session"\s*\|\s*"conditions_interest"/
+    );
+    expect(entry).toMatch(/reconciled_this_session:\s*boolean/);
+    expect(entry).not.toMatch(/channel:/);
   });
 });
