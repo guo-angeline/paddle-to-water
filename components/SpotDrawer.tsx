@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from 
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 import { trackIntent } from "@/lib/analytics";
+import { useExperiment } from "@/lib/experiments";
 import ConditionsPanel from "@/components/ConditionsPanel";
 
 interface Props {
@@ -117,6 +118,19 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Item 39: the owner's own rating, on the 118 spots that carry one.
+  const { variant: ratingVariant, ready: ratingReady, logExposure: logRatingExposure } =
+    useExperiment("owner_rating");
+  // Treatment only counts as seen when a rating actually renders. 24 spots are
+  // deliberately unrated, and a bucketed user who only ever opens those saw
+  // nothing, so they must not dilute the arm.
+  const showOwnerRating =
+    ratingReady && ratingVariant === "treatment" && typeof spot?.owner_rating === "number";
+
+  useEffect(() => {
+    if (showOwnerRating) logRatingExposure();
+  }, [showOwnerRating, logRatingExposure]);
+
   if (!spot) return null;
 
   const diff = DIFF_STYLES[spot.difficulty] ?? DIFF_STYLES.unknown;
@@ -137,6 +151,12 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
     spot_name: spot.water,
     region: spot.region,
     has_fee: spot.has_fee,
+    // Item 39: carried so the readout can ask the actual hypothesis (do people
+    // act more on higher-rated spots?) without joining back to spots.json, and
+    // so it segments by region, which is where this field's signal lives or
+    // dies. `null` distinguishes an unrated spot from an unrated arm.
+    owner_rating: spot.owner_rating ?? null,
+    owner_rating_shown: showOwnerRating,
   };
 
   async function handleShare() {
@@ -217,6 +237,22 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
                 {spot.water}
               </h2>
               <p className="text-sm text-(--muted) mt-1">{spot.city} &middot; {spot.region}</p>
+              {/*
+                Item 39. Deliberately NOT a star row and NOT paired with a count:
+                there is exactly one rater, and any aggregate affordance would
+                read as crowd consensus. The qualifier ships on every instance
+                for that reason, not as decoration.
+              */}
+              {showOwnerRating && (
+                <p className="flex items-baseline gap-1.5 mt-1.5">
+                  <span aria-hidden className="text-(--accent) text-sm leading-none">&#9733;</span>
+                  <span className="text-sm font-semibold text-(--dark)">
+                    {spot.owner_rating!.toFixed(1)}
+                    <span className="sr-only"> out of 5, rated by one paddler</span>
+                  </span>
+                  <span className="text-xs text-(--muted)">One paddler&rsquo;s take</span>
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}

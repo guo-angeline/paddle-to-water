@@ -57,3 +57,68 @@ describe("hidden spots are withheld everywhere (2026-07-16 coordinate audit)", (
     expect(offenders, `import ALL_SPOTS from "@/lib/spots" instead`).toEqual([]);
   });
 });
+
+describe("owner ratings (item 39, 2026-07-16)", () => {
+  const rated = ALL_SPOTS_INCLUDING_HIDDEN.filter((s) => typeof s.owner_rating === "number");
+
+  it("carries the owner's 118 hand-entered ratings", () => {
+    expect(rated.length).toBe(118);
+  });
+
+  it("every rating is 1.0-5.0 at one decimal", () => {
+    for (const s of rated) {
+      const v = s.owner_rating!;
+      expect(v, `spot ${s.id}`).toBeGreaterThanOrEqual(1);
+      expect(v, `spot ${s.id}`).toBeLessThanOrEqual(5);
+      // Guards a JSON round-trip or a bad merge introducing float noise
+      // (4.300000000000001), which would render as "4.3" but compare unequal.
+      expect(Math.round(v * 10), `spot ${s.id} is not one-decimal`).toBeCloseTo(v * 10, 9);
+    }
+  });
+
+  it("never rates a hidden spot, so a rating can never reach a surface", () => {
+    // Spot 79 is this project's one confirmed fabrication and the owner rated it
+    // 3.9 before it was hidden, because the blank sheet was generated over
+    // ALL_SPOTS_INCLUDING_HIDDEN. The rating was dropped on the owner's own call.
+    // The real guard is structural: no hidden record may carry a rating at all.
+    const leaked = HIDDEN_SPOTS.filter((s) => s.owner_rating !== undefined);
+    expect(leaked.map((s) => s.id), "a hidden spot carries an owner_rating").toEqual([]);
+    expect(ALL_SPOTS_INCLUDING_HIDDEN.find((s) => s.id === 79)?.owner_rating).toBeUndefined();
+  });
+
+  it("leaves 24 spots deliberately unrated, and that is not a gap", () => {
+    // The sheet told the owner blank was the correct answer where they had not
+    // paddled. An unrated spot must render nothing; it must never coerce to 0.
+    const unrated = ALL_SPOTS.filter((s) => s.owner_rating === undefined);
+    expect(unrated.length).toBe(ALL_SPOTS.length - rated.length);
+    expect(unrated.some((s) => s.owner_rating === 0)).toBe(false);
+  });
+
+  it("is never rendered as an average or paired with a review count", () => {
+    // Population of one. "Average", "reviews", "ratings" (plural) or an out-of-5
+    // count next to the number would each assert a consensus that does not exist.
+    // Sweep the rendered tree rather than trusting the copy we remember writing.
+    const banned = /\b(average rating|avg rating|\d+\s+reviews?|\d+\s+ratings)\b/i;
+    // Comments discuss the analysis (which counts ratings) and must not trip the
+    // guard; only what renders can mislead a user. Strip them first.
+    const stripComments = (src: string) =>
+      src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const e of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+        const rel = path.join(dir, e.name);
+        if (e.isDirectory()) walk(rel);
+        else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
+          const src = fs.readFileSync(path.join(ROOT, rel), "utf-8");
+          if (src.includes("owner_rating") && banned.test(stripComments(src))) offenders.push(rel);
+        }
+      }
+    };
+    ["app", "components", "lib"].forEach(walk);
+    expect(offenders, "owner_rating is one paddler, not an aggregate").toEqual([]);
+
+    // Prove the guard still bites after the comment strip, or it certifies nothing.
+    expect(banned.test(stripComments('const x = <p>Average rating 4.3</p>;'))).toBe(true);
+    expect(banned.test(stripComments('// East Bay: 29 ratings in a 0.4 band'))).toBe(false);
+  });
+});

@@ -38,6 +38,25 @@ export interface Spot {
   hidden?: boolean;
   /** Why this spot is hidden, and what would un-hide it. Required when hidden. */
   hidden_reason?: string;
+  /**
+   * The owner's own 1.0-5.0 rating of the paddle, entered by hand (item 39,
+   * 2026-07-16). Absent = unrated, which is not a gap: 24 of 142 records are
+   * deliberately blank and must render nothing at all.
+   *
+   * This is NOT the item 39 weighted score, and the two must never be blended.
+   * The rubric (D15) scored the PUT-IN: ramp, parking, launch traffic. This
+   * rates THE PADDLE. They correlate at 0.04 against researcher A and -0.10
+   * against B, while A and B correlate 0.52 with each other, so they are
+   * answers to different questions, not two estimates of one quantity. China
+   * Camp is 3.6 on the rubric and 5.0 here and both are correct.
+   *
+   * It is also not an aggregate. There is a population of one, so never render
+   * it as "average", never pair it with a review count, and never let a second
+   * source feed this field. See reports/paddle-score-owner-ratings-2026-07-16.md
+   * for the discrimination analysis, including the regions where this field
+   * carries no information (East Bay: 29 spots inside a 0.4-wide band).
+   */
+  owner_rating?: number;
 }
 
 export const REGIONS = [

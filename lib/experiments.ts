@@ -69,6 +69,22 @@ export const EXPERIMENTS = {
     primaryMetric: "alert_optin_result",
     guardrails: ["email_capture_submitted", "alert_optin_dismissed"],
   },
+  // Item 39: show the owner's hand-entered 1-5 rating in the spot drawer, on
+  // the 118 rated spots. Control shows nothing, as today.
+  //
+  // Read this one with the discrimination analysis open
+  // (reports/paddle-score-owner-ratings-2026-07-16.md): the ratings only spread
+  // meaningfully in the North Bay (n=46, spread 1.9). East Bay's 29 ratings all
+  // sit inside a 0.4-wide band, so treatment there is close to a constant and
+  // cannot plausibly move behavior. Segment the readout by region before
+  // concluding anything about the field as a whole; a flat pooled result is the
+  // predicted outcome, not evidence the idea failed.
+  owner_rating: {
+    flag: "owner-rating",
+    variants: ["control", "treatment"],
+    primaryMetric: "spot_action",
+    guardrails: ["conditions_loaded", "spot_sheet_dismissed"],
+  },
 } as const satisfies Record<string, ExperimentDef>;
 
 export type ExperimentName = keyof typeof EXPERIMENTS;
