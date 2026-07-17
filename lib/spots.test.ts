@@ -134,3 +134,102 @@ describe("owner ratings (item 39, 2026-07-16)", () => {
     expect(banned.test(stripComments('// East Bay: 29 ratings in a 0.4 band'))).toBe(false);
   });
 });
+
+describe("tide_sensitive corrections (item 40, 2026-07-17)", () => {
+  // Candidate set from the keyword screen: 1, 25, 27, 29, 38, 39, 40, 41, 43,
+  // 44, 51, 60, 82, 96. A regex hit is not evidence: it can't tell an
+  // assertion from its negation. Each id below was read against its own
+  // notes; only records whose notes unambiguously describe tidal dependence
+  // (a required tide window, or unusable outside one) were flipped.
+  const byId = (id: number) => ALL_SPOTS_INCLUDING_HIDDEN.find((s) => s.id === id)!;
+
+  it("flips ids whose notes unambiguously describe tidal dependence", () => {
+    // 1: "Tidal range runs 9-10 feet, so push off about an hour before low."
+    // 25: "Stick to mid or high tide or you'll bottom out in the muck..."
+    // 29: "paddle upstream past the Bon Air Road bridge at high tide. Tidal,
+    //      so check the chart and go with the flow."
+    // 39: "Unusable at low tide when mudflats extend into the inlet, so
+    //      check tides before arriving."
+    // 41: "so plan for a mid-to-high tide to keep water under your board."
+    // 44: "otherwise time mid-to-high tide to avoid stranding on mudflats."
+    // 51: "Currents at the Gate can hit 6 knots on a strong ebb, so check
+    //      the tide tables before heading outside the cove."
+    const flipped = [1, 25, 29, 39, 41, 44, 51];
+    for (const id of flipped) {
+      expect(byId(id).tide_sensitive, `spot ${id} should be flipped to true`).toBe(true);
+    }
+  });
+
+  it("holds negations false: 60 and 96 explicitly say tides don't matter here", () => {
+    // 60: "Usable at all tide levels."
+    // 96: "...free of tides and currents."
+    expect(byId(60).tide_sensitive).toBe(false);
+    expect(byId(96).tide_sensitive).toBe(false);
+  });
+
+  it("holds ambiguous mentions false: tidal label alone is not dependence", () => {
+    // 27: "moderate tidal current" describes the water body, not a usability
+    //     dependency or an action tied to tide state.
+    // 38: "opposing tides mid-bay near Hog Island, where chop builds
+    //     quickly" is a wind-vs-tide chop hazard on one stretch, not a
+    //     tide-gated launch.
+    // 40: "A mellow tidal stretch through downtown" labels the water tidal
+    //     with no dependency described.
+    // 43: "Two put-ins on the same tidal river" labels the water tidal with
+    //     no dependency described.
+    // 82: "a tidal lagoon in the heart of Oakland" labels the water tidal
+    //     with no dependency described.
+    const held = [27, 38, 40, 43, 82];
+    for (const id of held) {
+      expect(byId(id).tide_sensitive, `spot ${id} should stay false`).toBe(false);
+    }
+  });
+});
+
+describe("coordinate corrections (item 40, 2026-07-17)", () => {
+  // Candidate set re-verified against primary sources: 54, 63, 64, 65, 70, 84,
+  // 120, 134. Only three moved, each on two independent named sources; the
+  // rest are report-only (see reports/item-40-record-accuracy-2026-07-17.md,
+  // "Phase 2: coordinates"). No single screen moves a pin.
+  const byId = (id: number) => ALL_SPOTS_INCLUDING_HIDDEN.find((s) => s.id === id)!;
+
+  it("moves 64 (Del Valle) to the OSM-tagged East Beach boat ramp named in its own notes", () => {
+    // Stored coordinate reverse-geocoded to Canyon Trail, a hiking track over
+    // 1km from the water. Notes name "the East Beach ramp"; OSM's leisure=
+    // slipway node "Del Valle Boat Ramp" plus EBRPD's own park page ("public
+    // boat ramp" at the "East Beach marina area") both confirm this point.
+    expect(byId(64).lat).toBe(37.5862939);
+    expect(byId(64).lng).toBe(-121.7037956);
+  });
+
+  it("moves 65 (Jack London Square) to Estuary Park, the launch its own notes name", () => {
+    // Notes: "Estuary Park at the Jack London Aquatic Center is the
+    // dedicated small-craft launch on this stretch." SF Bay Water Trail's
+    // Estuary Park trailhead page publishes 37.79017451,-122.26595967.
+    expect(byId(65).lat).toBe(37.7901745);
+    expect(byId(65).lng).toBe(-122.2659597);
+  });
+
+  it("corrects 134 (Eden Landing)'s corrupted longitude to the Water Trail's published value", () => {
+    // Stored lat 37.6221119 already matches the SF Bay Water Trail's own
+    // embedded map coordinate (37.6221077, off by ~0.5m); only the longitude
+    // was corrupted (-122.1246736, ~193m off). The Water Trail page's
+    // Directions link (live-fetched) embeds 37.6221077,-122.1224849 for the
+    // Eden Landing Road end. Nominatim reverse geocode on that exact point
+    // (live-fetched, independent of the Water Trail fetch) confirms
+    // class=amenity, type=parking on Eden Landing Road, matching the
+    // record's own notes ("About 30 free parking spaces sit a quarter mile
+    // away"), the same disclosed-parking pattern already accepted for the
+    // 6-decimal Water Trail block (127/130/132). Latitude is left unchanged.
+    expect(byId(134).lat).toBe(37.6221119);
+    expect(byId(134).lng).toBe(-122.1224849);
+  });
+
+  it("leaves the 6-decimal Water Trail parking block untouched, e.g. spot 127", () => {
+    // Proves nothing outside the report churned: 127 is a documented,
+    // disclosed parking coordinate (correct as stored) and must not move.
+    const s = byId(127);
+    expect(s.lat).toBe(38.039643);
+    expect(s.lng).toBe(-121.963406);
+  });
+});
