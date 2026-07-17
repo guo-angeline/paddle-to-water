@@ -55,7 +55,18 @@ type SystemEventName =
   // granted (Permissions API === "granted"), applied on load with no click.
   // SYSTEM, not intent: the app acted, the user did not toggle Near Me this
   // session. Never read this as "people use Near Me" — that's near_me_toggled.
-  | "location_auto_applied";
+  | "location_auto_applied"
+  // An enrollment prompt was declined because this device is a confirmed
+  // email subscriber (item 47). SYSTEM, not intent: the app decided not to
+  // render and the user did not act at all, since the standalone_relaunch
+  // and return_session gates fire on mount before any click is possible.
+  // Deviates from the _loaded/_failed naming convention: this is neither a
+  // fetch settle nor a failure, but the event_category stamp, not the name
+  // suffix, is what is load-bearing. With the "Turn on alerts" button
+  // hiding for email subscribers (D18), trigger:"manual" goes to zero for
+  // this cohort, so this event's volume is the ONLY signal that would catch
+  // a bad suppression. Must never be countable as engagement.
+  | "enrollment_prompt_suppressed";
 
 /**
  * INTENT / engagement events. Fire only on a deliberate user act or a
@@ -183,6 +194,25 @@ interface EventPropMap {
   alert_optin_result: {
     platform: "standalone" | "ios" | "android" | "desktop";
     result: "granted" | "denied" | "unsupported";
+  };
+  // A prompt this device would otherwise have seen was suppressed because
+  // it is already a confirmed email subscriber (item 47). `trigger` is the
+  // trigger that WOULD have fired, mirroring alert_optin_shown so the two
+  // funnels segment the same way. `platform` carries an explicit "unknown"
+  // member (not null): the first_save gate runs inside the ptw:spotsaved
+  // handler and can read platform before it is set, and the event must
+  // never be dropped just because platform is unset. `channel` is
+  // deliberately omitted: these gates run before dualCta.ready and before
+  // the push `result` resolves, so leadChannel(platform, result) is not
+  // computable here, and the counterfactual channel is derivable from
+  // platform. `reconciled_this_session` is true when the cache was written
+  // this pageload from a live /api/email/opened or ?email_confirmed=1
+  // answer, false when read from a cache written earlier: that is what
+  // separates a fresh correct suppression from a possibly-stale one.
+  enrollment_prompt_suppressed: {
+    platform: "standalone" | "ios" | "android" | "desktop" | "unknown";
+    trigger: "first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest";
+    reconciled_this_session: boolean;
   };
   alert_interstitial_shown: { spot_id: number; launch_tip_shown: boolean };
   alert_interstitial_result: { spot_id: number; outcome: "dismissed" | "reminder" };

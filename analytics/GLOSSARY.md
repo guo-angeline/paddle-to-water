@@ -54,6 +54,10 @@ filter on it is complete only from that date.)
 ## Alert loop (the retention epic)
 - **Opt-in rate** — users with `alert_optin_result` `result="granted"` ÷ users
   with `alert_optin_shown`. → `queries/alert_optin_funnel.sql`
+- **Enrollment prompt suppression** - `enrollment_prompt_suppressed` count:
+  prompts the app declined to render because this device is a confirmed email
+  subscriber. A guardrail on over-suppression, never an engagement number.
+  -> `queries/enrollment_prompt_suppression.sql`
 - **Net enabled** — granted users minus users with any `alert_subscribe_failed`.
   Subscribe success is silent by design, so this is a floor, not an exact count.
   → `queries/alert_optin_funnel.sql`

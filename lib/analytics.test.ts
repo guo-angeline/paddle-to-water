@@ -101,4 +101,40 @@ describe("pre-init event queue", () => {
       event_category: "system",
     });
   });
+
+  it("emits enrollment_prompt_suppressed as a SYSTEM event", () => {
+    posthog.__loaded = true;
+    const capture = vi.spyOn(posthog, "capture").mockImplementation(() => undefined);
+
+    trackSystem("enrollment_prompt_suppressed", {
+      trigger: "first_save",
+      platform: "ios",
+      reconciled_this_session: true,
+    });
+
+    expect(capture).toHaveBeenCalledWith("enrollment_prompt_suppressed", {
+      trigger: "first_save",
+      platform: "ios",
+      reconciled_this_session: true,
+      event_category: "system",
+    });
+  });
+
+  it("emits enrollment_prompt_suppressed with platform unknown and a stale cache", () => {
+    posthog.__loaded = true;
+    const capture = vi.spyOn(posthog, "capture").mockImplementation(() => undefined);
+
+    trackSystem("enrollment_prompt_suppressed", {
+      trigger: "return_session",
+      platform: "unknown",
+      reconciled_this_session: false,
+    });
+
+    expect(capture).toHaveBeenCalledWith("enrollment_prompt_suppressed", {
+      trigger: "return_session",
+      platform: "unknown",
+      reconciled_this_session: false,
+      event_category: "system",
+    });
+  });
 });

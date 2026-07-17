@@ -14,6 +14,17 @@ without touching this file.
 
 ---
 
+## 2026-07-16 (item 47): `enrollment_prompt_suppressed` added (SYSTEM event)
+
+**New event.** `enrollment_prompt_suppressed` fires whenever the app declines to render an enrollment prompt because the device is already a confirmed email subscriber. Props: `platform` (`standalone`/`ios`/`android`/`desktop`/`unknown`), `trigger` (the trigger that would have fired: `first_save`/`standalone_relaunch`/`manual`/`return_session`/`conditions_interest`), `reconciled_this_session` (bool: was the confirmed-subscriber cache written this pageload from a live server answer, or read from an earlier cache).
+
+Why: item 47 fixes a bug where a confirmed email subscriber kept being re-prompted to enroll. Part of the fix (D18) lets the "Turn on alerts" entry point hide once a device is known confirmed, which drives `trigger:"manual"` to zero for this cohort. With that path gone, `enrollment_prompt_suppressed` volume is the only signal that would catch an over-broad or wrongly-triggered suppression, so it is required, not optional. It is a SYSTEM event, stamped `event_category: "system"`: the app decided not to render and the user took no action, so it must never be read as engagement.
+
+- **Comparability: no prior series exists.** This event has no history before this date; do not attempt to backfill or compare against an earlier window.
+- **Comparability: `alert_optin_shown` volume drops for the email-confirmed cohort from this date forward, and that drop is the fix working, not a regression.** The bug this item fixes inflated `alert_optin_shown` with prompt impressions that should never have fired for confirmed subscribers; the email enrollment funnel denominator (`queries/alert_optin_funnel.sql`) is wrong for the entire period the bug existed. Any pre/post comparison of `alert_optin_shown` or the opt-in rate spanning this date must account for this fix, not read the drop as declining interest.
+
+---
+
 ## 2026-07-16 (item 39): `spot_action` gains `owner_rating` + `owner_rating_shown`; new `owner-rating` experiment (props-changed)
 
 **No event added, removed, or renamed.** `spot_action` gains two props, and a new experiment arm starts logging `experiment_exposed` with `experiment: "owner_rating"`.
