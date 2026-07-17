@@ -1607,6 +1607,8 @@
     "rentals_available": true,
     "inspection_required": false,
     "power_boats": true,
+    "hidden": true,
+    "hidden_reason": "Delisted by owner (D14, 2026-07-17). Coordinate is 101 Surf Sports' private business dock, not a public launch; a paddler who drives here may have no right to put in (data-quality-sweep-2026-07-16.md row 0). Un-hide only if replaced with a Water-Trail-confirmed public launch on the San Rafael Canal.",
     "id": 92
   },
   {

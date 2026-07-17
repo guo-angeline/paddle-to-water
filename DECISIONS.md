@@ -127,7 +127,7 @@ Answer: a (owner, 2026-07-11): look up the owner's push subscription key and add
 
 WIRED 2026-07-15: owner supplied push anon_id `2f625b9b-4627-483e-b29b-8ab5973e046b` (iOS PWA). Added to EXCLUDED_PERSONS.md and the owner-exclusion clause of all three push queries. Placeholder removed. Push numbers are now owner-clean.
 
-## D10 [OPEN] 2026-07-14 · Item 31 (a photo per spot): pick the sourcing approach
+## D10 [RESOLVED] 2026-07-14 · Item 31 (a photo per spot): pick the sourcing approach
 
 Context: item 31 wants a hero photo on each spot card/sheet. 142 spots, a mix of famous water (Tahoe, Folsom, Fallen Leaf, Pillar Point) and obscure sloughs / boat ramps / creeks. The build is easy; rights-clean sourcing at scale is the hard part, and it forks the whole approach, so it needs your call before I build. Two findings from a feasibility probe today:
 
@@ -150,7 +150,7 @@ Effort estimate (option a): harvest script ~0.5 day; manual curation ~142 spots 
 
 Recommendation: (a). It is the only path that is rights-clean, carries no recurring cost, and keeps the render path dependency-free, in exchange for one-time human curation. Ship the curated tranche behind the flag, map-thumbnail fallback for the rest, owner and (later, if approved) user photos backfill. Per the major-update directive this ships flag-gated; per D2/D3 reality (~14 users/day) it is a monitored rollout with guardrails, not a powered A/B.
 
-Answer: 
+Answer: (a) tiered hybrid, self-hosted + attributed (owner, 2026-07-17, in chat). Harvest CC-BY/CC-BY-SA/CC0 (Wikimedia Commons + Flickr CC geosearch), hand-curate, self-host sized derivatives, map-thumbnail fallback for uncovered spots, owner photos backfill high-value gaps. Sub-questions carry the recommendations: Q3 defer user-submitted photos (UGC moderation/rights/legal gate), Q4 the "Photo: {author} / {license}" caption surface is accepted. Ship the curated tranche flag-gated, monitored 100% with guardrails (not a powered A/B), with a dwell-gated `spot_photo_viewed` intent event + INSTRUMENTATION_CHANGELOG entry. Item 31 unblocked to ready.
 
 ## D11 [RESOLVED] 2026-07-15 · Item 36 (launch-direction tip): A/B flag exemption + copy wording
 
@@ -185,7 +185,7 @@ What we give up, recorded honestly: there is no control arm, so the effect of th
 
 Rollback is revert + redeploy, minutes.
 
-## D14 [OPEN] 2026-07-16 · Spots 76 and 79: hidden pending repair or delist
+## D14 [RESOLVED] 2026-07-17 · Spots 76, 79, and 92: delisted
 
 Context: the 2026-07-16 coordinate audit (`reports/coord-audit-2026-07-16.md`) found two records with no confirmable public launch. Both were live. The owner directed "hide both now" in chat on 2026-07-16, and they are now hidden in production via the new `hidden` field (filtered at `lib/spots.ts`; records and notes retained). This memo tracks the disposition, which is still open.
 
@@ -206,6 +206,8 @@ Answer: delist both 79 and 76.
 - **Owner confirmed no relationship with 101 Surf Sports** (2026-07-16), so no FTC Endorsement Guides material-connection disclosure is needed.
 - The notes now say plainly that this is a private business dock rather than a public launch. They deliberately do **not** assert a rental/storage-only access policy: the sweep rates the exact policy only "medium" (the shop's storage/contact pages 404'd) and the shop's own site says "come on down and go for a paddle", so a stated access rule would be inventing a fact.
 - **Still open:** whether 92 should remain listed at all, or be replaced with a Water-Trail-confirmed public launch. The sweep declines to propose a replacement coordinate and will not guess Buck's Landing. Un-hiding/delisting is an owner decision by the same rule as 76 and 79.
+
+Answer (spot 92): delist (owner, 2026-07-17, in chat). Hidden in `data/spots.json` with `hidden`/`hidden_reason`; retained for later repair. Un-hide only if replaced with a Water-Trail-confirmed public launch on the San Rafael Canal. D14 now fully resolved (76, 79, 92 all delisted). Ships to prod on the next `vercel --prod`; no lat/lng touched, so D19 predeploy gate is clear.
 
 **Process fact recorded from the item 39 rating pass (relevant to 79):** the owner's blank rating sheet was generated over `ALL_SPOTS_INCLUDING_HIDDEN`, so it asked the owner to rate spot 79, a place established that morning not to exist. The owner rated it 3.9 and, when shown, called it a slip. The row structure supports that reading (79 sits in no fill-down run; its neighbours vary), and the rating was dropped. The narrower point worth keeping: **the sheet never gated on "have I been here"**, so "these are places I paddled" is an after-the-fact reconstruction rather than a per-row recorded fact. Any future rating sheet gets a "been here" column and is generated from `ALL_SPOTS`.
 

@@ -65,16 +65,18 @@ describe("owner ratings (item 39, 2026-07-16)", () => {
     expect(rated.length).toBe(117);
   });
 
-  it("does not rate spot 92, where the user may have no right to launch", () => {
-    // Legal gate, 2026-07-16. 92 is 101 Surf Sports' private business dock. The
-    // site's /disclaimer covers a spot "appearing" here, not a favorable rating:
-    // listing is passive, a 4.3 is vouching, and the data-quality sweep says a
-    // user who drives there may have no right to launch. The owner confirmed no
-    // relationship with the shop. Restore a rating only once the record settles
-    // what public access actually exists (sweep row 0).
-    const s = ALL_SPOTS.find((x) => x.id === 92);
-    expect(s, "spot 92 should still be listed, just unrated").toBeTruthy();
-    expect(s!.owner_rating).toBeUndefined();
+  it("delists spot 92, where the user may have no right to launch", () => {
+    // Legal gate, 2026-07-16, escalated to D14 and resolved 2026-07-17: the owner
+    // delisted 92. It is 101 Surf Sports' private business dock, not a public
+    // launch, and the data-quality sweep says a user who drives there may have no
+    // right to put in (row 0). Hidden (not deleted) via lib/spots.ts, so it must
+    // not appear on any user-facing surface. Un-hide only if replaced with a
+    // Water-Trail-confirmed public launch on the San Rafael Canal.
+    expect(ALL_SPOTS.find((x) => x.id === 92), "spot 92 must be hidden").toBeUndefined();
+    const hidden = ALL_SPOTS_INCLUDING_HIDDEN.find((x) => x.id === 92);
+    expect(hidden?.hidden).toBe(true);
+    expect(hidden?.hidden_reason).toBeTruthy();
+    expect(hidden?.owner_rating).toBeUndefined();
   });
 
   it("every rating is 1.0-5.0 at one decimal", () => {
