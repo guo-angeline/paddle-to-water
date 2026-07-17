@@ -134,3 +134,54 @@ describe("owner ratings (item 39, 2026-07-16)", () => {
     expect(banned.test(stripComments('// East Bay: 29 ratings in a 0.4 band'))).toBe(false);
   });
 });
+
+describe("tide_sensitive corrections (item 40, 2026-07-17)", () => {
+  // Candidate set from the keyword screen: 1, 25, 27, 29, 38, 39, 40, 41, 43,
+  // 44, 51, 60, 82, 96. A regex hit is not evidence: it can't tell an
+  // assertion from its negation. Each id below was read against its own
+  // notes; only records whose notes unambiguously describe tidal dependence
+  // (a required tide window, or unusable outside one) were flipped.
+  const byId = (id: number) => ALL_SPOTS_INCLUDING_HIDDEN.find((s) => s.id === id)!;
+
+  it("flips ids whose notes unambiguously describe tidal dependence", () => {
+    // 1: "Tidal range runs 9-10 feet, so push off about an hour before low."
+    // 25: "Stick to mid or high tide or you'll bottom out in the muck..."
+    // 29: "paddle upstream past the Bon Air Road bridge at high tide. Tidal,
+    //      so check the chart and go with the flow."
+    // 39: "Unusable at low tide when mudflats extend into the inlet, so
+    //      check tides before arriving."
+    // 41: "so plan for a mid-to-high tide to keep water under your board."
+    // 44: "otherwise time mid-to-high tide to avoid stranding on mudflats."
+    // 51: "Currents at the Gate can hit 6 knots on a strong ebb, so check
+    //      the tide tables before heading outside the cove."
+    const flipped = [1, 25, 29, 39, 41, 44, 51];
+    for (const id of flipped) {
+      expect(byId(id).tide_sensitive, `spot ${id} should be flipped to true`).toBe(true);
+    }
+  });
+
+  it("holds negations false: 60 and 96 explicitly say tides don't matter here", () => {
+    // 60: "Usable at all tide levels."
+    // 96: "...free of tides and currents."
+    expect(byId(60).tide_sensitive).toBe(false);
+    expect(byId(96).tide_sensitive).toBe(false);
+  });
+
+  it("holds ambiguous mentions false: tidal label alone is not dependence", () => {
+    // 27: "moderate tidal current" describes the water body, not a usability
+    //     dependency or an action tied to tide state.
+    // 38: "opposing tides mid-bay near Hog Island, where chop builds
+    //     quickly" is a wind-vs-tide chop hazard on one stretch, not a
+    //     tide-gated launch.
+    // 40: "A mellow tidal stretch through downtown" labels the water tidal
+    //     with no dependency described.
+    // 43: "Two put-ins on the same tidal river" labels the water tidal with
+    //     no dependency described.
+    // 82: "a tidal lagoon in the heart of Oakland" labels the water tidal
+    //     with no dependency described.
+    const held = [27, 38, 40, 43, 82];
+    for (const id of held) {
+      expect(byId(id).tide_sensitive, `spot ${id} should stay false`).toBe(false);
+    }
+  });
+});
