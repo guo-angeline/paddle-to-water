@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { trackIntent, trackSystem, setPersona } from "@/lib/analytics";
 import { enablePushAlerts, readStashedSubscription, getAnonId, type OptInResult } from "@/lib/push";
 import { isValidEmail } from "@/lib/email/validation";
+import { isEmailConfirmed, wasReconciledThisSession } from "@/lib/email/subscriptionState";
 import { useExperiment } from "@/lib/experiments";
 import {
   RESEND_COOLDOWN_MS,
@@ -96,6 +97,10 @@ function readFavoriteIds(): number[] {
 // desktop = leads with email (item 23).
 type Platform = "standalone" | "ios" | "android" | "desktop" | null;
 
+// The five moments that can offer enrollment. Named here (was an inline union
+// on the trigger useState) so item 47's suppression sweep has one type to walk.
+type Trigger = "first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest";
+
 // Which channel the enrollment card leads with, per the item-23 matrix: desktop
 // and iOS Safari lead with email; a push-denied installed user gets the email
 // rescue; everyone else leads with push.
@@ -113,7 +118,12 @@ export default function InstallPrompt() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [enabling, setEnabling] = useState(false);
   const [result, setResult] = useState<OptInResult | null>(null);
-  const [trigger, setTrigger] = useState<"first_save" | "standalone_relaunch" | "manual" | "return_session" | "conditions_interest">("first_save");
+  const [trigger, setTrigger] = useState<Trigger>("first_save");
+  // Item 47: a confirmed email subscriber who reaches the manual entry point
+  // sees a static "You're set." card instead of the channel picker (D18 Q2(c)
+  // let the "Turn on alerts" button hide, so this is the defensive path for a
+  // stale DOM or a future caller of ptw:enablealerts, not the common case).
+  const [youreSet, setYoureSet] = useState(false);
   // Email capture (item 23). `email` is the field; `emailResult` is the outcome
   // ("pending" = confirm mail sent, awaiting the double-opt-in click). `altChannel`
   // toggles the secondary channel: on iOS it reveals the install steps, on Android
@@ -131,6 +141,35 @@ export default function InstallPrompt() {
   // Item 32: dual-CTA experiment (push + email at equal weight on mobile
   // surfaces). Control is today's single-lead card; see lib/experiments.ts.
   const dualCta = useExperiment("enrollment_dual_cta");
+
+  // Item 47: a mirror of `platform` readable inside effects that only run once
+  // ([] deps: onSaved, the manual entry point, conditions-interest), where
+  // reading `platform` directly would close over the initial null.
+  const platformRef = useRef<Platform>(null);
+  useEffect(() => {
+    platformRef.current = platform;
+  }, [platform]);
+
+  // Item 47: dedupes enrollment_prompt_suppressed per trigger per pageload.
+  // Without it the return_session gate (a useEffect keyed on [platform], which
+  // changes up to twice per load) would count renders instead of suppressions.
+  const suppressedRef = useRef(new Set<Trigger>());
+
+  // Item 47: the one gate every enrollment surface routes through. Confirmed
+  // email subscribers should never be re-offered email (D18), so this returns
+  // true and fires the suppression guardrail exactly once per trigger per load.
+  function suppressedByEmail(trigger: Trigger, platform: Platform | "standalone"): boolean {
+    if (!isEmailConfirmed()) return false;
+    if (!suppressedRef.current.has(trigger)) {
+      suppressedRef.current.add(trigger);
+      trackSystem("enrollment_prompt_suppressed", {
+        trigger,
+        platform: platform ?? "unknown",
+        reconciled_this_session: wasReconciledThisSession(),
+      });
+    }
+    return true;
+  }
 
   // Track whether a spot drawer is open. We no longer HIDE for it (that suppressed
   // the prompt at the exact moment it's earned, since the primary "Save this spot"
@@ -160,6 +199,8 @@ export default function InstallPrompt() {
       try {
         const optedOut = snoozedUntil() > Date.now() || localStorage.getItem(DENIED_KEY) === "1";
         if (!optedOut && readFavoriteIds().length > 0 && !readStashedSubscription()) {
+          // platform state is not readable yet (setPlatform above hasn't flushed).
+          if (suppressedByEmail("standalone_relaunch", "standalone")) return;
           setTrigger("standalone_relaunch");
           setVisible(true);
         }
@@ -199,6 +240,7 @@ export default function InstallPrompt() {
     function onSaved(e: WindowEventMap["ptw:spotsaved"]) {
       if (snoozedUntil() > Date.now()) return; // snoozed (was: permanent dismiss)
       if (readStashedSubscription()) return; // already subscribed
+      if (suppressedByEmail("first_save", platformRef.current)) return;
       setSpotName(e.detail?.spotName || "this spot");
       setTrigger("first_save");
       setVisible(true);
@@ -215,6 +257,7 @@ export default function InstallPrompt() {
   useEffect(() => {
     if (platform !== "ios" && platform !== "android" && platform !== "desktop") return;
     if (readStashedSubscription()) return;
+    if (suppressedByEmail("return_session", platform)) return;
     try {
       const optedOut = snoozedUntil() > Date.now() || localStorage.getItem(DENIED_KEY) === "1";
       if (!optedOut && readFavoriteIds().length >= 2) {
@@ -233,6 +276,14 @@ export default function InstallPrompt() {
   useEffect(() => {
     function onEnableRequest() {
       if (readStashedSubscription()) return; // already subscribed
+      // Normally unreachable: SpotList hides the "Turn on alerts" entry point
+      // once alerts read as on (D18 Q2(c)). Defensive path for a stale DOM or
+      // a future caller of ptw:enablealerts.
+      if (suppressedByEmail("manual", platformRef.current)) {
+        setYoureSet(true);
+        setVisible(true);
+        return;
+      }
       setTrigger("manual");
       setResult(null);
       setVisible(true);
@@ -249,6 +300,7 @@ export default function InstallPrompt() {
   useEffect(() => {
     function onConditionsInterest() {
       if (readStashedSubscription()) return; // already subscribed
+      if (suppressedByEmail("conditions_interest", platformRef.current)) return;
       try {
         const optedOut = snoozedUntil() > Date.now() || localStorage.getItem(DENIED_KEY) === "1";
         if (optedOut) return;
@@ -275,16 +327,19 @@ export default function InstallPrompt() {
     platform !== "desktop" &&
     result !== "granted" &&
     emailResult !== "pending" &&
+    !youreSet &&
     !(platform === "standalone" && result === "denied");
   const isTreatment = dualEligible && dualCta.variant === "treatment";
 
   useEffect(() => {
-    if (!visible) { shownRef.current = false; return; }
+    // Item 47: a suppressed-then-manual "You're set." card is not a channel
+    // offer, so it must never count as an enrollment impression.
+    if (!visible || youreSet) { shownRef.current = false; return; }
     if (platform && dualCta.ready && !shownRef.current) {
       trackIntent("alert_optin_shown", { platform, trigger, channel: isTreatment ? "both" : leadChannel(platform, result) });
       shownRef.current = true;
     }
-  }, [visible, platform, trigger, result, dualCta.ready, dualCta.variant]);
+  }, [visible, youreSet, platform, trigger, result, dualCta.ready, dualCta.variant]);
 
   // Log exposure for BOTH arms at this shared render point once eligible;
   // logExposure no-ops until ready and dedupes once per session per variant.
@@ -519,7 +574,17 @@ export default function InstallPrompt() {
   );
 
   let body: React.ReactNode;
-  if (result === "granted") {
+  if (youreSet) {
+    // Item 47: confirmed email subscriber hit the manual entry point. Static
+    // card, no push offer (D18 Q2(c) preserves the desktop-never-offers-push
+    // invariant); reuses the granted-push copy pattern with the email verb.
+    body = (
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>You&rsquo;re set.</p>
+        <p style={muted}>We&rsquo;ll email you when your spots are good to paddle.</p>
+      </div>
+    );
+  } else if (result === "granted") {
     body = (
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>You&rsquo;re set.</p>
