@@ -137,6 +137,15 @@ function ymd(d: Date): string {
   return `${y}${m}${day}`;
 }
 
+// Fast-fail the tide hop. Wind + the paddleability verdict resolve in ~100ms,
+// but the conditions panel waits on BOTH sources (getConditions Promise.allSettled),
+// so a slow tide call skeletons the whole panel. When NOAA flaps, the /api/tides
+// proxy can take its full timeout + retry (measured ~13s in prod), which would
+// leave the panel loading that long. Cap the client's patience well under that:
+// past this, give up on tides so the panel paints wind + the static-notes fallback.
+// (ROADMAP item 53; the proxy's own per-attempt timeout was also tightened.)
+const TIDE_CLIENT_TIMEOUT_MS = 4000;
+
 async function fetchTides(
   lat: number,
   lng: number,
@@ -164,7 +173,18 @@ async function fetchTides(
     begin_date: ymd(today),
     end_date: ymd(end),
   });
-  const res = await fetch(`/api/tides?${params.toString()}`, { signal });
+  // Abort on the earlier of: the caller's signal, or our own client timeout.
+  const controller = new AbortController();
+  const onCallerAbort = () => controller.abort();
+  signal.addEventListener("abort", onCallerAbort);
+  const timer = setTimeout(() => controller.abort(), TIDE_CLIENT_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`/api/tides?${params.toString()}`, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+    signal.removeEventListener("abort", onCallerAbort);
+  }
   if (!res.ok) throw new Error(`tides ${res.status}`);
   const data = (await res.json()) as {
     predictions?: { t: string; v: string; type: "H" | "L" }[];

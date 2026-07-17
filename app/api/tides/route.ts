@@ -20,7 +20,12 @@ export const runtime = "nodejs";
  */
 
 const NOAA_BASE = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter";
-const FETCH_TIMEOUT_MS = 6000;
+// Per-attempt timeout. Healthy NOAA answers well under 1s; keep this tight so a
+// flaky upstream can't run the timeout + one retry into a long wait (item 53,
+// owner note). The client (fetchTides) also caps its own patience at 4s, so the
+// user never waits on the full server budget; this mainly bounds the wasted work
+// and lets a cache-warming retry still fit inside a reasonable window.
+const FETCH_TIMEOUT_MS = 2500;
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min: a day's hi/lo predictions are stable.
 
 interface CacheEntry {
