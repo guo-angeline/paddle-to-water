@@ -1,5 +1,31 @@
 # Briefings: the board log
 
+## 2026-07-16 (evening) · Items 34 + 39 + 40 + 44 + 45 · 1 SHIPPED (undeployed), 1 CUT, 2 RESCOPED, 1 BLOCKED ON YOU
+
+What happened, in one line: **the day's real output was finding out that four of your eight ideas were built on premises that do not hold, and proving it cheaply instead of shipping them.**
+
+**Item 34 (reframe alert copy) SHIPPED to main, NOT deployed.** The lawyer's step zero. "Time to launch / Go while it lasts" is gone from the push that fires the moment a window opens, along with every other directive across both pushes, the interstitial, and all 7 email variants. The canonical safety line now renders on the email footer (HTML and text), the interstitial, and the enrollment card. 227 tests, build clean. Ready to deploy.
+
+**Item 39 (paddle score) CUT** (D16 open for your confirmation). A 10-spot pilot met a kill criterion set BEFORE the run. Two blind researchers: spread 1.1 and 0.8 against a 1.5 threshold; 8/9 and 9/9 spots inside one band. The rubric worked (within one level on every axis, mean disagreement 0.26). The score does not: a discriminating score and a legally defensible score are in direct tension, because the axes that separate these places (wind, water quality) are exactly the two the legal gate cut. Your alternative, rating them yourself, is in `reports/spot-ratings-blank.xlsx` and is the honest version.
+
+**Item 40 RESCOPED** from "the pin is on the put-in" to "the record is true". Its four worst findings are notes and boolean fields, not coordinates. The 127-spot sweep found **no second spot 79**, which is genuinely good news, and corrected the audit's own method: DBW is the wrong registry and using it as a screen was a category error (it registers motorized/trailered facilities; McNears Beach is DBW `NoFacility` AND an official Water Trail launch; 75% false positives). The right registry is the SF Bay Water Trail.
+
+**Item 45 RESCOPED to `blocked(no-source)`.** All 47 Water Trail trailheads classified: 34 carried (72%), 10 merged into other records, 3 genuine gaps, 0 unverifiable. **You cannot expand coverage from a source you have already ingested.** 10 of 13 non-carried sites are item 40 in disguise (spot 70 alone hides 3 Richmond trailheads). And the registry stops at the Bay: no field-complete equivalent exists for the Sierra, Delta, Central Valley, or coast, so step 1 of item 45 is finding a registry, not running the pipeline.
+
+**Item 44 (accounts) BLOCKED ON YOU.** Its step 1, the privacy policy, is written, lawyer-reviewed, and committed but undeployed. See D17.
+
+Evidence: 227 unit tests, lint 0 errors, build clean, `data/spots.json` untouched all day (verified at git-diff level, not numerically). Reports: `coord-audit-2026-07-16.md`, `paddle-score-pilot-A/-B.md`, `data-quality-sweep-2026-07-16.md`, `item-45-watertrail-gap.md`, `spot-ratings-blank.xlsx`.
+
+Measure: item 34 changes no event but breaks per-variant email comparability (all 7 variants rewritten); expect alert tap-through to fall, which is the intended trade, not a regression. Full note in INSTRUMENTATION_CHANGELOG.
+
+Deployed: **nothing this session.** Items 41/42 and the 76/79 hides went out earlier today; item 34 and the privacy policy are committed and waiting.
+
+Decisions raised: **D13** (item 42 at 100%, resolved), **D14** (spots 76/79 disposition, OPEN), **D15** (item 39 put-in only + pilot, resolved), **D16** (confirm the item 39 cut, OPEN), **D17** (no MX, no DMARC, OPEN and blocking).
+
+Limit, stated plainly: three of today's four research passes corrected the pass before them. The coord audit corrected my decimal-count heuristic (36% false positives, and it called Miller Boat Launch "11km off" when it is 14m from the ramp). The sweep corrected the audit's DBW screen. The item 45 pass corrected my name-matching. **Every screen this project has invented has had a false-positive rate the pass that invented it could not see.** Treat the current two screens the same way.
+
+Next up: **D17 is the whole critical path** (minutes in Cloudflare; unblocks item 44 and the privacy policy, and repairs a reply-to that has never worked). Then the six spot decisions from the sweep, loudest being **92 San Rafael Canal, a private shop's dock presented as a public put-in** where a user may have no right to launch. Then split spots 70/68/18/63, which is simultaneously item 40 work and the cheapest coverage in the backlog. The mid-July retention read is still unread and still the thing the roadmap's thesis depends on.
+
 ## 2026-07-16 · Owner idea batch (items 39-45): 3 shipped, 1 audit, 1 legal gate · SHIPPED + ESCALATIONS
 
 What shipped to prod (three things, all in one deploy): **item 42**, the mobile spot sheet now opens full height for every open instead of the 0.58vh peek, at 100% with no A/B flag per owner direction (D13). **Item 41**, a rotating one-sentence technique pro-tip in each alert email, reusing the 2026-07-13 copy-rotation mechanism. **Spots 79 and 76 hidden**, because the audit could not confirm either has a real public launch.
