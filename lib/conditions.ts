@@ -14,12 +14,25 @@
  *   on every load: it's a fixed, tiny region (Monterey to Mendocino, Bay + Delta).
  * - Wind: US National Weather Service, fetched directly from the browser.
  *   weather.gov DOES send `access-control-allow-origin: *` reliably, so it needs
- *   no proxy. `/points/{lat},{lng}` resolves a forecast gridpoint, then the
- *   gridpoint `/forecast` gives wind speed + direction.
+ *   no proxy. The `/points/{lat},{lng}` -> forecast-gridpoint resolution is
+ *   PRECOMPUTED offline (data/gridpoints.json, scripts/precompute_gridpoints.py),
+ *   so the runtime wind fetch is one hop (the forecast) instead of two. A spot
+ *   missing from the bundle, or a stale gridpoint, falls back to the live
+ *   two-hop resolution.
  *
  * Results are cached per session (module-level Map) so reopening the same spot
  * doesn't refetch.
  */
+
+import gridpointsData from "@/data/gridpoints.json";
+
+/** Precomputed "<lat4>,<lng4>" -> NWS forecast URL. See precompute_gridpoints.py. */
+const PRECOMPUTED_GRIDPOINTS = gridpointsData as Record<string, string>;
+
+/** The bundled forecast URL for a spot, or null if it wasn't precomputed. */
+export function precomputedForecastUrl(lat: number, lng: number): string | null {
+  return PRECOMPUTED_GRIDPOINTS[`${lat.toFixed(4)},${lng.toFixed(4)}`] ?? null;
+}
 
 export interface TideEvent {
   type: "H" | "L";
@@ -228,20 +241,35 @@ export function paddleabilityFromWind(maxMph: number): Paddleability {
   return "windy";
 }
 
-async function fetchWind(lat: number, lng: number, signal: AbortSignal): Promise<WindInfo | null> {
-  // NWS wants 4-decimal coords; more precision 301-redirects.
-  const pLat = lat.toFixed(4);
-  const pLng = lng.toFixed(4);
-  const pointRes = await fetch(`https://api.weather.gov/points/${pLat},${pLng}`, {
+/** Resolve a spot's forecast gridpoint live (the /points hop). NWS wants
+ * 4-decimal coords; more precision 301-redirects. */
+async function resolveGridpoint(key: string, signal: AbortSignal): Promise<string | null> {
+  const pointRes = await fetch(`https://api.weather.gov/points/${key}`, {
     signal,
     headers: { Accept: "application/geo+json" },
   });
   if (!pointRes.ok) throw new Error(`points ${pointRes.status}`);
   const point = (await pointRes.json()) as { properties?: { forecast?: string } };
-  const forecastUrl = point.properties?.forecast;
+  return point.properties?.forecast ?? null;
+}
+
+async function fetchWind(lat: number, lng: number, signal: AbortSignal): Promise<WindInfo | null> {
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  const precomputed = PRECOMPUTED_GRIDPOINTS[key] ?? null;
+  // One hop when precomputed; otherwise resolve the gridpoint live (two hops).
+  let forecastUrl = precomputed ?? (await resolveGridpoint(key, signal));
   if (!forecastUrl) return null;
 
-  const fRes = await fetch(forecastUrl, { signal, headers: { Accept: "application/geo+json" } });
+  let fRes = await fetch(forecastUrl, { signal, headers: { Accept: "application/geo+json" } });
+  if (!fRes.ok && precomputed) {
+    // A precomputed gridpoint can go stale if NWS re-grids (rare). Re-resolve
+    // live once and retry before giving up, so a stale bundle self-heals.
+    const fresh = await resolveGridpoint(key, signal);
+    if (fresh && fresh !== forecastUrl) {
+      forecastUrl = fresh;
+      fRes = await fetch(forecastUrl, { signal, headers: { Accept: "application/geo+json" } });
+    }
+  }
   if (!fRes.ok) throw new Error(`forecast ${fRes.status}`);
   const fData = (await fRes.json()) as {
     properties?: {

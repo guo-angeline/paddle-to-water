@@ -1,4 +1,5 @@
 import { evaluateGoodWindow, DEFAULT_HORIZON_DAYS, type GoodWindow, type HourlyPeriod } from "@/lib/alerts/conditions-window";
+import { precomputedForecastUrl } from "@/lib/conditions";
 
 export type NextWindowResult = { ok: true; window: GoodWindow | null } | { ok: false };
 
@@ -30,12 +31,19 @@ export function getNextWindow(
 
   const promise = (async (): Promise<NextWindowResult> => {
     try {
-      const pointRes = await fetch(`https://api.weather.gov/points/${lat.toFixed(4)},${lng.toFixed(4)}`, {
-        headers: { Accept: "application/geo+json" },
-      });
-      if (!pointRes.ok) return { ok: false };
-      const point = (await pointRes.json()) as { properties?: { forecastHourly?: string } };
-      const forecastUrl = point.properties?.forecastHourly;
+      // The hourly forecast lives at the precomputed gridpoint URL + "/hourly"
+      // (NWS's stable scheme), so a precomputed spot skips the /points hop. A spot
+      // missing from the bundle resolves the gridpoint live (two hops).
+      const precomputed = precomputedForecastUrl(lat, lng);
+      let forecastUrl: string | null = precomputed ? `${precomputed}/hourly` : null;
+      if (!forecastUrl) {
+        const pointRes = await fetch(`https://api.weather.gov/points/${lat.toFixed(4)},${lng.toFixed(4)}`, {
+          headers: { Accept: "application/geo+json" },
+        });
+        if (!pointRes.ok) return { ok: false };
+        const point = (await pointRes.json()) as { properties?: { forecastHourly?: string } };
+        forecastUrl = point.properties?.forecastHourly ?? null;
+      }
       if (!forecastUrl) return { ok: false };
       const fRes = await fetch(forecastUrl, { headers: { Accept: "application/geo+json" } });
       if (!fRes.ok) return { ok: false };
