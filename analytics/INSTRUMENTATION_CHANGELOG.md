@@ -14,6 +14,14 @@ without touching this file.
 
 ---
 
+## 2026-07-17 (item 53 slice): tide fast-fail; conditions_loaded `latency_ms` tail SHRINKS on tidal spots (no event/props change, semantics-note)
+
+**No event added, no props change, no `lib/analytics.ts` edit.** `conditions_loaded.latency_ms` measures the whole `getConditions` settle, which waits on the slower of tide/wind (`Promise.allSettled`). Before this change, a flaky NOAA could hang the `/api/tides` proxy for its full timeout + retry (~13s in prod), so `latency_ms` had a long tail on `tide_sensitive` spots even though wind resolved in ~100ms. The client now aborts the tide fetch at 4s and the proxy per-attempt timeout dropped 6s -> 2.5s, so the worst-case tide wait is bounded.
+
+- **Comparability: `conditions_loaded.latency_ms` p95/p99 STEPS DOWN on tide_sensitive spots from 2026-07-17, because the upstream wait is capped, not because the app or user got faster in the happy path.** The healthy-NOAA median is unchanged (it was already fast). Do not read the tail improvement as a general speed win; it is specifically the removal of the multi-second tide-hang tail. A side effect: on tidal spots during a NOAA outage, `has_tides:false` now settles by ~4s instead of ~13s, so the `has_tides` false-rate timing shifts earlier (the rate itself is governed by NOAA uptime, unchanged). `has_wind` and the fire condition are untouched.
+
+---
+
 ## 2026-07-17 (item 52): tide fetch moved to a same-origin proxy; conditions_loaded `has_tides` availability RISES (no event/props change, semantics-note)
 
 **No event added, no props change, no `lib/analytics.ts` edit.** This is a reliability fix, recorded here because it moves a metric an analyst reads. The browser used to fetch NOAA tide predictions directly; NOAA sends the CORS header only intermittently, so on `tide_sensitive` spots the tide fetch was silently CORS-blocked roughly half the time and `fetchTides` rejected, making the `conditions_loaded` event carry `has_tides: false` even though a station existed. From this date tides go through `/api/tides` (server-side, no CORS, with a timeout + one retry), so the fetch succeeds whenever NOAA is up.
