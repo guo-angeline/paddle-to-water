@@ -215,3 +215,22 @@ Consequences recorded:
 - The pilot carries a kill criterion set in advance (spec §4.1): if 10 spots spanning the expected range produce a spread under 1.5 points, the score does not discriminate and item 39 gets cut or rethought, not shipped.
 
 Still open, tracked in the spec §3: never emit schema.org `aggregateRating` for the editorial score (recommendation: no structured data in v1; an implementer will reach for it because it is what makes the star show in search).
+
+## D16 [OPEN] 2026-07-16 · Item 39 pilot met its kill criterion: confirm the cut
+
+Context: D15 resolved item 39's scope to put-in only and directed a 10-spot pilot before any full pass. The spec (§4.1) set a kill criterion BEFORE the run, specifically so it could not be rationalized afterward: spread under 1.5 points, or 7+ of 10 spots inside a single 1.0-wide band, means a put-in-only score does not discriminate and item 39 gets cut rather than shipped.
+
+Result (2026-07-16, two agents scoring the same 10 spots blind; `reports/paddle-score-pilot-A.md`, `-B.md`):
+- Researcher A: spread **1.1** (3.6 to 4.7), 8 of 9 in one band.
+- Researcher B: spread **0.8** (3.5 to 4.3), 9 of 9 in one band.
+- **Both prongs met, by both researchers.** The 10 spots were chosen to span the range across 6 regions, 3 fee states, and both tide states, so this is a finding, not a selection artifact.
+
+The rubric itself worked: inter-researcher agreement was within one level on **every** axis (mean disagreement 0.26 points), and both independently returned `null` on the same unsourceable axes rather than guessing. The failure is structural, not procedural: **a discriminating score and a legally defensible score are in direct tension.** Wind exposure and water quality are the axes that separate these places, and they are exactly the two the legal gate cut. A third rubric does not escape that squeeze.
+
+Recommendation: **confirm the cut.** The kill criterion was pre-committed and is met with room to spare; overriding it now would make the criterion theatre. Salvage the binary facts into filters and `notes` (the same home §0.1 chose for the wind axis), and redirect the effort into item 40's data-quality screens, which is where this pilot's value actually landed (a 30-40% material defect rate on spots item 40 never flagged).
+
+This is filed as OPEN rather than RESOLVED because item 39 was the owner's idea and the owner should get the last word on killing it, not the criterion alone.
+
+Question for the owner: confirm item 39 is cut, or override the kill criterion and say what would make the score worth shipping at a 1.1-point spread?
+
+Answer: 

@@ -1,6 +1,8 @@
 # Item 39: Paddle score, rubric + row design
 
-Status: **§0.1 RESOLVED by the owner 2026-07-16: option (a), PUT-IN ONLY.** Wind exposure and water quality are CUT. Rubric v2 in §1 reflects that; §1-old is preserved in git if the reasoning is ever needed. Next step is a 10-spot pilot (owner decision, 2026-07-16), not a 142-spot pass. Read alongside ROADMAP.md items 39, 40, 43, and DECISIONS.md D15.
+Status: **PILOT RUN 2026-07-16. KILL CRITERION MET BY BOTH RESEARCHERS. Recommendation: CUT item 39 as specified.** See §5 for the result. The rubric below is reproducible; the score it produces is not useful. Both things are true, and §5 explains why that is not a contradiction.
+
+Prior status: **§0.1 RESOLVED by the owner 2026-07-16: option (a), PUT-IN ONLY.** Wind exposure and water quality are CUT. Rubric v2 in §1 reflects that; §1-old is preserved in git if the reasoning is ever needed. Next step is a 10-spot pilot (owner decision, 2026-07-16), not a 142-spot pass. Read alongside ROADMAP.md items 39, 40, 43, and DECISIONS.md D15.
 
 Authored by the design-lead agent 2026-07-16. The legal-gate findings in §0.1 arrived from the lawyer agent in parallel and did **not** reach the design agent before it finished, so §1's rubric is written against the original brief. Where they conflict, §0.1 wins pending an owner decision.
 
@@ -304,3 +306,73 @@ Five of these (38, 45, 84, 104, 112) had their coordinates independently confirm
 ### 4.4 What ships out of the pilot
 
 Nothing user-facing. The pilot produces: 10 scored spots with per-axis sources and confidence, the inter-researcher agreement rate, the observed spread against the §4.1 kill criterion, and a recommendation to proceed, rethink, or cut. The owner reads it before any UI is built.
+
+
+---
+
+## 5. Pilot result, 2026-07-16: CUT
+
+Two agents (A and B) independently scored the same 10 spots against rubric v2. Reports: `reports/paddle-score-pilot-A.md`, `reports/paddle-score-pilot-B.md`.
+
+### 5.1 The kill criterion was met by both, on both prongs
+
+| | A | B | Threshold |
+|---|---|---|---|
+| Spread | **1.1** (3.6 to 4.7) | **0.8** (3.5 to 4.3) | < 1.5 = cut |
+| In one 1.0-wide band | 8 of 9 | 9 of 9 | 7+ = cut |
+
+§0.1 predicted the outcome verbatim before the run: *"every spot lands at 3.5-4.5 and the score is decoration."* Observed: 3.5 to 4.7. The 10 spots were chosen in §4.3 to span the range across 6 regions, 3 fee states, and both tide states, so the narrow spread is a finding, not a selection artifact.
+
+### 5.2 The rubric is fine. The score is not. Both are true.
+
+This is the part worth understanding, because "the pilot failed" is the wrong summary.
+
+**Inter-researcher agreement was good:**
+
+| Axis | Exact | Within 1 level |
+|---|---|---|
+| launch_ease | 6/10 | **10/10** |
+| parking | 8/9 | **9/9** |
+| launch_traffic | 8/9 | **9/9** |
+| facility | 5/10 | **10/10** |
+
+Mean disagreement per spot: **0.26 points**. Max: 0.6. Both researchers independently returned `null` for the same two axes on the same spot (48) rather than guessing. So the rubric is applicable and reproducible: two blind researchers land within one level on every single axis judgment.
+
+**The score still fails**, because a 1.1-point spread across deliberately diverse spots means every Bay Area launch is "about a 4". Signal-to-noise is 4.3x, which sounds acceptable and is not the point: the absolute range is too narrow to tell a user anything. There is no version of `4.1 score` vs `4.3 score` that changes where someone paddles.
+
+### 5.3 The real finding: discriminating and defensible are in direct tension
+
+Researcher A stated it best. **The two axes that would actually separate these places are wind exposure and water quality, and those are exactly the two §0.1 cut for legal reasons.** The put-in-only decision was correct on the law and it is what removes the score's discriminating power. That is not an argument to reverse it: the v1 rubric (wind at 0.30, next to a live conditions widget, with no Section 230 protection on a computed average) is the version the lawyer gate rejected, and rightly.
+
+So item 39 is squeezed from both sides. The legally defensible score is useless; the useful score is legally indefensible. **That is why the answer is cut, not rethink.** A third rubric does not escape the squeeze.
+
+Mechanically, why the axes collapse:
+- **Level 5 on launch_ease requires four conditions conjunctively** ("paved ramp or dock" AND "gentle grade" AND "carry under 50 ft" AND "tide-independent"), which almost no real lot achieves, so level 4's catch-all absorbs every developed launch. 6 of 10 spots scored 4.
+- **The axes are negatively correlated by construction.** A ramp is simultaneously what makes launching easy (launch_ease up) and what makes the put-in contested (launch_traffic down). The weighted sum cancels.
+- **facility used 2 of its 5 levels.** Nothing scored 1 or 2 on launch_ease or parking either.
+- **launch_traffic is unsourceable.** Every level is defined by use intensity ("light use", "a real queue at peak") and no agency publishes that; 6 of 9 levels came back low-confidence in both runs. It has ~3 real levels, not 5. Per §0.2, shipping those gradations would be exactly the rubric-decorating-a-vibes-score the lawyer warned about.
+- **parking** sources cleanly for cost but not for "rarely full", which 3 of its 5 levels hinge on, degrading it toward a proxy for `has_fee`, which the app already has.
+
+### 5.4 What to salvage
+
+The research is not wasted; the aggregate is.
+
+**Every genuinely useful fact the researchers found is binary, and binary facts belong in filters and `notes`, not in an average:** non-motorized only, trailer ramp vs. beach carry, $12 vs. free, mid-to-high tide only, ramp hours, no ramp at all. Those change where someone paddles. `4.1` does not. This is the same home §0.1 already chose for the cut wind axis: describe the place, do not rate it.
+
+### 5.5 The pilot's most valuable output was not about item 39
+
+**Ten spots chosen for reasons unrelated to data quality yielded a 30-40% material defect rate.** Both researchers independently found the same three, none previously flagged by item 40:
+
+- **120 Folsom / Beals Point: the record's central claim is false.** Notes say "Beals Point has a ramp." DBW types it **"No Facility"** while every other Folsom launch is typed "Launch"; OSM has no slipway within 1.5km. It is a swim beach. Unlike spot 79 the place is real, legal, and paddleable (State Parks confirms SUP rentals there), so this is a notes-accuracy defect, not a fabrication. `rentals_available: false` also looks wrong.
+- **63 Berkeley Marina: the pin sits on the DoubleTree hotel parking lot**, ~410m from the nearest slipway and ~700m from the beach its notes describe. Berkeley Marina is also two separate Water Trail sites and the record does not say which.
+- **84 MLK Jr. Shoreline: two launches ~2.5km apart merged into one record.** The pin is the Doolittle trailer ramp; the ADA paddle-craft dock and Tidewater Boating Center named in the notes are at Tidewater Ave. The coordinate is fine; the notes are not.
+
+Minor: spot 1's `tide_sensitive: false` contradicts its own notes ("push off about an hour before low"); 112's "easiest entry at any tide" is uncorroborated by any agency source; 38 and 104 carry stale fee prose.
+
+**The audit's DBW facility-type screen caught 120 on the first spot outside its original sample.** That screen and the reverse-geocode screen should be run across all 142 as a data-quality job. That is the highest-value thing in this whole spec, and it is an argument for item 40 and against item 45, not for item 39.
+
+Also worth recording: **3 of 10 official sources are Cloudflare-blocked** (Marin County, sccgov, EBRPD). The path of least resistance around that block is an AI search summary, which is precisely what put spot 79 into production. Any future data job needs a sanctioned path to those sources, not a workaround.
+
+### 5.6 Checked: the fabricated boilerplate did not spread
+
+Researcher B flagged that spot 1 shares spot 79's "9-to-10-foot" tidal figure and suggested grepping all 140. Done: only spot 1 shares it, and both are South Bay tidal-slough spots where a large range is genuinely expected. Spot 79's other distinctive phrases ("tidal velocity runs around", "timing with the flood") appear in **no** other record. **The fabrication is contained to 79, not systemic.** Good instinct, reassuring answer.
