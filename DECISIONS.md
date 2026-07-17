@@ -324,7 +324,7 @@ Two consequences accepted with it:
 
 D17 was re-confirmed live by the lawyer (`dig MX` and `dig TXT _dmarc` both empty) and re-flagged as a CCPA/CPRA + FTC exposure, since `hello@` is the published channel for access, correction, deletion, AND the COPPA child-report channel. It does not gate item 47. It remains the owner's call and is still unanswered.
 
-## D19 [OPEN] 2026-07-17 · Item 40: may this pass write to spots.json, and what about records with several launches?
+## D19 [RESOLVED] 2026-07-17 · Item 40: may this pass write to spots.json, and what about records with several launches?
 
 Context: the item 40 vision pass stopped before design with two blocking questions. Both are genuinely yours; the other three escalations were advisory and are folded in as defaults below.
 
@@ -353,4 +353,10 @@ If silent: (a) + (a), and the deploy waits for you regardless.
 
 Blocks: item 40 (record-accuracy audit)
 
-Answer:
+Answer: **Q1 (a) apply two-source-defensible edits, gate on deploy. Q2 (a) pin to what the notes name, split nothing.** (2026-07-17, owner.)
+
+Q1: the pass commits and merges only edits defensible by two independent sources; the merged coordinate diff is the review artifact; `vercel --prod --yes` does NOT run until the owner has read that diff and said go. This resolves the conflict with the prior audits' house rule: the rule was really "no unreviewed spot reaches production", and gating the deploy rather than the commit satisfies it while honouring the owner's instruction to apply corrections.
+
+Q2: 70, 54, 84 and 63 are NOT split in this pass. Where a record's own notes already name the launch (65 names the dock half a mile east at Estuary Park), that counts as the second source and the pin moves to it. Where the notes are silent, the pass reports the candidate launches and changes nothing. Record splits (a new spot id enters the sitemap, OG builder, generateStaticParams and both crons) get their own item if the owner wants them.
+
+Defaults confirmed by silence elsewhere: tide pass runs first; the tide screen's own false positives (96, 60) are already corrected in the brief and must not be flipped; no source is called blocked until it has failed via WebFetch AND a POST with a User-Agent.
