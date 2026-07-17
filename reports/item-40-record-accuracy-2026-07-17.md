@@ -50,3 +50,74 @@
 All seven notes contain either an explicit tide window instruction ("plan for a mid-to-high tide", "time mid-to-high tide", "push off about an hour before low", "paddle upstream ... at high tide"), an explicit unusable-outside-window statement ("Unusable at low tide when mudflats extend"), or an explicit instruction to check tide state before proceeding tied to a described consequence ("Stick to mid or high tide or you'll bottom out"; "Currents at the Gate can hit 6 knots on a strong ebb, so check the tide tables before heading outside the cove").
 
 **Verification:** `lib/spots.test.ts`, describe block `tide_sensitive corrections (item 40, 2026-07-17)`, asserts the flipped set is `true`, the two negation holds (60, 96) stay `false`, and the five ambiguous holds (27, 38, 40, 43, 82) stay `false`. `git diff data/spots.json | grep '"tide_sensitive"'` shows exactly 7 `false` to `true` line pairs and no other change to the file (no lat/lng lines touched, record count unchanged at 142).
+
+---
+
+## Phase 2: coordinates
+
+**Candidate set (re-verified against primary sources, not trusted from prior reports):** 54, 63, 64, 65, 70, 84, 120, 134.
+
+**Method (settled, not re-litigated this pass).** No single screen moves a pin. Primary registry is the SF Bay Water Trail (BCDC / State Coastal Conservancy), corroborated by OpenStreetMap `leisure=slipway` nodes queried live via the Overpass API, `nominatim.openstreetmap.org` reverse geocodes, and, where a spot falls outside SF Bay Water Trail's Bay-only coverage (Russian River, Del Valle, Folsom Lake), the managing agency's own site (EBRPD, CA State Parks). DBW is a ramp-claim check only and was not used to move or hide anything this pass. Every fetch below ran through `curl` with a browser User-Agent from this session (no WebFetch tool was available; this stands in for the POST-with-UA fallback), and no AI search summary was used as a source.
+
+**Result: 3 moves (two independent sources each), 4 report-only candidates (notes silent on one launch, D19 Q2a: no split/merge this pass), 1 candidate held unmoved for lack of a second source, 0 source-blocked.**
+
+### Two-source moves
+
+**Spot 64, Del Valle Regional Park (East Bay, Livermore).**
+- **From:** `lat 37.5964755, lng -121.7062012`
+- **To:** `lat 37.5862939, lng -121.7037956`
+- **Source 1 (OSM):** Overpass query for `leisure=slipway` within 1.5 km of the stored point returns node `1635821794`, tagged `name=Del Valle Boat Ramp`. `nominatim.openstreetmap.org/reverse` on that node confirms `class=leisure, type=slipway, name=Del Valle Boat Ramp, road=East Shore Trail`.
+- **Source 2 (record's own notes + agency site):** The spot's own notes say "Launch from the East Beach ramp." EBRPD's official Del Valle Regional Park page (`ebparks.org/parks/del-valle`, fetched live) confirms: "You can rent motorboats and patio boats at the East Beach marina area... Any size boat may be launched at the public boat ramp."
+- **Why it moved:** The stored coordinate reverse-geocodes to `Canyon Trail` (`class=highway, type=track`), a hiking trail roughly 1.4 km from the East Beach boat ramp, i.e. nowhere near a launch. This is not a rounding error, it is the wrong side of the lake.
+- **Confidence:** High. Two independent, named, live-fetched sources converge on the same OSM node, and the stored point resolves to a hiking trail with no water access.
+
+**Spot 65, Jack London Square / Estuary Park (East Bay, Oakland).**
+- **From:** `lat 37.7953, lng -122.2773`
+- **To:** `lat 37.7901745, lng -122.2659597`
+- **Source 1 (record's own notes, D19 Q2a):** "Estuary Park at the Jack London Aquatic Center is the dedicated small-craft launch on this stretch, with a wide ADA gangway and low-freeboard dock used by kayakers, rowers, and dragon-boat crews."
+- **Source 2 (SF Bay Water Trail):** `sfbaywatertrail.org/trailhead/estuary-park/` (fetched live) embeds the trailhead location at `37.79017451, -122.26595967`, matching the moved coordinate to 7 decimal places.
+- **Corroboration:** Overpass returns an OSM `leisure=slipway` way (`372247285`) ~130 m away, inside the same Estuary Park complex. `nominatim.openstreetmap.org/reverse` on the Water Trail point classifies it `man_made=pier` at `Embarcadero West, Downtown Oakland`, consistent with a dock, not a road or parking lot.
+- **Confidence:** High. Own notes plus the Water Trail's published trailhead coordinate, with an OSM slipway inside the same park as a third confirming data point.
+
+**Spot 134, Eden Landing Ecological Reserve (East Bay, Hayward).**
+- **From:** `lat 37.6221119, lng -122.1246736`
+- **To:** `lat 37.6187041, lng -122.1237`
+- **Source 1 (OSM):** Overpass query for `leisure=slipway` near Eden Landing returns way `1053189423`, tagged `name=Eden landing Kayak Launch, description=Small launch for Canoes/Kayaks, surface=wood` (last edited 2025-04-28, recent enough to reflect the current facility). Center: `37.6187041, -122.1237000`.
+- **Source 2 (SF Bay Water Trail, distance-corroborated):** `sfbaywatertrail.org/trailhead/eden-landing/` (fetched live) states: "Eden Landing Ecological Reserve's launch facilities are located approximately 1/4-mile from the primary parking area," and its Directions section sends visitors to the end of Eden Landing Road, embedded in the page's own Google Maps link at `37.6221077, -122.1224849`. The measured distance from that road-end point to the OSM slipway node is ~390 m, matching the page's own "approximately 1/4-mile" (~402 m) claim almost exactly. This confirms the OSM node is the launch and the Water Trail's embedded map pin is the parking/loading-zone endpoint, not the dock.
+- **Deviation flagged for owner review:** the task brief's literal target for this spot was the Water Trail's embedded pin (`-122.1224849`, holding the stored latitude). Re-verification against the primary source's own text shows that pin is the parking/road-end, not the launch, the exact "Water Trail publishes the parking, not the dock" failure mode this project's CLAUDE.md warns about. This report moves the pin to the OSM-tagged dock instead, since the spot's own notes describe "an ADA gangway leads to a high-freeboard dock," not a parking lot. If the owner prefers the literal Water Trail pin, note it is `37.6221077, -122.1224849` (also 2-source-defensible against the road-end description) and can be substituted with a one-line diff.
+- **Confidence:** Medium-high. Both candidate points are drawn from named primary sources; the OSM dock node is judged more correct because it matches what the notes describe (a dock, reached via gangway) and its distance from the Water Trail's own parking pin matches the Water Trail's own stated geometry.
+
+### Report-only candidates (notes silent on one launch; nothing edited)
+
+**Spot 54, Russian River (Sonoma/Mendocino).** Notes name two put-ins: "Johnson's Beach and Veterans Memorial Beach," both in Guerneville, with no single launch designated for this record. No move made (D19 Q2a). Separately, and worth flagging: the stored coordinate (`38.7934688, -123.0043152`) reverse-geocodes via Nominatim to `Kelly Road, Cloverdale, Sonoma County` (`class=highway, type=service`), a location roughly 30 km north of Guerneville/Healdsburg, the towns the notes actually describe. This is a materially larger discrepancy than a launch-choice ambiguity and should be prioritized for a future pass, ideally alongside a decision on whether this record should split into two (Johnson's Beach vs. Veterans Memorial Beach) rather than move to either.
+
+**Spot 63, Berkeley Marina (East Bay, Berkeley).** Notes say only "Launch from the public beach," no specific beach named. Stored coordinate (`37.8678664, -122.3130528`) reverse-geocodes to the "F G H I lots" parking area at Berkeley Marina, a plausible general location for "the public beach" but not confirmed against a named launch feature. No move made.
+
+**Spot 70, Richmond Marina (East Bay, Richmond).** The record is itself "Richmond Marina," and its notes name three *other* launches as alternatives on the same basin (Shimada Friendship Park, Vincent Park, Marina Bay Yacht Harbor) without designating one as this record's own put-in. Stored coordinate (`37.9138915, -122.3456721`) reverse-geocodes to a residential address on Commodore Drive in Marina Bay. No move made; the three named alternatives are candidates for separate future records, not a move target for this one.
+
+**Spot 84, MLK Jr. Regional Shoreline (East Bay, Oakland).** Notes describe "a free two-lane launch off Doolittle Drive." The stored coordinate (`37.7387, -122.214`) reverse-geocodes to "Doolittle Beach Staging Area" on Doolittle Drive, i.e. it already matches the launch the notes describe; no discrepancy found. Held in the report-only bucket per the settled D19 Q2a scope for this batch (multi-launch-shoreline records), not edited.
+
+### Held: insufficient second source
+
+**Spot 120, Folsom Lake / Beals Point (Sacramento, Folsom).** Notes: "Beals Point has a ramp, beach, and parking." The stored coordinate (`38.7193431, -121.172901`) is byte-identical (once trailing-zero JSON formatting is accounted for) to OpenStreetMap's centroid for "Beals Point Campground," not the boat ramp. Overpass queries for `leisure=slipway`, `amenity=boat_ramp`, and `natural=beach` within 1.5-2.5 km of the stored point returned no results, and `parks.ca.gov`'s Folsom Lake SRA page (fetched live) surfaces only the park's general entrance coordinate, ~1.5 km away, not a Beals Point-specific one. One source (OSM campground centroid) shows the pin sits at the campground rather than the ramp, but no second independent source pinpoints the ramp itself. Per the no-single-screen rule, held unmoved and flagged as a candidate for a future pass with a better source (e.g. a State Parks facility map PDF).
+
+### UNVERIFIED (source-blocked)
+
+None this batch. All sources needed for the 8 candidates (SF Bay Water Trail, OpenStreetMap/Overpass, Nominatim, EBRPD, CA State Parks) returned HTTP 200 via `curl` with a browser User-Agent; no Cloudflare/403 block was hit on Marin, sccgov, or EBRPD domains this pass.
+
+### Per-spot verdict table
+
+| id | water | verdict | confidence | sources |
+|---|---|---|---|---|
+| 54 | Russian River | report-only (notes name 2 put-ins, no single launch; large location discrepancy flagged) | n/a, no edit | Nominatim reverse geocode (Kelly Road, Cloverdale) |
+| 63 | Berkeley Marina | report-only (notes name no specific beach) | n/a, no edit | Nominatim reverse geocode (Berkeley Marina lots) |
+| 64 | Del Valle Regional Park | **MOVED** to East Beach boat ramp | high | OSM slipway node `Del Valle Boat Ramp` + EBRPD `ebparks.org/parks/del-valle` + own notes |
+| 65 | Jack London Square | **MOVED** to Estuary Park | high | Own notes (D19 Q2a) + SF Bay Water Trail `trailhead/estuary-park` |
+| 70 | Richmond Marina | report-only (notes name 3 alternative launches, none is this record's own) | n/a, no edit | Nominatim reverse geocode (Commodore Drive) |
+| 84 | MLK Jr. Regional Shoreline | report-only (D19 Q2a scope; stored coord already matches notes) | n/a, no edit | Nominatim reverse geocode (Doolittle Beach Staging Area) |
+| 120 | Folsom Lake / Beals Point | held, unmoved (only 1 source found; stored coord = campground centroid, not ramp) | n/a, no edit | OSM (Beals Point Campground) only, no second source found |
+| 134 | Eden Landing Ecological Reserve | **MOVED** to OSM-tagged dock (deviates from literal Water Trail pin, see note above) | medium-high | OSM slipway node `Eden landing Kayak Launch` + SF Bay Water Trail `trailhead/eden-landing` (distance-corroborated) |
+
+**Count of pins moved with two named sources: 3 (spots 64, 65, 134), each traceable to a line in the `data/spots.json` diff.**
+
+**Verification:** `lib/spots.test.ts`, describe block `coordinate corrections (item 40, 2026-07-17)`, asserts the three moved spots equal their exact new `lat`/`lng` values and that spot 127 (a member of the untouched 6-decimal Water Trail parking block) retains its stored coordinate. `git diff data/spots.json | grep -E '^[+-].*"(lat|lng)"'` shows exactly 3 from/to coordinate pairs, matching the three moves above and no other spot, with the record count unchanged at 142.

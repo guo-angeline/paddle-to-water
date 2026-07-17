@@ -185,3 +185,50 @@ describe("tide_sensitive corrections (item 40, 2026-07-17)", () => {
     }
   });
 });
+
+describe("coordinate corrections (item 40, 2026-07-17)", () => {
+  // Candidate set re-verified against primary sources: 54, 63, 64, 65, 70, 84,
+  // 120, 134. Only three moved, each on two independent named sources; the
+  // rest are report-only (see reports/item-40-record-accuracy-2026-07-17.md,
+  // "Phase 2: coordinates"). No single screen moves a pin.
+  const byId = (id: number) => ALL_SPOTS_INCLUDING_HIDDEN.find((s) => s.id === id)!;
+
+  it("moves 64 (Del Valle) to the OSM-tagged East Beach boat ramp named in its own notes", () => {
+    // Stored coordinate reverse-geocoded to Canyon Trail, a hiking track over
+    // 1km from the water. Notes name "the East Beach ramp"; OSM's leisure=
+    // slipway node "Del Valle Boat Ramp" plus EBRPD's own park page ("public
+    // boat ramp" at the "East Beach marina area") both confirm this point.
+    expect(byId(64).lat).toBe(37.5862939);
+    expect(byId(64).lng).toBe(-121.7037956);
+  });
+
+  it("moves 65 (Jack London Square) to Estuary Park, the launch its own notes name", () => {
+    // Notes: "Estuary Park at the Jack London Aquatic Center is the
+    // dedicated small-craft launch on this stretch." SF Bay Water Trail's
+    // Estuary Park trailhead page publishes 37.79017451,-122.26595967.
+    expect(byId(65).lat).toBe(37.7901745);
+    expect(byId(65).lng).toBe(-122.2659597);
+  });
+
+  it("moves 134 (Eden Landing) to the OSM-tagged dock, not the Water Trail's parking pin", () => {
+    // SF Bay Water Trail's Eden Landing page embeds a Google Maps point at
+    // the end of Eden Landing Road (the parking/loading zone the page's own
+    // Directions section describes), 37.6221077,-122.1224849. OSM's leisure=
+    // slipway node "Eden landing Kayak Launch" sits ~390m from that point,
+    // matching the page's own text ("launch facilities are located
+    // approximately 1/4-mile from the primary parking area"). Moving to the
+    // Water Trail's literal pin would reproduce the documented "parking
+    // stored as a put-in" defect (CLAUDE.md); the OSM dock node is used
+    // instead.
+    expect(byId(134).lat).toBe(37.6187041);
+    expect(byId(134).lng).toBe(-122.1237);
+  });
+
+  it("leaves the 6-decimal Water Trail parking block untouched, e.g. spot 127", () => {
+    // Proves nothing outside the report churned: 127 is a documented,
+    // disclosed parking coordinate (correct as stored) and must not move.
+    const s = byId(127);
+    expect(s.lat).toBe(38.039643);
+    expect(s.lng).toBe(-121.963406);
+  });
+});
