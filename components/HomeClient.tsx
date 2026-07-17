@@ -60,6 +60,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(false);
+  const [geoErrorReason, setGeoErrorReason] = useState<"denied" | "unsupported" | null>(null);
   // Start empty so the first client render matches the static server HTML, then
   // hydrate from localStorage in an effect. Reading storage in the initializer
   // rendered the "Your saved spots" section the server never had → React #418
@@ -397,7 +398,11 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     }
     if (!navigator.geolocation) {
       setGeoError(true);
-      setTimeout(() => setGeoError(false), 4000);
+      setGeoErrorReason("unsupported");
+      setTimeout(() => {
+        setGeoError(false);
+        setGeoErrorReason(null);
+      }, 4000);
       trackIntent("near_me_toggled", { enabled: true, outcome: "unsupported" });
       return;
     }
@@ -414,7 +419,11 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       () => {
         setLocating(false);
         setGeoError(true);
-        setTimeout(() => setGeoError(false), 4000);
+        setGeoErrorReason("denied");
+        setTimeout(() => {
+          setGeoError(false);
+          setGeoErrorReason(null);
+        }, 4000);
         trackIntent("near_me_toggled", { enabled: true, outcome: "denied" });
       },
       { timeout: 8000 }
@@ -577,6 +586,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         nearMe={!!userLocation}
         locating={locating}
         geoError={geoError}
+        geoErrorReason={geoErrorReason}
         onToggleNearMe={handleNearMe}
         onClearAll={handleClearAll}
       />

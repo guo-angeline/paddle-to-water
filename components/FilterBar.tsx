@@ -15,6 +15,7 @@ interface Props {
   nearMe?: boolean;
   locating?: boolean;
   geoError?: boolean;
+  geoErrorReason?: "denied" | "unsupported" | null;
   onToggleNearMe?: () => void;
   onClearAll?: () => void;
 }
@@ -41,11 +42,11 @@ const FREE_INACTIVE: React.CSSProperties = { background: "#E4F5EA", color: "#2E9
 
 const NEAR_ACTIVE:   React.CSSProperties = { background: "var(--accent)", color: "#fff" };
 const NEAR_INACTIVE: React.CSSProperties = { background: "#E3EEFA", color: "#0B4E96" };
-const NEAR_ERROR:    React.CSSProperties = { background: "#FEE9E0", color: "#CC5528" };
+const NEAR_ERROR:    React.CSSProperties = { background: "var(--wind-alert-fill)", color: "var(--wind-alert)" };
 
 export default function FilterBar({
   filters, onChange,
-  nearMe, locating, geoError, onToggleNearMe, onClearAll,
+  nearMe, locating, geoError, geoErrorReason, onToggleNearMe, onClearAll,
 }: Props) {
   const pillLg = "px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer whitespace-nowrap";
   // Row 2 was `grid-cols-5` + `w-full` at every width. That is right on mobile
@@ -127,6 +128,22 @@ export default function FilterBar({
           </button>
         )}
       </div>
+
+      {/* Visible recovery message for denied/unsupported geolocation. The title
+          attribute on the Near me button above never renders on a touch tap, so
+          this inline, reason-specific line is the real recovery surface. */}
+      {geoErrorReason && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="rounded-lg px-3 py-2 text-xs font-medium"
+          style={{ background: "var(--wind-alert-fill)", color: "var(--wind-alert)" }}
+        >
+          {geoErrorReason === "unsupported"
+            ? "Your browser doesn’t support location. Try searching by name instead."
+            : "Location access is off. Turn it on in your browser or device settings, then tap Near me again."}
+        </p>
+      )}
 
       {/* Clear all — only when a filter is active, so the default header stays compact */}
       {hasActiveFilters(filters, nearMe) && (
