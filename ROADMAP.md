@@ -131,7 +131,10 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Blocked on curation (owner action, not a decision):** the harvest produces CANDIDATES, not confirmed photos. Rights-clean sourcing per spot is the item's hard part and its acceptance requires human review. NEXT: owner curates `raw-data/photo-candidates.json` (per spot, set `chosen` to a candidate title or an owner-photo path; reject off-topic hits like maps/logos). Then slice 2 = self-host chosen photos as sized derivatives + build the drawer/sheet photo surface with attribution caption, lazy-load, and the map-thumbnail fallback, behind the kill-switch flag + `spot_photo_viewed`. Slice 2 also needs a light IP/licensing check (attribution format per license) at build, flag for the lawyer gate then.
 
-## 35. [ready] Terms of Service + assented assumption-of-risk waiver (legal gate)
+## 35. [blocked(D25)] Terms of Service + assented assumption-of-risk waiver (legal gate)
+
+**Lawyer gate ran 2026-07-18 (studio loop): verdict ESCALATE, opened D25.** Full draft ToS + assumption-of-risk waiver written (ready for a CA attorney to bless, embedded in D25). Core finding: a release of ORDINARY negligence for recreation is generally enforceable in CA (Tunkl), but a wrongful-death claim belongs to non-signatory heirs, so the waiver is UNCERTAIN against the exact drowning suit it targets, and gross negligence is never waivable. So it must not ship as a "shield" until attorney review. D25 asks the owner: (Q1) engage a CA attorney ~1hr; (Q2) form a CA LLC; (Q3) liability insurance; (Q4) ship the `/terms` page + footer now but HOLD the enrollment assent line until Q1. Recommended assent = sign-in-wrap ("By turning on alerts, you agree to our Terms and Disclaimer" below the CTA), NOT a checkbox, to protect enrollment conversion. No code/deploy this iteration (escalation only). Blocked on D25.
+
 
 **Why:** Lawyer legal-gate review 2026-07-14. The site has a passive `/disclaimer` page but no Terms the user actually assents to. An assented release with an express assumption-of-risk + ordinary-negligence waiver is a contract defense that can knock a weak wrongful-death suit out early and (with an entity) protects the owner's personal assets. Highest-value legal item; the enrollment step is the strongest assent moment.
 
