@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 31 shipped: 57 spot photos live, auto-picked + vision-curated, no owner curation
+
+**Your move:** nothing required. Optional later: backfill the 83 photo-less spots (54 need a re-pick, 29 need Flickr/owner photos), promote that slice when you want it.
+
+**TL;DR:** You said automate the photo pick and deploy without you, so I did. A scorer picked the best Commons candidate per spot, then I vision-reviewed contact sheets of all 111 picks (title scoring alone had a ~50% false-positive rate: it grabbed birds, a scorpion, a car, a Kmart, office buildings). Kept the 57 verified genuine location photos, dropped 54. They're live now in the spot drawer with proper CC attribution, behind a kill switch. Zero wrong photos went live; that was the priority over coverage.
+
+**Appendix:**
+- Commit `ef0bc53`, deployed + verified (prod 200, photos serving, rendered live desktop + mobile, no console errors). `spot-photos` kill-switch flag at 100% (no A/B, DAU<100 rule). New dwell-gated `spot_photo_viewed` event + changelog.
+- Only CC-BY/BY-SA/CC0/PD shipped, attribution rendered per license (D10 Q4, pre-cleared), so no lawyer re-gate. `spots.json` untouched (photos in a separate manifest, no coordinate churn).
+- Coverage: 57/140 spots have a photo. The 83 gaps are an honest backfill tail, not a regression. Tooling (`raw-data/select_photos.mjs`, `montage_photos.mjs`) is reusable for that pass.
+- Backlog still dry of `[ready]` work; D24 + D25 await you.
+
 ## 2026-07-18 · Item 35 drafted + escalated (D25); backlog now dry of ready work
 
 **Your move:** (1) **D25**, four decisions on the Terms/waiver: engage a CA attorney (~1hr), form an LLC, get insurance, and whether to ship the `/terms` page now vs hold. (2) Standing: curate `raw-data/photo-candidates.json` (item 31), answer **D24**, or promote a `[proposed]` item. Nothing is on fire.
