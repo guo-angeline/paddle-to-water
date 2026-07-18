@@ -73,6 +73,29 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner item, added 2026-07-18 (mobile sheet polish; queued top-most on purpose)
+
+## 63. [done] Redesign the full-screen mobile spot sheet: false drag handle + scroll wobble fixed (design-lead pass, deployed 2026-07-18)
+
+**Shipped 2026-07-18 (studio loop, design-lead spec).** Ran design-lead first per the owner's ask. Decision: the full-screen sheet is now a TRUE full-screen surface (`position: fixed; inset: 0`, covers to the top, no 8% gap), not a bottom sheet in costume. Two fixes: (1) **False affordance gone**, the grabber pill is replaced by a slim sticky app bar (spot name in Newsreader + a real 44px circular close button, `bg-(--fill)`, hairline below); nothing signals a drag that doesn't exist. (2) **Wobble gone**, `inset:0` reads no `window.innerHeight` and carries `transition:none`, so an iOS URL-bar collapse mid-scroll can't animate the top edge (root cause was `0.92*innerHeight` + a height transition recomputing on scroll re-renders). Also stripped the rounded top + shadow in full-screen (a viewport-covering surface clips its own corners). Rollback (kill-switch-off peek+drag) path untouched; desktop sidebar untouched. Dismiss stays × (now in the bar) + backdrop (inert behind a full-cover surface, harmless) + Escape. 344 tests, build clean; verified live-in-dev at 390px: panel covers 0->812, app bar + 44px close present, no `role=slider` handle, no console errors. **On-device caveat (owner):** the URL-bar wobble is iOS-Safari-only and not reproducible in the emulator, confirm on a real iPhone (Safari + installed PWA). Advisory follow-ups from design-lead, not blocking: Android back-gesture doesn't close the sheet (pre-existing, history uses replaceState) and optional focus-to-close-on-open a11y nicety.
+
+**Owner-reported 2026-07-18, with a screenshot, after item 57 shipped.** Item 57 made the mobile spot sheet open full-screen and removed the drag *behavior*, but left the drag *chrome and mechanics*, so the surface now lies about what it does. Two concrete defects, both visible on a real iPhone:
+
+1. **The grabber pill is a false affordance.** In full-screen mode the sheet still renders the grey drag-handle pill, `components/SpotDrawer.tsx:242-245`, as a "visual only" decoration (`aria-hidden`, no touch handlers). A centered pill at the top of a sheet is the universal "drag me" signal; keeping it after removing the drag makes every user try to drag and get nothing. The owner's words: "I don't know what it's for, it still intuitively invites me to drag down the sheet." Remove it, or replace it with chrome that tells the truth about a full-screen surface.
+2. **The sheet wobbles on scroll.** The sheet height is `FULL = 0.92` of `window.innerHeight` with a `height 0.28s` transition (`SpotDrawer.tsx:48, 162, 234`). On iOS the URL bar collapses as you scroll, `innerHeight` changes, a re-render recomputes the height, and the transition animates it, so the sheet edge slides while you scroll ("the sheet wobbles when I scroll it for no reason"). Likely fix: give a permanently full-screen surface a stable height that does not track live `innerHeight` mid-scroll (e.g. `100dvh` / fixed insets) and do not run a height transition on scroll-driven re-renders. Confirm the exact cause on a real iOS device, not just the emulator.
+
+**This is a design item, not a one-line deletion. The owner explicitly asked for "heavier designer scrutiny and thoughtfulness," so run it through design-lead first.** The deeper point: a sheet that is *always* full-screen is no longer a bottom sheet, and should not wear bottom-sheet costume. Design-lead should decide what it actually is now and design it as that:
+- Is it truly full-screen (cover to the top, a modal page) or a deliberate near-full sheet that still peeks the map? Item 57/D27 said "full screen"; the current `0.92` leaves an 8% top gap that, with the pill, reads as draggable. Pick one on purpose.
+- What replaces the grabber as the top chrome? A full-screen surface needs an unambiguous, reachable close (the `×` exists at `SpotDrawer.tsx` top-right; is it enough on a tall phone, or does it need a title bar / back affordance?) and correct top safe-area handling.
+- Keep the existing dismiss paths honest (× + backdrop; item 57 removed drag-to-dismiss). Do not reintroduce a swipe-to-dismiss without designing its affordance.
+- Preserve everything item 57/D27 decided (no drag-to-resize, full-screen open, `sheet-auto-expand` kill switch, no A/B per DAU<100). This is finishing item 57's job with design care, not reopening D27.
+
+**Acceptance:**
+- No element on the full-screen sheet signals draggability that isn't draggable (no vestigial grabber pill; no ambiguous top gap that invites a drag).
+- No wobble/height-shift while scrolling the sheet body on a real iOS device (verify on device, the emulator will not reproduce the URL-bar collapse).
+- A clear, reachable way to close the sheet, verified at 390px and on a tall phone.
+- design-lead sign-off on the redesigned top chrome before implementation; verifier confirms on device-sized viewport.
+
 ## Owner item, added 2026-07-17 (queued top-most on purpose)
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)

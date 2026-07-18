@@ -157,9 +157,12 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
     trackIntent("spot_sheet_dismissed", { spot_id: spot.id, spot_name: spot.water, region: spot.region, method });
     onClose();
   };
-  // Item 57: full-screen mobile sheet (kill switch ON). Rollback = drag mode.
+  // Item 57/63: full-screen mobile sheet (kill switch ON). Rollback = drag mode.
+  // Item 63: full-screen uses fixed inset:0 (below), so it reads NO innerHeight,
+  // that is what kills the iOS URL-bar scroll wobble. renderH is only for the
+  // rollback peek/drag path now.
   const forceFull = isMobile && fullScreen;
-  const renderH = forceFull && typeof window !== "undefined" ? Math.round(window.innerHeight * FULL) : sheetH;
+  const renderH = sheetH;
 
   const diff = DIFF_STYLES[spot.difficulty] ?? DIFF_STYLES.unknown;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
@@ -215,33 +218,61 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
         onClick={() => dismiss("backdrop")}
       />
 
-      {/* Drawer panel */}
+      {/* Drawer panel. Item 63: full-screen mode drops the rounded top + shadow
+          (a viewport-covering surface clips its own corners and has no edge to
+          shadow); rollback keeps them (it's still a partial sheet). */}
       <div
-        className="fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 rounded-t-2xl md:rounded-none overflow-y-auto max-h-[58vh] md:max-h-none md:h-full shadow-2xl md:shadow-none"
+        className={`fixed bottom-0 left-0 right-0 md:static md:border-l md:border-gray-200 md:z-auto bg-white md:w-80 md:shrink-0 md:rounded-none overflow-y-auto max-h-[58vh] md:max-h-none md:h-full md:shadow-none ${forceFull ? "" : "rounded-t-2xl shadow-2xl"}`}
         style={{
           zIndex: 1200,
-          ...(isMobile && renderH != null
+          ...(forceFull
             ? {
-                // Anchor the box's bottom edge at the *physical* screen bottom, not
-                // the layout-viewport bottom, so the white sheet paints through the
-                // home-indicator safe-area inset instead of leaving the page canvas
-                // showing. Height grows by the same inset so the visible top
-                // height is unchanged; inner content padding keeps text above the
-                // indicator. Item 57: renderH is forced to FULL in full-screen mode.
-                height: `calc(${renderH}px + env(safe-area-inset-bottom))`,
-                bottom: "calc(-1 * env(safe-area-inset-bottom))",
+                // Item 63: cover the whole viewport with fixed insets. No
+                // window.innerHeight read and no height transition, so an iOS
+                // URL-bar collapse mid-scroll can't animate the top edge (the
+                // wobble). safe-area-top is handled by the sticky bar's padding.
+                position: "fixed",
+                inset: 0,
                 maxHeight: "none",
-                transition: dragging ? "none" : "height 0.28s cubic-bezier(0.32, 0.72, 0, 1)",
+                transition: "none",
               }
-            : {}),
+            : isMobile && renderH != null
+              ? {
+                  // Rollback (peek/drag) path, unchanged. Anchor the box's bottom
+                  // edge at the *physical* screen bottom so the sheet paints
+                  // through the home-indicator inset; height grows by that inset.
+                  height: `calc(${renderH}px + env(safe-area-inset-bottom))`,
+                  bottom: "calc(-1 * env(safe-area-inset-bottom))",
+                  maxHeight: "none",
+                  transition: dragging ? "none" : "height 0.28s cubic-bezier(0.32, 0.72, 0, 1)",
+                }
+              : {}),
         }}
       >
-        {/* Handle (mobile). Item 57: in full-screen mode it's a static grabber
-            (visual only); dismiss is the × or the backdrop. In rollback (drag)
-            mode it's the old drag-to-resize surface. */}
+        {/* Item 63: full-screen mode gets a slim sticky app bar (spot name + a
+            real close button), NOT a grabber pill, so nothing signals a drag
+            that no longer exists. Rollback mode keeps the draggable pill. */}
         {fullScreen ? (
-          <div className="sticky top-0 z-10 bg-white flex justify-center pt-2 pb-1.5 md:hidden" aria-hidden>
-            <div className="w-10 h-1.5 bg-gray-300 rounded-full" />
+          <div
+            className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white md:hidden"
+            style={{
+              borderBottom: "1px solid var(--border)",
+              paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+              paddingBottom: "0.625rem",
+              paddingLeft: "1.25rem",
+              paddingRight: "0.75rem",
+            }}
+          >
+            <span className="font-['Newsreader'] text-base font-semibold text-(--dark) truncate min-w-0 flex-1">
+              {spot.water}
+            </span>
+            <button
+              onClick={() => dismiss("close")}
+              aria-label={`Close ${spot.water}`}
+              className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center bg-(--fill) text-(--dark) text-xl leading-none"
+            >
+              ×
+            </button>
           </div>
         ) : (
           <div
@@ -293,8 +324,8 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
             </div>
             <button
               onClick={() => dismiss("close")}
-              className="text-gray-400 hover:text-gray-600 shrink-0 mt-0.5 text-xl leading-none"
-              aria-label="Close"
+              className={`text-gray-400 hover:text-gray-600 shrink-0 mt-0.5 text-xl leading-none ${fullScreen ? "hidden md:inline-flex" : ""}`}
+              aria-label={`Close ${spot.water}`}
             >
               ×
             </button>
