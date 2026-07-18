@@ -1,5 +1,16 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 56 slice B: +18 photos via Wikidata, coverage now 78/140 (56%)
+
+**Your move:** nothing required. Standing: D24, D25, D26 await you; 46 + 57 are the cleaner remaining code builds if you want the next run to ship non-photo work.
+
+**TL;DR:** Widened the photo backfill to a second free source, Wikidata's curated place image (P18), coordinate-verified so it can't grab the wrong lake. 25 of 80 uncovered spots matched; 18 passed vision review and shipped. Coverage jumped 60 -> 78. The named lakes/reservoirs/regional parks (Folsom, Berryessa, Clear Lake, Lexington, Huntington...) now have photos.
+
+**Appendix:**
+- Item 56 slice B: `raw-data/wikidata_photos.mjs`, +18 (spots 2,3,4,5,16,67,74,75,80,83,93,94,95,96,105,107,113,120), deployed `004ab18`, verified live. Dropped 7 P18s that were aerials/satellite/a dam/the Morro Bay power plant/a sign.
+- Item 56 stays `[ready]` for slice C (Openverse + Flickr + wider radius) on the ~62 still uncovered, mostly marinas/sloughs without a Wikidata image; diminishing returns expected.
+- Ready queue: 56 (slice C), 57 (mobile-sheet inspection), 46 (reminder safety line). One heavy build this run; stopped for a breather, cron picks up next.
+
 ## 2026-07-18 · Item 50 escalated (D26), item 56 backfill +3 photos live (60 total)
 
 **Your move:** **D26**, item 50 turned out to be mostly not-ready. Recommended one-liners: hide spot 54 (30km-off, redundant with spot 150), drop 84 (no defect), defer the 63/70 splits to a sourcing pass. Plus the standing D24/D25.
