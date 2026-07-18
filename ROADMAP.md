@@ -116,7 +116,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 ## Restored 2026-07-18: items 31, 35, 45, 46 (accidentally deleted 2026-07-17 in commit 7063d16, re-added verbatim from git; owner directive: never delete a roadmap item)
 
-## 31. [ready] A picture for each spot
+## 31. [blocked(curation)] A picture for each spot
 
 **Why:** Owner idea 2026-07-13. Spot cards/sheets are text-only; a photo is the highest-impact visual upgrade for browse appeal and shared-link CTR.
 
@@ -125,7 +125,11 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Sourcing must be rights-clean and attributed (owner photos, CC-licensed with attribution, or a licensed API); no scraping. This is the hard part: 140 spots, so propose the sourcing plan + effort estimate as a decision before building.
 - New user-facing surface: ships behind a flag or staged tranche per the major-update directive.
 
-**Sourcing plan sized 2026-07-14 (studio); decision open at DECISIONS.md D10.** Feasibility probe found: Google Places Photos can't be self-hosted (ToS bars caching, photo names expire, so re-fetch + pay per view + a render-path dependency); free self-hostable CC sources (Wikimedia Commons + Flickr CC) cover ~55-75% of spots after human curation (36-spot probe: 78% have a geo-tagged Commons file within 500m, 22% none). Recommended path (D10 option a): tiered hybrid, harvest + curate CC-BY/BY-SA/CC0 photos self-hosted with attribution, static-map-thumbnail fallback for gaps, owner photos backfill, ship the curated tranche behind the flag. Effort ~2.5 eng days + ~1 day curation. **Blocked on D10** before build (which sourcing approach, fallback treatment, tranche scope, UGC defer). Stays `[proposed]` until the owner answers D10 and promotes to `[ready]`.
+**Sourcing plan sized 2026-07-14 (studio); D10 RESOLVED 2026-07-17 (owner: tiered hybrid, option a).** Feasibility probe found: Google Places Photos can't be self-hosted (ToS bars caching, photo names expire, so re-fetch + pay per view + a render-path dependency); free self-hostable CC sources (Wikimedia Commons + Flickr CC) cover ~55-75% of spots after human curation (36-spot probe: 78% have a geo-tagged Commons file within 500m, 22% none). Path (D10 option a): tiered hybrid, harvest + curate CC-BY/BY-SA/CC0 photos self-hosted with attribution, static-map-thumbnail fallback for gaps, owner photos backfill, ship the curated tranche behind a **kill-switch flag at 100%** (per the 2026-07-17 no-A/B-until-DAU-100 directive, NOT a powered A/B) with a dwell-gated `spot_photo_viewed` intent event + changelog. Effort ~2.5 eng days + ~1 day curation.
+
+**Slice 1 shipped 2026-07-18 (studio loop): Commons candidate harvest.** `raw-data/harvest_photos.mjs` queries Wikimedia Commons geosearch (500m, File namespace) for free-licensed geo-tagged photos near every non-hidden spot and writes `raw-data/photo-candidates.json` for curation. Live run: **112 of 140 spots (80%) have >=1 free candidate, 946 candidates total**, all CC-BY / CC-BY-SA / CC0 / public-domain (fair-use/NC/ND filtered out), with author + license + attribution-required + source-page per candidate. Matches the probe's 78% estimate. No app code, no deploy, no user-facing change. The 28 zero-candidate spots (Lexington Reservoir, Rollins Lake, Folsom Lake, Lake Berryessa, Clear Lake, Delta launches, etc.) are the Flickr-CC (needs API key) + owner-photo + static-map-fallback tail.
+
+**Blocked on curation (owner action, not a decision):** the harvest produces CANDIDATES, not confirmed photos. Rights-clean sourcing per spot is the item's hard part and its acceptance requires human review. NEXT: owner curates `raw-data/photo-candidates.json` (per spot, set `chosen` to a candidate title or an owner-photo path; reject off-topic hits like maps/logos). Then slice 2 = self-host chosen photos as sized derivatives + build the drawer/sheet photo surface with attribution caption, lazy-load, and the map-thumbnail fallback, behind the kill-switch flag + `spot_photo_viewed`. Slice 2 also needs a light IP/licensing check (attribution format per license) at build, flag for the lawyer gate then.
 
 ## 35. [ready] Terms of Service + assented assumption-of-risk waiver (legal gate)
 
