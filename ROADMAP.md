@@ -75,7 +75,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Owner item, added 2026-07-18 (mobile sheet polish; queued top-most on purpose)
 
-## 64. [ready] Mobile sheet app bar: show the "Paddle to Water" brand (not the duplicated spot name), and change the close X to a back/return affordance (design-lead pass)
+## 64. [done] Mobile sheet app bar: brand wordmark + back affordance (design-lead pass, deployed 2026-07-18)
+
+**Shipped 2026-07-18 (studio loop, design-lead spec).** The full-screen app bar now leads with a 44px circular **back arrow** (Feather `arrow-left` SVG, `aria-label="Back to the map"`, focus-visible ring) then the **"Paddle to Water" wordmark** (Newsreader bold, non-tappable `<span>`), replacing the spot-name + × that duplicated the `<h1>` below. Layout `justify-between`->`gap-2`, left gutter tightened, right loosened. design-lead's calls: back arrow (not chevron/undo) since it's page-not-modal; wordmark non-interactive (a tappable brand would be a second control for the same `onClose`). Analytics: the control fires `spot_sheet_dismissed { method: "back" }` (was "close"); desktop/rollback × stays "close"; changelog added. Scope: full-screen mobile bar only; rollback pill + desktop untouched. 344 tests, build clean; verified live-in-dev at 390px: bar shows brand + back arrow, spot name renders once (the `<h1>`), back dismisses to the map, no console errors.
 
 **Owner-directed 2026-07-18, following item 63.** The new full-screen app bar (`components/SpotDrawer.tsx:257-278`) currently shows the spot name, and the same name repeats immediately below as the large `<h1>` title, so the spot name renders twice on open. Two owner directives to fix it:
 

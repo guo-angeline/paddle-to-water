@@ -153,7 +153,7 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
   // Item 57: with the drag gone, the × and the backdrop are the dismiss paths.
   // Keep spot_sheet_dismissed alive (it's a guardrail) by tagging the method,
   // so the metric doesn't just vanish when the drag ("drag" method) is removed.
-  const dismiss = (method: "close" | "backdrop") => {
+  const dismiss = (method: "close" | "backdrop" | "back") => {
     trackIntent("spot_sheet_dismissed", { spot_id: spot.id, spot_name: spot.water, region: spot.region, method });
     onClose();
   };
@@ -259,26 +259,32 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
             real close button), NOT a grabber pill, so nothing signals a drag
             that no longer exists. Rollback mode keeps the draggable pill. */}
         {fullScreen ? (
+          // Item 64: back arrow leads, then the brand wordmark (NOT the spot
+          // name, which already renders as the <h1> below). Full-screen is a
+          // page, so the control is "back to the map", not a modal close.
           <div
-            className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-white md:hidden"
+            className="sticky top-0 z-10 flex items-center gap-2 bg-white md:hidden"
             style={{
               borderBottom: "1px solid var(--border)",
               paddingTop: "max(0.75rem, env(safe-area-inset-top))",
               paddingBottom: "0.625rem",
-              paddingLeft: "1.25rem",
-              paddingRight: "0.75rem",
+              paddingLeft: "0.5rem",
+              paddingRight: "1rem",
             }}
           >
-            <span className="font-['Newsreader'] text-base font-semibold text-(--dark) truncate min-w-0 flex-1">
-              {spot.water}
-            </span>
             <button
-              onClick={() => dismiss("close")}
-              aria-label={`Close ${spot.water}`}
-              className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center bg-(--fill) text-(--dark) text-xl leading-none"
+              onClick={() => dismiss("back")}
+              aria-label="Back to the map"
+              className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center bg-(--fill) text-(--dark) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
             >
-              ×
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
             </button>
+            <span className="font-['Newsreader'] text-base font-bold text-(--dark) leading-none select-none">
+              Paddle to Water
+            </span>
           </div>
         ) : (
           <div

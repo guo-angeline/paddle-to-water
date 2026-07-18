@@ -30,6 +30,14 @@ Twelve owner-supplied first-party photos were added to the spot-photo manifest (
 
 ---
 
+## 2026-07-18 (item 64): spot_sheet_dismissed gains `method: "back"` (props-values-changed); full-screen app-bar control is now a back arrow
+
+Item 64 changed the full-screen mobile sheet's app-bar control from a close × to a back arrow (the sheet is a full-screen page, not a modal). The control's dismiss now fires `spot_sheet_dismissed { method: "back" }` instead of `"close"`. The desktop/rollback × still fires `"close"` (unchanged). So from 2026-07-18, mobile full-screen dismissals via the top control move from `method:"close"` to `method:"back"`; `"backdrop"` (tap outside) is unaffected.
+
+- **Comparability:** `spot_sheet_dismissed` total volume is continuous. The `method` breakdown shifts: mobile full-screen top-control dismissals read `"back"` from 2026-07-18 (were `"close"` for the ~few hours item 57/63 shipped the × bar). Segment by `method` across the date. `method` is untyped (`Record<string, unknown>`), no schema change.
+
+---
+
 ## 2026-07-18 (item 57): mobile sheet opens full-screen, drag removed; spot_sheet_dismissed `method` values change, spot_sheet_resized stops (semantics-changed)
 
 D27: every mobile spot sheet now opens FULL SCREEN and the drag-to-resize handle is gone (behind the `sheet-auto-expand` kill switch, default ON). Analytics impact on the two sheet events (both INTENT, `SpotDrawer`):
