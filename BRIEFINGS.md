@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-18 · Items 65 + 67 shipped: enrollment prompt fires less often, stops re-nagging
+
+**Your move:** nothing required. Item 66 (enrollment prompt visual/copy redesign) is the one ready item left; it's a design-lead + editor pass, next run.
+
+**TL;DR:** Two frequency fixes to the enrollment prompt, both from your 9-day-window findings. It now fires on stronger intent (3rd spot, not 2nd) and can't re-nag the same person (the return-visit trigger is capped per-session + backed off 14 days). These directly attack the "shown too early / shown 31x to one user" problems.
+
+**Appendix:**
+- **Item 65 -> done** (`d0f4004`, deployed): `conditions_interest` trigger 2 -> 3 distinct spots (was ~86% of exposures, firing too early).
+- **Item 67 -> done** (`b199fd0`, deployed): `return_session` gained a per-session guard + a persistent 14-day show-based back-off (one user had seen it 31x). Scoped to that trigger; eligibility + dismiss-snooze unchanged.
+- Both: no new events; `alert_optin_shown` volume drops by design (changelogs note it's a frequency change, not lost interest; per-exposure rates stay comparable and get cleaner). Grep-guard regression tests added for each.
+- **Ready queue:** item **66** only (enrollment prompt redesign, design-lead + editor). Then D24 (reviews) open, item-35 assent line pending counsel, 45 no-source.
+
 ## 2026-07-18 · Item 64 shipped: sheet app bar = brand + back arrow; mobile-sheet saga complete
 
 **Your move:** nothing required. Backlog is dry of `[ready]` work; D24 (reviews) is the only open decision if you want to open that up.
