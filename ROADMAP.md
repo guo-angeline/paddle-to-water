@@ -90,7 +90,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 - Confirm `leaflet.markercluster` composes with `preferCanvas` + the shared `L.canvas()` renderer, or document the alternative (a canvas-native clustering approach).
 - Pins keep the difficulty colours (`DIFFICULTY_COLOR`, `lib/types.ts`); cluster bubbles need their own count styling.
 
-## 50. [ready] Split the multi-launch records the item 40 audit could not pin
+## 50. [blocked(D26)] Split the multi-launch records the item 40 audit could not pin
+
+**Escalated to D26 2026-07-18 (studio loop).** Reading the item-40 audit showed the "split 4 records" framing overstates readiness: **84 has no defect** (coord already matches its notes), **63 + 70 splits are not sourced** (the audit fetched no put-in coordinates for them, and a split mints new SEO/cron surfaces, D19 Q2a reserves the scope for the owner), and **only spot 54 is a real defect** (coord ~30km off in Cloverdale vs the Guerneville put-ins its notes name, likely redundant with the owner-added spot 150). D26 recommends: hide spot 54 (reversible), drop 84, defer the 63/70 splits to a sourcing pass. Blocked on D26.
 
 **Created by item 40 (2026-07-17), report-only section.** Four records name several real launches at once, so no single coordinate is correct. The audit verified the candidate launches with sources and deliberately changed nothing (D19 Q2a), because a split creates a new spot id that enters the sitemap, the OG image builder, `generateStaticParams`, JSON-LD, and BOTH alert crons. That is a product change, not a data fix.
 

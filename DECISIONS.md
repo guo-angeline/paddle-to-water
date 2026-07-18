@@ -529,3 +529,29 @@ Blocks: item 35. (Independent of D24; can be answered separately.)
 </details>
 
 Answer:
+
+## D26 [OPEN] 2026-07-18 · Item 50 (split the multi-launch records): the audit says only 1 of the 4 is a real defect, and the splits need sourcing you have to scope
+
+Item 50 was promoted to `[ready]`, but reading `reports/item-40-record-accuracy-2026-07-17.md` (the audit it depends on) shows the "split 4 records" framing overstates what is ready. Correcting the record per spot, then the calls that are yours:
+
+- **84 MLK Jr. Shoreline, NO defect.** The audit found the stored coord already matches the launch its notes describe (Doolittle Beach Staging Area); "no discrepancy found." Item 50's "two launches merged" premise is wrong here. Recommend: **drop 84 from this item, do nothing.**
+- **54 Russian River, the one real defect.** Stored coord reverse-geocodes to Kelly Road, Cloverdale, ~30 km NORTH of the Guerneville put-ins its notes name (Johnson's Beach, Veterans Memorial Beach). It is also likely redundant now that you added spot 150 "Russian River - Guerneville River Park" (Johnson's Beach area). Recommend: **hide spot 54** (`hidden` + `hidden_reason`: coord ~30km off, untrustworthy, Guerneville covered by spot 150), reversible, keeps the record, removes it from every surface + both crons. Alternative: re-point 54 to Veterans Memorial Beach with a sourced coord if you want both Guerneville put-ins live.
+- **63 Berkeley Marina, split not sourced.** The audit's 63 entry does NOT publish the "ramp + hand-launch" coordinates item 50's summary claimed; it says only that the coord sits at the marina parking and notes name no specific beach. A split needs a fresh two-source pass (Water Trail + OSM) to get the two put-in coordinates first.
+- **70 Richmond Marina, split not sourced.** Notes name three OTHER launches (Shimada, Vincent Park, Marina Bay Yacht Harbor) as alternatives; the audit calls them "candidates for separate future records" with no coordinates fetched. A 3-way split needs sourcing each, two sources each, before any record is trustworthy.
+
+**Why this is yours, not the loop's:** a split/delete mints or removes spot ids, which enter/leave the sitemap, `generateStaticParams` (the static `/spot/<id>` page), OG images, JSON-LD, and BOTH alert crons, a product + SEO change, not a data fix (D19 Q2a reserved the split-vs-keep scope for you). And the 63/70 splits can't even start without a sourcing pass that doesn't exist yet.
+
+**Q1 (spot 54).** Hide it (recommended, reversible, 150 covers Guerneville), re-point it to one Guerneville put-in, or leave it? 
+- Recommended: **hide**, with `hidden_reason` noting the 30km error + spot 150 overlap.
+
+**Q2 (63 + 70 splits).** Authorize a sourcing pass (Water Trail + OSM/Nominatim, two sources each) to get the split coordinates, THEN a split? Or defer these as a separate coverage item? Note each new record is a new SEO surface and an owner-scope call on how many launches to break out.
+- Recommended: **defer 63 + 70 to a separate sourcing item**; they are not "ready," and shipping guessed put-in coords would repeat the exact defect item 40 exists to prevent.
+
+**Q3 (item 50 scope).** Given the above, narrow item 50 to "fix spot 54" (doable this loop once Q1 lands) and re-file the 63/70 splits? 
+- Recommended: **yes.**
+
+If silent: item 50 stays blocked. Nothing is deleted or split without your Q1/Q2 answers, because removing or minting a live `/spot/<id>` page is irreversible SEO and D19 Q2a made the scope yours.
+
+Blocks: item 50.
+
+Answer:
