@@ -77,7 +77,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
-## 58. [ready] Two spots are both named exactly "Folsom Lake" (ids 20 and 120): indistinguishable in the list
+## 58. [done] Two spots both named "Folsom Lake" (ids 20/120): disambiguated (deployed 2026-07-18)
+
+**Shipped 2026-07-18 (studio loop).** Renamed spot 120's `water` to "Folsom Lake - Beals Point" (its coordinate 38.719,-121.173 and notes both confirm Beals Point); spot 20 stays "Folsom Lake". The two rows are now distinguishable at a glance in the list/map. `water`-field text edit only, verified no `lat`/`lng` churn in the diff, no new spot id, spot-id/sitemap URL unchanged; page `<title>`/OG/JSON-LD regenerate from `water` (confirmed the new name in the build output). 338 tests + build green. Left id 20 generic on purpose: it is a genuine multi-launch record (Peninsula/Rattlesnake Bar/Granite Beach/Browns Ravine/Beeks Bight) with no single accurate sub-name, giving it a guessed one would be the item-50/D26 defect; renaming only 120 is the smallest fully-grounded fix that removes the ambiguity.
 
 **Found by the 2026-07-18 verify loop (data + UX).** Two non-hidden records carry the identical `water` name "Folsom Lake", same city ("Folsom"), same region (Sacramento), same difficulty (flatwater), 5.7 mi apart on the same reservoir. In the list and map a user sees two "Folsom Lake" rows with nothing in the primary label to tell them apart; the only difference (pin location, notes) is hidden until the spot is opened. It is the sole identical-name pair among all non-hidden spots (checked programmatically).
 
