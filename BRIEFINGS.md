@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 35 shipped (/terms page live); D25/26/27 queue fully cleared, backlog dry
+
+**Your move:** the only thing left is **D24** (user reviews, 43/44) if you want to open that up; and once you engage the CA attorney (D25 Q1), tell me and I'll ship the enrollment assent line + 1542 wording as the follow-up. Otherwise nothing.
+
+**TL;DR:** Shipped the /terms page (assented Terms of Use + release), the last item from your D25/26/27 answers. It's live and linked from both footers; the enforceability-critical pieces (enrollment assent line, 1542 quote) stay held for the attorney, exactly as D25 directed.
+
+**Appendix:**
+- **Item 35 -> done** (`c3f63f9`, deployed, verified live: `/terms` 200, content present, zero attorney-note/1542 leaks). Held per D25 Q1: assent line not added to InstallPrompt, 1542 omitted, no "enforceable waiver" claim. A test guards all of that.
+- Built on top of your concurrent `97bc9ba` (owner first-party photos); confirmed it's contained in the deployed tree (no revert).
+- **Backlog now dry of `[ready]` work.** Done today: 32, 31 (+owner photos), 56, 58, 46, 60, 62, 50, 57, 35; resolved D25/26/27; item 59 no-op. Remaining: D24 (reviews) open; items 43/44 blocked on it; 45 no-source; 12 owner-screenshot; proposals 8/49/51/61.
+- Loop will idle until you answer D24, promote a proposal, or the attorney unblocks the item-35 follow-up.
+
 ## 2026-07-18 · Item 57 shipped: mobile spot sheet opens full-screen, drag removed
 
 **Your move:** nothing required. One ready item left, **35** (/terms page, D25); it ships the ToS container next run.
