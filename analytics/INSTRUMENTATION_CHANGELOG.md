@@ -30,6 +30,14 @@ Twelve owner-supplied first-party photos were added to the spot-photo manifest (
 
 ---
 
+## 2026-07-18 (item 65): conditions_interest enrollment trigger threshold 2 -> 3 (volume-changed, no event change)
+
+Item 65 raised the `conditions_interest` enrollment trigger from the 2nd to the 3rd distinct dwell-viewed spot per session (`ConditionsPanel.tsx`, `conditionsViewedSpots.size >= 3`). No event added/renamed. Effect: `alert_optin_shown { trigger: "conditions_interest" }` exposures DROP by design from 2026-07-18 (the prompt now fires on stronger intent), and this trigger is ~86% of all enrollment exposures, so total `alert_optin_shown` volume falls too.
+
+- **Comparability:** a fall in `alert_optin_shown` (overall and `trigger:"conditions_interest"`) on/after 2026-07-18 is this threshold change, NOT reduced user interest. Downstream rates read PER exposure (dismiss-rate, exposure->enroll), so they stay comparable; the denominator just shrinks. Watch (not gating, small N): dismiss rate and prompt->enroll conversion. Revert is one line (`>= 3` -> `>= 2`).
+
+---
+
 ## 2026-07-18 (item 64): spot_sheet_dismissed gains `method: "back"` (props-values-changed); full-screen app-bar control is now a back arrow
 
 Item 64 changed the full-screen mobile sheet's app-bar control from a close × to a back arrow (the sheet is a full-screen page, not a modal). The control's dismiss now fires `spot_sheet_dismissed { method: "back" }` instead of `"close"`. The desktop/rollback × still fires `"close"` (unchanged). So from 2026-07-18, mobile full-screen dismissals via the top control move from `method:"close"` to `method:"back"`; `"backdrop"` (tap outside) is unaffected.

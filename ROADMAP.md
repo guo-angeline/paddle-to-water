@@ -73,6 +73,46 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner items, added 2026-07-18 (enrollment-prompt tuning; all three [ready], queued top-most on purpose)
+
+*From the 2026-07-18 enrollment-funnel readout: the alert prompt reaches 59 unique users in the clean 9-day window (34% of visitors) but 83% dismiss it and ~2% enroll. The bottleneck is prompt quality and timing, not reach. These three items address timing (65), design + copy (66), and over-nagging (67). Work item 65 first (one-line, low-risk), then 66, then 67.*
+
+## 65. [done] Raise the `conditions_interest` enrollment trigger from 2 distinct spots to 3 (deployed 2026-07-18)
+
+**Shipped 2026-07-18 (studio loop).** `ConditionsPanel.tsx` `conditionsViewedSpots.size >= 2` -> `>= 3` (+ comment updated). The prompt now fires on the 3rd distinct dwell-viewed spot, a stronger "deciding where to paddle" signal, since conditions_interest is ~86% of enrollment exposures and 2 fired too early. No new event; `alert_optin_shown{trigger:"conditions_interest"}` volume drops by design (changelog: it's a threshold change, not reduced interest; per-exposure rates stay comparable). New grep-guard test locks `>=3`. 345 tests, build clean, `size>=3` confirmed in the bundle. Watch (not gating, small N): dismiss rate + prompt->enroll; revert is one line back to 2.
+
+**Owner-directed 2026-07-18.** 86% of enrollment-prompt exposures fire on the `conditions_interest` trigger, which today fires after a user dwell-views conditions on just **2** distinct spots in a session (`components/ConditionsPanel.tsx:46`, `conditionsViewedSpots.size >= 2`). Browsing two spots is a weak "I'm deciding where to paddle" signal, so the card is shown too early, to people still browsing. Raise the bar to 3 so the prompt fires on stronger intent.
+
+- **Change:** `ConditionsPanel.tsx:46` `>= 2` -> `>= 3`; update the comment at lines 36-37 ("2nd distinct view" -> "3rd") to match. No other trigger touched (`first_save`, `return_session`, `manual`, `standalone_relaunch` unchanged).
+- **Instrumentation:** no new event; `alert_optin_shown { trigger: "conditions_interest" }` volume drops by design. Add an `analytics/INSTRUMENTATION_CHANGELOG.md` entry (trigger-threshold change; Comparability note: conditions_interest exposures fall, this is a trigger change, not a behavior change).
+- **Acceptance:** the interest event fires only after the 3rd distinct dwell-viewed spot in a session; existing tests updated; changelog entry present; verified in dev.
+- **Watch, do not gate:** dismiss rate among shown and prompt->enroll conversion. N is small, so this is a design bet, not a powered test; revert is a one-line change back to 2.
+
+## 66. [ready] Redesign the enrollment prompt: informative, elegant, inviting, clear (design-lead + editor pass)
+
+**Owner-directed 2026-07-18.** The enrollment card (`components/InstallPrompt.tsx`) converts ~2% of the 59 users it reaches; 83% dismiss. Owner's critique: "ugly, wordy, text wraps to the next row, looks unappealing and unprofessional and unpolished." Run a design-lead + editor pass to make it informative, elegant, inviting, and clear.
+
+Problems to fix:
+- **Wordy / lawyerly.** Cut or shorten the legal/privacy disclaimer copy to the minimum actually required. Coordinate with the lawyer gate on what must stay (item 35 held an enrollment assent line for attorney review, respect that boundary). Every sentence that adds no net-new info goes.
+- **Text wraps awkwardly** to a second row. Size copy and controls so nothing wraps at the widths the card renders on (the three mobile surfaces + desktop).
+- **Unpolished visuals.** Bring it to the app's Meltwater design system (Newsreader display / Hanken Grotesk body, azure `--accent`, `--border` hairlines, generous whitespace), matching the polish of the redesigned spot sheet (items 63/64).
+
+- **Process:** design-lead produces the spec (layout, all states, exact copy strings, visual notes referencing existing components); editor rewrites every user-facing string for clarity and house voice (no em dashes); then implement. Keep the dual-CTA push+email structure (item 32) and the item-47 email-subscriber suppression: this is a visual + copy redesign, not a behavior change.
+- **Acceptance:** no text wraps at 390px or desktop; disclaimer reduced to the lawyer-cleared minimum; card matches the design system; all states covered (push / email / both; granted / denied / dismissed; "you're set"); verified live at 390px + desktop, no console errors.
+- **Watch:** dismiss rate and prompt->enroll conversion after ship.
+
+## 67. [ready] Cap the `return_session` enrollment-prompt frequency (one user saw it 31 times)
+
+**Owner-directed 2026-07-18.** In the clean 9-day window the `return_session` trigger logged **31 `alert_optin_shown` views to a single user** (1 unique user total): it re-nags the same person on repeat pageloads. Unlike `conditions_interest`, which has a once-per-session module guard (`conditionsInterestFired`, `components/ConditionsPanel.tsx:43-48`), the `return_session` re-offer (`components/InstallPrompt.tsx:258-277`, a `useEffect` keyed on `[platform]`) has **no per-session cap**: any qualifying mount (not subscribed, not snoozed/denied, >=2 saves, not email-suppressed) re-shows the card. It is bounded only by the 14-day snooze, which is set on dismissal, so a user who never explicitly dismisses (or whose dismissal did not persist the snooze) sees it again and again.
+
+- **Diagnose first (confirm on a real device):** whether the 31 impressions are within one session (effect re-running / platform re-resolving) or across many sessions with no snooze set, and whether every dismiss path reliably persists `snoozedUntil()`.
+- **Fix:** add a per-session guard to `return_session` mirroring `conditionsInterestFired` (show at most once per session), plus a persistent back-off so it does not re-offer indefinitely absent an explicit dismissal; ensure every dismissal path writes the snooze.
+- **Scope:** `return_session` only; do not change its eligibility (>=2 saves, item-15 snooze, item-47 suppression) or the other triggers.
+- **Acceptance:** the card shows at most once per session for this trigger; a user who ignores it (never taps dismiss) is not re-shown indefinitely; existing tests updated + a regression test for the cap; verified in dev.
+- **Instrumentation:** no new event; `alert_optin_shown { trigger: "return_session" }` per-user view counts fall. Add an `analytics/INSTRUMENTATION_CHANGELOG.md` entry (frequency cap; Comparability: return_session impressions drop, not a behavior change).
+
+---
+
 ## Owner item, added 2026-07-18 (mobile sheet polish; queued top-most on purpose)
 
 ## 64. [done] Mobile sheet app bar: brand wordmark + back affordance (design-lead pass, deployed 2026-07-18)
