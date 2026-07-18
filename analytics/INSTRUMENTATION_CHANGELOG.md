@@ -30,6 +30,14 @@ Twelve owner-supplied first-party photos were added to the spot-photo manifest (
 
 ---
 
+## 2026-07-18 (item 67): return_session enrollment prompt capped (frequency cap, no event change)
+
+Item 67 added a per-session guard + a persistent 14-day show-based back-off to the `return_session` enrollment trigger (`InstallPrompt.tsx`), which previously had neither and re-nagged on every qualifying pageload (one user logged 31 `alert_optin_shown` views in the 9-day window). No event added/renamed. Effect: `alert_optin_shown { trigger: "return_session" }` per-user view counts fall sharply (the prompt now shows at most once per session and once per 14 days per device).
+
+- **Comparability:** a drop in `alert_optin_shown` volume and `trigger:"return_session"` (especially views-per-user) from 2026-07-18 is this cap, NOT reduced eligibility or interest. Unique-users-shown for the trigger is roughly unchanged; it's the repeat impressions to the same user that collapse. Per-exposure rates (dismiss, exposure->enroll) become more meaningful (no longer inflated by re-nags). No schema change (`trigger` values unchanged).
+
+---
+
 ## 2026-07-18 (item 65): conditions_interest enrollment trigger threshold 2 -> 3 (volume-changed, no event change)
 
 Item 65 raised the `conditions_interest` enrollment trigger from the 2nd to the 3rd distinct dwell-viewed spot per session (`ConditionsPanel.tsx`, `conditionsViewedSpots.size >= 3`). No event added/renamed. Effect: `alert_optin_shown { trigger: "conditions_interest" }` exposures DROP by design from 2026-07-18 (the prompt now fires on stronger intent), and this trigger is ~86% of all enrollment exposures, so total `alert_optin_shown` volume falls too.

@@ -47,6 +47,26 @@ function snoozedUntil(): number {
     return 0;
   }
 }
+
+// Item 67: cap the return_session re-offer. Before this it had no per-session
+// guard and no show-based back-off, so it re-nagged on every qualifying pageload
+// (one user saw it 31 times). Two layers: (1) `returnSessionShownThisSession`, a
+// module flag mirroring ConditionsPanel's `conditionsInterestFired`, resets on
+// full reload, so it shows at most once per session even if the [platform]
+// effect re-runs; (2) a persistent back-off written WHEN SHOWN (not only on
+// dismiss), so a user who ignores the card without tapping dismiss is not
+// re-offered again for RETURN_BACKOFF_MS. Scoped to return_session, its own key,
+// so it never suppresses the other triggers.
+let returnSessionShownThisSession = false;
+const RETURN_BACKOFF_KEY = "ptw-return-offered-until";
+const RETURN_BACKOFF_MS = 14 * 24 * 60 * 60 * 1000; // 14 days between re-offers
+function returnOfferedUntil(): number {
+  try {
+    return Number(localStorage.getItem(RETURN_BACKOFF_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
 // One pwa_installed per device, however the install happened (in-app button,
 // browser menu, or iOS Add to Home Screen detected on first standalone launch).
 // v2: the v1 build (live ~30 min on 2026-07-02) set the flag while the event
@@ -258,7 +278,13 @@ export default function InstallPrompt() {
   useEffect(() => {
     if (platform !== "ios" && platform !== "android" && platform !== "desktop") return;
     if (readStashedSubscription()) return;
+    // Item 67: at most once per session, and not again until the back-off passes
+    // even if the user never explicitly dismissed. Both are cheap "wouldn't show
+    // anyway" checks, so they precede the suppressedByEmail guardrail without
+    // affecting its accounting.
+    if (returnSessionShownThisSession) return;
     try {
+      if (Date.now() < returnOfferedUntil()) return;
       const optedOut = snoozedUntil() > Date.now() || localStorage.getItem(DENIED_KEY) === "1";
       if (!optedOut && readFavoriteIds().length >= 2) {
         // Item 47: gate on eligibility (opted-out / saved-spot count) BEFORE
@@ -267,6 +293,14 @@ export default function InstallPrompt() {
         // suppression on every pageload for a confirmed subscriber, even one
         // with < 2 saves, and defeat the guardrail's purpose.
         if (suppressedByEmail("return_session", platform)) return;
+        // Item 67: mark shown (session + persistent back-off) BEFORE surfacing,
+        // so a re-run or a repeat visit within the window can't re-nag.
+        returnSessionShownThisSession = true;
+        try {
+          localStorage.setItem(RETURN_BACKOFF_KEY, String(Date.now() + RETURN_BACKOFF_MS));
+        } catch {
+          /* private mode: session guard still caps to once per load */
+        }
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setTrigger("return_session");
         setVisible(true);
