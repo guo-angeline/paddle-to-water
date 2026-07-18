@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from 
 import type { Spot } from "@/lib/types";
 import { DIFFICULTY_LABEL } from "@/lib/types";
 import { trackIntent } from "@/lib/analytics";
+import { getSpotPhoto } from "@/lib/spotPhotos";
+import { useKillSwitch } from "@/lib/experiments";
+import { useGenuineView } from "@/lib/useGenuineView";
 import ConditionsPanel from "@/components/ConditionsPanel";
 
 interface Props {
@@ -124,6 +127,21 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
   // analytics. `spot_action` still carries owner_rating + owner_rating_shown,
   // so engagement with rated spots is still measurable without an experiment.
   const showOwnerRating = typeof spot?.owner_rating === "number";
+
+  // Item 31: per-spot photo. Kill-switch flag (default ON, no A/B per the
+  // DAU<100 rule); only ~57 spots have a vision-verified free-licensed photo,
+  // the rest render nothing. Dwell-gated view event so it means "a human looked".
+  const showPhotos = useKillSwitch("spot-photos");
+  const photo = spot ? getSpotPhoto(spot.id) : null;
+  const photoViewRef = useGenuineView({
+    key: spot?.id ?? "none",
+    enabled: showPhotos && !!photo && !!spot,
+    onView: () => {
+      if (spot && photo) {
+        trackIntent("spot_photo_viewed", { spot_id: spot.id, region: spot.region, license: photo.license });
+      }
+    },
+  });
 
   if (!spot) return null;
 
@@ -290,6 +308,38 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
             <div className="flex flex-wrap gap-2 mb-3">
               {tags.map((t) => <Tag key={t} label={t} />)}
             </div>
+          )}
+
+          {/* Item 31: spot photo. Modest height so the conditions panel (the
+              reason to come back) still sits near the peek fold. CC-BY/BY-SA
+              require attribution, so author + license + source always render. */}
+          {showPhotos && photo && (
+            <figure ref={photoViewRef} className="mb-3 -mx-1">
+              {/* Self-hosted derivatives are already sized to 800px; next/image
+                  optimization would add Vercel image cost for no gain here. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo.file}
+                alt={`${spot.water}, ${spot.city ?? spot.region}`}
+                loading="lazy"
+                className="w-full h-40 md:h-44 object-cover rounded-lg bg-gray-100"
+              />
+              <figcaption className="mt-1 text-[11px] text-(--muted) leading-tight">
+                Photo:{" "}
+                <a href={photo.source_page} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  {photo.author}
+                </a>
+                {" · "}
+                {photo.license_url ? (
+                  <a href={photo.license_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {photo.license}
+                  </a>
+                ) : (
+                  photo.license
+                )}
+                {" · "}Wikimedia Commons
+              </figcaption>
+            </figure>
           )}
 
           {/* Notes — truncated on mobile, full on desktop */}

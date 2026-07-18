@@ -14,6 +14,16 @@ without touching this file.
 
 ---
 
+## 2026-07-18 (item 31): spot_photo_viewed ADDED (INTENT); per-spot photos in the drawer
+
+**One INTENT event ADDED** (`event_category: "intent"`): `spot_photo_viewed`, props `{ spot_id, region, license }`. Fires once per genuine view (on screen + dwell, via `lib/useGenuineView`, re-armed per spot) of a spot's photo in the drawer/sheet. Measures whether the new photo surface (item 31) earns attention. NOT fired on mount or on data load; it is a deliberate-attention signal, mirroring `saved_conditions_viewed` / `recent_spots_shown`.
+
+Photos are shown for only the ~57 spots with a vision-verified free-licensed Commons photo (`data/spot-photos.json`); other spots render no photo and emit no event. Carries the standard `display_mode` super-property, bot-filtered like every event. Gated behind a 100%-on kill-switch flag `spot-photos` (`useKillSwitch`, default ON, hides only on explicit PostHog disable), not an A/B, per the 2026-07-17 no-A/B-until-DAU-100 directive.
+
+- **Comparability: NEW from 2026-07-18, no prior series, nothing discontinuous.** Guardrails while live: `spot_sheet_dismissed` and `conditions_loaded` (the photo sits above the conditions panel; watch it does not push conditions engagement down or slow the sheet). If `spot_photo_viewed` is ~0 while photo'd spots are opened, suspect the dwell gate or that the photo renders below the peek fold on mobile.
+
+---
+
 ## 2026-07-17 (item 32 retired to 100%): `enrollment_dual_cta` experiment REMOVED; `experiment_exposed` for it stops; `alert_optin_shown`/`_dismissed` `channel:"both"` now fires for ALL mobile enrollment surfaces (semantics-changed)
 
 The `enrollment_dual_cta` A/B (added 2026-07-14, see entry below) is retired to a

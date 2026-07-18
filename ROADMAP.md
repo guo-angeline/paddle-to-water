@@ -116,7 +116,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 ## Restored 2026-07-18: items 31, 35, 45, 46 (accidentally deleted 2026-07-17 in commit 7063d16, re-added verbatim from git; owner directive: never delete a roadmap item)
 
-## 31. [blocked(curation)] A picture for each spot
+## 31. [done] A picture for each spot (first tranche, 57 spots, deployed 2026-07-18)
 
 **Why:** Owner idea 2026-07-13. Spot cards/sheets are text-only; a photo is the highest-impact visual upgrade for browse appeal and shared-link CTR.
 
@@ -129,7 +129,9 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Slice 1 shipped 2026-07-18 (studio loop): Commons candidate harvest.** `raw-data/harvest_photos.mjs` queries Wikimedia Commons geosearch (500m, File namespace) for free-licensed geo-tagged photos near every non-hidden spot and writes `raw-data/photo-candidates.json` for curation. Live run: **112 of 140 spots (80%) have >=1 free candidate, 946 candidates total**, all CC-BY / CC-BY-SA / CC0 / public-domain (fair-use/NC/ND filtered out), with author + license + attribution-required + source-page per candidate. Matches the probe's 78% estimate. No app code, no deploy, no user-facing change. The 28 zero-candidate spots (Lexington Reservoir, Rollins Lake, Folsom Lake, Lake Berryessa, Clear Lake, Delta launches, etc.) are the Flickr-CC (needs API key) + owner-photo + static-map-fallback tail.
 
-**Blocked on curation (owner action, not a decision):** the harvest produces CANDIDATES, not confirmed photos. Rights-clean sourcing per spot is the item's hard part and its acceptance requires human review. NEXT: owner curates `raw-data/photo-candidates.json` (per spot, set `chosen` to a candidate title or an owner-photo path; reject off-topic hits like maps/logos). Then slice 2 = self-host chosen photos as sized derivatives + build the drawer/sheet photo surface with attribution caption, lazy-load, and the map-thumbnail fallback, behind the kill-switch flag + `spot_photo_viewed`. Slice 2 also needs a light IP/licensing check (attribution format per license) at build, flag for the lawyer gate then.
+**Slice 2 shipped + deployed 2026-07-18 (owner directive: automate the pick, no manual curation).** `raw-data/select_photos.mjs` scored each spot's candidates (relevance keywords + spot-name-token match + orientation/resolution, minus junk) and downloaded the top pick; `raw-data/montage_photos.mjs` built contact sheets that were **vision-reviewed** (the title score cannot tell "bird photographed at X Bay" from "photo of X Bay"). Of 111 auto-picks, **57 were verified genuine location photos and shipped; 54 rejected** (wildlife, objects, buildings, signs, maps, satellite imagery). Self-hosted as 800px derivatives in `public/spot-photos/` (~5MB), served via a plain lazy `<img>`. Display in `SpotDrawer` above the notes, with required CC attribution ("Photo: {author} · {license} · Wikimedia Commons", linked to source + license). Behind the `spot-photos` kill-switch flag at 100% (no A/B, DAU<100 rule). New dwell-gated INTENT `spot_photo_viewed` + changelog. 338 tests (6 new), build clean; verified live desktop + mobile (photo + attribution render, conditions still reachable, no-photo spots render nothing, no console errors). IP note: only CC-BY/BY-SA/CC0/PD shipped, attribution rendered per license (the D10 Q4 caption model, pre-cleared); no lawyer re-gate needed for a pre-cleared attribution surface.
+
+**Remaining (follow-up, not blocking):** 83 spots still have no photo, 54 rejected auto-picks (have candidates, need a targeted re-pick pass, ids in git history of this commit) + 29 with no free Commons candidate (Flickr-CC needs an API key, or owner photos). This is a proposed backfill slice, not auto-promoted.
 
 ## 35. [blocked(D25)] Terms of Service + assented assumption-of-risk waiver (legal gate)
 

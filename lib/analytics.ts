@@ -85,6 +85,10 @@ type IntentEventName =
   // via lib/useGenuineView). The real "I came back to check my spots" signal —
   // distinct from `saved_conditions_loaded`, which only means the data resolved.
   | "saved_conditions_viewed"
+  // Item 31: a spot's photo was genuinely viewed (on screen + dwell) in the
+  // drawer/sheet. Measures whether the photo surface earns attention; distinct
+  // from the page load, gated via lib/useGenuineView.
+  | "spot_photo_viewed"
   // The cold-open "Recently checked" strip (item 26) was genuinely viewed
   // (on screen + dwell), and a spot in it was clicked. The return-reason signal
   // for anonymous users with view history, no save/install/push required.
@@ -173,6 +177,7 @@ interface EventPropMap {
   location_auto_applied: { source: "permission_granted" };
   alert_subscribe_failed: { status: number | null; watched_count: number };
   saved_conditions_viewed: { count: number; calm_count: number };
+  spot_photo_viewed: { spot_id: number; region: string; license: string };
   recent_spots_shown: { count: number; calm_count: number };
   recent_spot_clicked: { spot_id: number; region: string };
   // Values mirror lib/push.ts OptInResult; kept inline to avoid a cycle
