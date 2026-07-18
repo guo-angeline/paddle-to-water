@@ -1,5 +1,16 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 64 shipped: sheet app bar = brand + back arrow; mobile-sheet saga complete
+
+**Your move:** nothing required. Backlog is dry of `[ready]` work; D24 (reviews) is the only open decision if you want to open that up.
+
+**TL;DR:** Finished the mobile spot-sheet rework. The app bar now shows the "Paddle to Water" brand + a back arrow (was the duplicated spot name + ×), so the spot name renders once and the surface reads as a page you go back from, not a modal.
+
+**Appendix:**
+- **Item 64 -> done** (`af6126a`, deployed, verified 390px). design-lead spec: back arrow leads (44px, "Back to the map"), non-tappable brand wordmark beside it; dismiss fires `spot_sheet_dismissed{method:"back"}` (changelog). Full-screen mobile only; rollback + desktop untouched.
+- The full arc of the mobile sheet this session: item 57 (full-screen + drag removed) -> item 63 (true full-screen, false pill -> app bar, first wobble fix) -> wobble follow-up (`overscroll-behavior:none`, the real fix) -> item 64 (brand + back arrow). All live and verified; owner confirmed the wobble is gone on-device.
+- **Backlog dry.** Open: D24 (reviews, blocks 43/44); item-35 attorney follow-up (assent line) waits on you engaging counsel; 45 no-source; proposals 8/49/51/61.
+
 ## 2026-07-18 · Item 63 shipped: full-screen sheet redesigned (false pill + wobble fixed); backlog dry
 
 **Your move:** one on-device check when you have a minute, open a spot on your iPhone and confirm (a) the top now shows a title + a round close button (no drag pill) and (b) the sheet doesn't wobble as you scroll. That's the one thing the emulator can't verify. Otherwise nothing.
