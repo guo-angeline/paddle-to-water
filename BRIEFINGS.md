@@ -1,5 +1,15 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 35 drafted + escalated (D25); backlog now dry of ready work
+
+**Your move:** (1) **D25**, four decisions on the Terms/waiver: engage a CA attorney (~1hr), form an LLC, get insurance, and whether to ship the `/terms` page now vs hold. (2) Standing: curate `raw-data/photo-candidates.json` (item 31), answer **D24**, or promote a `[proposed]` item. Nothing is on fire.
+
+**TL;DR:** The loop took item 35 (assented Terms + assumption-of-risk waiver), the highest-value legal item. The lawyer agent drafted the full ToS/waiver and escalated it: an ordinary-negligence release for recreation is generally enforceable in CA, but a wrongful-death claim belongs to non-signatory heirs, so the waiver is uncertain against the exact drowning suit it targets, and that call needs a licensed CA attorney. Draft + four decisions are in D25. No code shipped (escalation only). With item 35 now blocked on you, **no `[ready]` items remain**, so the loop stops until you steer.
+
+**Appendix:**
+- Item 35 -> `[blocked(D25)]`, commit `155e1c3`. Recommended assent pattern = sign-in-wrap at enrollment (one line under the CTA), not a checkbox, to protect the retention loop's conversion. Q4 recommends shipping the `/terms` page + footer link now and holding only the enrollment assent line on the attorney review (Q1).
+- Backlog state: item 31 `[blocked(curation)]` (waiting on you), item 35 `[blocked(D25)]`, items 43+44 `[blocked(D24)]`, item 45 `[blocked(no-source)]`, four `[proposed]` awaiting promotion (51, 50, 49, 8). The 30-min cron stays live but will idle each tick until something is `[ready]`.
+
 ## 2026-07-18 · Item 32 shipped to 100%; item 31 photo harvest started (80% coverage), your curation next
 
 **Your move:** (1) curate `raw-data/photo-candidates.json` when you have time (per spot, pick a candidate or drop an owner photo, reject off-topic hits), that unblocks the item-31 display build. (2) Still open from before: answer **D24** or promote a `[proposed]` item. Nothing urgent.
