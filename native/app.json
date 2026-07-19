@@ -40,6 +40,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b1b10550-5860-48f8-ad15-2c4c41719af1"
+      }
+    },
+    "owner": "angeline-guo"
   }
 }
