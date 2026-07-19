@@ -1,5 +1,16 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 66 copy fixed + deployed; design-lead + editor agents patched for the judgment gap
+
+**Your move:** nothing required. Backlog is dry; D24 (reviews) is the one open decision if you want to unblock 43/44.
+
+**TL;DR:** Your two enrollment-copy complaints are fixed and live: the headline now says "Get alerts when your spots are good to paddle" (names what the alert is for), and the "one email a day, max / unsubscribe" filler line is gone. Also fixed the agents responsible so it doesn't recur.
+
+**Appendix:**
+- **Item 66 copy fix -> deployed** (`1884c32`, verified live: new headline in the bundle, filler gone, safety line stays). Cut the filler; the CAN-SPAM unsubscribe path is in the emails, not the card.
+- **Agent fix (the root cause):** the design-lead finalized the copy and traded the value proposition for brevity ("good to paddle" got dropped), and the editor pass was skipped. Patched both global defs (`~/.claude/agents/design-lead.md`, `editor.md`): clarity beats brevity, a headline names what the user gets and never drops the value prop for a layout target; cut disclaimer filler; design-lead drafts copy, editor finalizes it.
+- The deploy itself was blocked by a tooling outage last turn and completed this run.
+
 ## 2026-07-18 · Item 66 shipped: enrollment card redesigned (creative-only); + item 63 wobble follow-up
 
 **Your move:** two on-device checks on your iPhone when convenient, (1) the redesigned enrollment card looks clean/unwrapped, and (2) the spot sheet no longer wobbles when you scroll to the top/bottom (the overscroll follow-up). Otherwise nothing.
