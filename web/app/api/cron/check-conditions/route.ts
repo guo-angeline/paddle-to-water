@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { findGoodWindow, type GoodWindow } from "@/lib/alerts/conditions-window";
 import { selectAlertSpots, composeAlert, sentKey, type SpotWindow } from "@/lib/alerts/select";
 import { sendPush } from "@/lib/alerts/push-sender";
+import { sendExpoPushes, type ExpoPushMessage } from "@/lib/alerts/expo-sender";
 import { ALL_SPOTS } from "@/lib/spots";
 
 export const runtime = "nodejs";
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
   // 1. Load enabled subscriptions + their watched spots + recent sends.
   const { data: subs, error: subErr } = await db
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth, token")
+    .select("id, endpoint, p256dh, auth, token, kind, expo_token")
     .eq("enabled", true);
   if (subErr) return NextResponse.json({ error: "db" }, { status: 500 });
 
@@ -62,9 +63,32 @@ export async function GET(req: Request) {
   }
 
   // 3. Per subscription: select, send one batched push, log, disable on gone.
+  // Transport branches on `kind` at send time only; selection, the 1/day cap,
+  // the (spot,window) dedupe, and alert_sends logging are identical for both.
+  // Expo sends are accumulated and flushed in one batched API call after the
+  // loop (Expo accepts up to 100 messages per request).
   let pushesSent = 0;
   let disabled = 0;
   const planned: { subscription_id: string; spots: number[] }[] = [];
+  const expoQueue: { sub: { id: string }; picks: ReturnType<typeof selectAlertSpots>; message: ExpoPushMessage }[] = [];
+
+  async function logSends(subId: string, picks: ReturnType<typeof selectAlertSpots>) {
+    const { error: insertErr } = await db.from("alert_sends").insert(
+      picks.map((p) => ({ subscription_id: subId, spot_id: p.spotId, window_key: p.windowKey, sent_at: new Date().toISOString() }))
+    );
+    if (insertErr) console.error("alert_sends insert failed for", subId, insertErr.message);
+  }
+  async function disableSub(subId: string) {
+    // Stamp disabled_at so the reachable-audience retention curve can date the
+    // churn (enabled alone is a point-in-time boolean).
+    const { error: disableErr } = await db
+      .from("push_subscriptions")
+      .update({ enabled: false, disabled_at: new Date().toISOString() })
+      .eq("id", subId);
+    if (disableErr) console.error("failed to disable subscription", subId, disableErr.message);
+    disabled += 1;
+  }
+
   for (const sub of subs ?? []) {
     const watchedIds = watchedBySub.get(sub.id) ?? [];
     const capReached = (sentTodayBySub.get(sub.id) ?? 0) > 0;
@@ -74,25 +98,39 @@ export async function GET(req: Request) {
     if (dry) continue;
 
     const payload = composeAlert(picks, sub.token ?? undefined);
+
+    if (sub.kind === "expo" && sub.expo_token) {
+      expoQueue.push({
+        sub,
+        picks,
+        message: { to: sub.expo_token, title: payload.title, body: payload.body, data: { url: payload.url } },
+      });
+      continue;
+    }
+
     const result = await sendPush(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
       payload
     );
     if (result.ok) {
       pushesSent += 1;
-      const { error: insertErr } = await db.from("alert_sends").insert(
-        picks.map((p) => ({ subscription_id: sub.id, spot_id: p.spotId, window_key: p.windowKey, sent_at: new Date().toISOString() }))
-      );
-      if (insertErr) console.error("alert_sends insert failed for", sub.id, insertErr.message);
+      await logSends(sub.id, picks);
     } else if (result.gone) {
-      // Stamp disabled_at so the reachable-audience retention curve can date the
-      // churn (enabled alone is a point-in-time boolean).
-      const { error: disableErr } = await db
-        .from("push_subscriptions")
-        .update({ enabled: false, disabled_at: new Date().toISOString() })
-        .eq("id", sub.id);
-      if (disableErr) console.error("failed to disable subscription", sub.id, disableErr.message);
-      disabled += 1;
+      await disableSub(sub.id);
+    }
+  }
+
+  if (expoQueue.length > 0) {
+    const results = await sendExpoPushes(expoQueue.map((q) => q.message));
+    for (let i = 0; i < expoQueue.length; i++) {
+      const { sub, picks } = expoQueue[i];
+      const result = results[i];
+      if (result.ok) {
+        pushesSent += 1;
+        await logSends(sub.id, picks);
+      } else if (result.gone) {
+        await disableSub(sub.id);
+      }
     }
   }
 

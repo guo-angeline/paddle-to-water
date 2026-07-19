@@ -83,3 +83,52 @@ describe("validateSubscribePayload", () => {
     if (!r.ok) expect(r.error).toBe("watchedSpotIds must be an array of numbers");
   });
 });
+
+describe("validateSubscribePayload: expo transport (native app)", () => {
+  const expoBody = {
+    anonId: "abc",
+    expoToken: "ExponentPushToken[AbC-123_xyz]",
+    watchedSpotIds: [1, 2],
+  };
+
+  it("accepts a well-formed expo payload and tags kind", () => {
+    const r = validateSubscribePayload(expoBody);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.kind).toBe("expo");
+      if (r.value.kind === "expo") expect(r.value.expoToken).toBe(expoBody.expoToken);
+      expect(r.value.watchedSpotIds).toEqual([1, 2]);
+    }
+  });
+
+  it("tags the classic web shape as kind webpush", () => {
+    const r = validateSubscribePayload({
+      subscription: { endpoint: "https://push.example/e", keys: { p256dh: "p", auth: "a" } },
+      watchedSpotIds: [],
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.kind).toBe("webpush");
+  });
+
+  it("rejects a malformed expo token", () => {
+    expect(validateSubscribePayload({ ...expoBody, expoToken: "not-a-token" }).ok).toBe(false);
+    expect(validateSubscribePayload({ ...expoBody, expoToken: "ExponentPushToken[bad chars!]" }).ok).toBe(false);
+  });
+
+  it("rejects an oversized expo token", () => {
+    const r = validateSubscribePayload({ ...expoBody, expoToken: `ExponentPushToken[${"x".repeat(300)}]` });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects both subscription and expoToken together", () => {
+    const r = validateSubscribePayload({
+      ...expoBody,
+      subscription: { endpoint: "https://push.example/e", keys: { p256dh: "p", auth: "a" } },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("still validates watchedSpotIds on the expo branch", () => {
+    expect(validateSubscribePayload({ ...expoBody, watchedSpotIds: ["x"] }).ok).toBe(false);
+  });
+});

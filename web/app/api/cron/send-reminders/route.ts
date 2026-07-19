@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { sendPush } from "@/lib/alerts/push-sender";
+import { sendExpoPush } from "@/lib/alerts/expo-sender";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,7 @@ export async function GET(req: Request) {
 
     const { data: due, error: dueErr } = await db
       .from("launch_reminders")
-      .select("id, spot_id, spot_name, subscription_id, push_subscriptions(endpoint, p256dh, auth, token)")
+      .select("id, spot_id, spot_name, subscription_id, push_subscriptions(endpoint, p256dh, auth, token, kind, expo_token)")
       .is("sent_at", null)
       .lte("fire_at", nowIso)
       .limit(100);
@@ -47,9 +48,11 @@ export async function GET(req: Request) {
     for (const r of due ?? []) {
       const sub = r.push_subscriptions as unknown as {
         endpoint: string;
-        p256dh: string;
-        auth: string;
+        p256dh: string | null;
+        auth: string | null;
         token: string | null;
+        kind: "webpush" | "expo";
+        expo_token: string | null;
       } | null;
       if (!sub) {
         // Subscription gone (cascade should prevent this, but be safe): retire the row.
@@ -78,18 +81,23 @@ export async function GET(req: Request) {
       // change, so it does not ride item 34. The body below carries the safety
       // half-line so the no-tap path (lock screen, swipe away) is still covered,
       // which is the majority path for a notification.
-      const result = await sendPush(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        {
-          title: "Your window is opening",
-          // Safety half-line goes LAST on purpose: if a long spot name clips the
-          // body, it clips the caveat, not the hours. A truncated disclaimer
-          // ("...not a safety gu") is worse than none, because conspicuousness
-          // is the test and a clipped one proves you knew it was needed.
-          body: `The forecast has ${name} good to paddle starting now. Conditions shift fast on the water.`,
-          url: `/?spot=${r.spot_id}&from=alert${tokenParam}`,
-        }
-      );
+      const payload = {
+        title: "Your window is opening",
+        // Safety half-line goes LAST on purpose: if a long spot name clips the
+        // body, it clips the caveat, not the hours. A truncated disclaimer
+        // ("...not a safety gu") is worse than none, because conspicuousness
+        // is the test and a clipped one proves you knew it was needed.
+        body: `The forecast has ${name} good to paddle starting now. Conditions shift fast on the water.`,
+        url: `/?spot=${r.spot_id}&from=alert${tokenParam}`,
+      };
+      // Same payload either way; only the transport branches on `kind`.
+      const result =
+        sub.kind === "expo" && sub.expo_token
+          ? await sendExpoPush(sub.expo_token, payload)
+          : await sendPush(
+              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh ?? "", auth: sub.auth ?? "" } },
+              payload
+            );
       if (result.ok || result.gone) {
         // Sent, or the endpoint is dead: mark done either way so it never retries.
         await db.from("launch_reminders").update({ sent_at: nowIso }).eq("id", r.id);

@@ -3,7 +3,13 @@
  * launch-time push reminder for one spot's calm window. Pure and unit-tested.
  */
 export interface RemindPayload {
-  endpoint: string; // identifies the caller's existing push subscription
+  /**
+   * Identifies the caller's existing push subscription row by its unique
+   * endpoint. Web callers send their Web Push endpoint; native callers send
+   * `expoToken` instead and validation maps it to the synthetic
+   * `expo:<token>` endpoint the subscribe route stored.
+   */
+  endpoint: string;
   spotId: number;
   spotName?: string;
   windowKey: string; // YYYY-MM-DD, spot-local
@@ -17,11 +23,25 @@ function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
+const EXPO_TOKEN = /^ExponentPushToken\[[A-Za-z0-9_-]+\]$/;
 
 export function validateRemindPayload(body: unknown, nowMs: number = Date.now()): RemindValidation {
   if (!isObject(body)) return { ok: false, error: "body must be an object" };
 
-  if (typeof body.endpoint !== "string" || !body.endpoint) {
+  const hasEndpoint = typeof body.endpoint === "string" && !!body.endpoint;
+  const hasExpo = body.expoToken !== undefined;
+  if (hasEndpoint && hasExpo) {
+    return { ok: false, error: "provide endpoint or expoToken, not both" };
+  }
+  let endpoint: string;
+  if (hasExpo) {
+    if (typeof body.expoToken !== "string" || !EXPO_TOKEN.test(body.expoToken)) {
+      return { ok: false, error: "expoToken is not a valid Expo push token" };
+    }
+    endpoint = `expo:${body.expoToken}`;
+  } else if (hasEndpoint) {
+    endpoint = body.endpoint as string;
+  } else {
     return { ok: false, error: "endpoint is required" };
   }
   if (!Number.isInteger(body.spotId) || (body.spotId as number) <= 0) {
@@ -45,7 +65,7 @@ export function validateRemindPayload(body: unknown, nowMs: number = Date.now())
   return {
     ok: true,
     value: {
-      endpoint: body.endpoint,
+      endpoint,
       spotId: body.spotId as number,
       spotName,
       windowKey: body.windowKey,

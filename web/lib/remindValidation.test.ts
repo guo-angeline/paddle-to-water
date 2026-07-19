@@ -45,3 +45,36 @@ describe("validateRemindPayload", () => {
     expect(validateRemindPayload(null, now)).toMatchObject({ ok: false });
   });
 });
+
+describe("validateRemindPayload: expoToken subscription discriminator (native app)", () => {
+  const now = Date.parse("2026-07-19T10:00:00Z");
+  const base = {
+    spotId: 32,
+    windowKey: "2026-07-20",
+    fireAt: "2026-07-20T14:00:00Z",
+  };
+
+  it("maps a valid expoToken to the synthetic expo: endpoint", () => {
+    const r = validateRemindPayload({ ...base, expoToken: "ExponentPushToken[abc123]" }, now);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.endpoint).toBe("expo:ExponentPushToken[abc123]");
+  });
+
+  it("rejects a malformed expoToken", () => {
+    expect(validateRemindPayload({ ...base, expoToken: "nope" }, now).ok).toBe(false);
+  });
+
+  it("rejects endpoint and expoToken together", () => {
+    const r = validateRemindPayload(
+      { ...base, endpoint: "https://push.example/e", expoToken: "ExponentPushToken[abc123]" },
+      now
+    );
+    expect(r.ok).toBe(false);
+  });
+
+  it("web endpoint shape is unchanged", () => {
+    const r = validateRemindPayload({ ...base, endpoint: "https://push.example/e" }, now);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.endpoint).toBe("https://push.example/e");
+  });
+});
