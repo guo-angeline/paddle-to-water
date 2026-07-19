@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 66 shipped: enrollment card redesigned (creative-only); + item 63 wobble follow-up
+
+**Your move:** two on-device checks on your iPhone when convenient, (1) the redesigned enrollment card looks clean/unwrapped, and (2) the spot sheet no longer wobbles when you scroll to the top/bottom (the overscroll follow-up). Otherwise nothing.
+
+**TL;DR:** Finished the enrollment-card redesign (my own pre-outage draft, picked up and completed): it's now the light Meltwater card, tight copy, no awkward wrapping, an SVG icon instead of the emoji. Purely visual + copy, every function (dual-CTA, item-47 suppression, analytics, the held item-35 assent line) is byte-unchanged.
+
+**Appendix:**
+- **Item 66 -> done** (`e3a2810`, deployed, verified desktop + 390px). Recovered the uncommitted pre-outage implementation, fixed a real bug it carried (`Header` was a component created during render, lint error + subtree remount, now a plain render helper), and shipped. The app has no dark-navy surfaces left.
+- **Item 63 wobble follow-up** (`9310537`, deployed earlier this turn): `overscroll-contain` on the sheet scroller stops an overscroll at the top/bottom from dragging the fixed sheet.
+- Committed separately (`1058cec`): the analytics rule that the loop-funnel tail is read from Supabase, not PostHog (PostHog overcounts the owner).
+- Process note: on resuming after the network outage I first read my own uncommitted work as a parallel session's and paused rather than risk clobbering it (correct default); you confirmed it was mine to finish.
+
 ## 2026-07-18 · Items 65 + 67 shipped: enrollment prompt fires less often, stops re-nagging
 
 **Your move:** nothing required. Item 66 (enrollment prompt visual/copy redesign) is the one ready item left; it's a design-lead + editor pass, next run.
