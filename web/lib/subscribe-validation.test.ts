@@ -11,7 +11,11 @@ describe("validateSubscribePayload", () => {
   it("accepts a well-formed payload", () => {
     const r = validateSubscribePayload(good);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.subscription.endpoint).toBe("https://push.example/x");
+    if (r.ok && r.value.kind === "webpush") {
+      expect(r.value.subscription.endpoint).toBe("https://push.example/x");
+    } else {
+      expect.fail("expected ok webpush payload");
+    }
   });
 
   it("accepts a missing anonId (optional)", () => {

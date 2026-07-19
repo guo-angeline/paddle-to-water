@@ -119,6 +119,14 @@ Problems to fix:
 
 ---
 
+## Owner item, added 2026-07-19 (native iOS app)
+
+## 72. [done] Native iOS app v1 (Expo), full web parity, shipped 2026-07-19
+
+**Owner-directed 2026-07-19, built same day.** React Native (Expo SDK 57) iOS app in `native/`; the repo split into `web/` + `native/` (deploy is now `vercel --prod --yes --cwd web`). Full feature parity with the web app: CARTO map with difficulty pins, list with Watching (calm-first, live badges) + Recently checked, filters + relevance search, full-screen spot sheet (photos w/ CC attribution, notes, live NWS wind + NOAA tides via the prod `/api/tides` proxy, next good window), saves, share/directions, feedback, deep links (`paddletowater:///spot/<id>` + query form + push data.url), alert interstitial with launch-time reminders, and the enrollment funnel. Spot data, conditions logic, search, alert evaluator, and the typed analytics contracts are imported from `web/` through a Metro alias, so the platforms cannot drift. Backend gained an Expo push transport (`push_subscriptions.kind`, `expo-sender.ts`, cron branches) alongside web-push; native analytics emit with `display_mode: "native_ios"`. Verified in the iOS 26.5 simulator via Maestro flows (smoke + deeplink, both green).
+
+Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations/20260719_native_push.sql` in the SQL editor, approve the gated web deploy of the M5 backend, `eas init`, set `EXPO_PUBLIC_POSTHOG_KEY`, and (for real push delivery + TestFlight later) enroll in the Apple Developer Program.
+
 ## Owner item, added 2026-07-19 (mobile back-swipe; queued top-most on purpose)
 
 ## 71. [ready] Left-edge swipe (left-to-right) to go back on mobile: close the spot sheet, or return home (design-lead + history integration)
