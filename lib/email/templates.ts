@@ -47,20 +47,59 @@ export function emailOpenUrl(
   return `${SITE_URL}/?spot=${spotId}&from=email&t=${encodeURIComponent(token)}${v}${pt}`;
 }
 
+// Branded, table-based email shell (item 68). Nested role="presentation" tables
+// + fully inline styles are the only layout that renders in Gmail/Outlook/Apple
+// Mail; no flex, no external CSS. The masthead wordmark is live HTML text (with a
+// PNG logo badge that degrades to empty space when images are blocked, the
+// default), so the email still reads as branded with images off. Dark mode is
+// owned explicitly via the <style> media query rather than left to each client's
+// auto-invert. Class names must avoid the word "calm" (a template test forbids
+// it in the copy), hence ptw-card-good for the good-window callout.
 function shell(bodyHtml: string, unsubUrl: string, preheader: string): string {
-  return `<!doctype html><html><body style="margin:0;background:#EEF5FB;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0B2A47">
+  const logo = `${SITE_URL}/email-logo.png`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><style>
+    @media (prefers-color-scheme: dark) {
+      .ptw-canvas { background:#0B2A47 !important; }
+      .ptw-masthead { background:#123655 !important; border-bottom-color:#1D4A6E !important; }
+      .ptw-card-good { background:#123655 !important; border-color:#155A54 !important; }
+      .ptw-card-neutral { background:#0F3A5C !important; border-color:#1D4A6E !important; }
+      .ptw-text { color:#F2F7FC !important; }
+      .ptw-muted { color:#9DAEBD !important; }
+      .ptw-border-top { border-top-color:#1D4A6E !important; }
+    }
+  </style></head>
+  <body style="margin:0;padding:0;background:#EEF5FB;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0B2A47">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0">${preheader}</div>
-  <div style="max-width:480px;margin:0 auto;padding:24px">
-    ${bodyHtml}
-    <hr style="border:none;border-top:1px solid #DCE7F0;margin:24px 0 12px">
-    <p style="font-size:12px;color:#556A7E;line-height:1.5;margin:0 0 8px">
-      Guidance only, not a safety guarantee. Conditions shift fast on the water.
-    </p>
-    <p style="font-size:12px;color:#556A7E;line-height:1.5;margin:0">
-      You're getting this because you signed up for paddle alerts at paddletowater.com.<br>
-      <a href="${unsubUrl}" style="color:#556A7E">Unsubscribe</a> &middot; Paddle to Water, ${POSTAL_ADDRESS}
-    </p>
-  </div></body></html>`;
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="ptw-canvas" style="background:#EEF5FB"><tr><td align="center" style="padding:0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto">
+      <tr><td class="ptw-masthead" style="background:#E3EEFA;border-bottom:1px solid #DCE7F0;padding:18px 24px">
+        <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:10px;vertical-align:middle"><img src="${logo}" width="36" height="36" alt="" style="display:block;border:0;border-radius:8px"></td>
+          <td style="vertical-align:middle"><span class="ptw-text" style="font-family:Georgia,'Times New Roman',Times,serif;font-size:22px;font-weight:700;color:#0B2A47;letter-spacing:-0.2px">Paddle to Water</span></td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:26px 24px 6px">${bodyHtml}</td></tr>
+      <tr><td class="ptw-border-top" style="border-top:1px solid #DCE7F0;padding:20px 24px 28px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="ptw-card-neutral" style="background:#F2F7FC;border:1px solid #DCE7F0;border-radius:6px;margin:0 0 14px"><tr><td style="padding:10px 12px">
+          <span class="ptw-muted" style="font-size:12px;color:#556A7E;line-height:1.5">Guidance only, not a safety guarantee. Conditions shift fast on the water.</span>
+        </td></tr></table>
+        <p class="ptw-muted" style="font-size:12px;color:#556A7E;line-height:1.5;margin:0 0 6px">You're getting this because you signed up for paddle alerts at paddletowater.com. <a href="${unsubUrl}" style="color:#0E6FD1">Unsubscribe</a></p>
+        <p class="ptw-muted" style="font-size:11px;color:#556A7E;line-height:1.5;margin:0">Paddle to Water, ${POSTAL_ADDRESS}</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+  </body></html>`;
+}
+
+// Small uppercase kicker above a headline (item 68). Azure, letter-spaced.
+function eyebrow(label: string): string {
+  return `<p style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#0E6FD1;margin:0 0 8px">${label}</p>`;
+}
+
+// Bulletproof (VML-free) padded button. Outlook desktop drops the border-radius
+// and renders sharp corners; that is a working button, not a bug, do not add VML.
+function button(url: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#0E6FD1;border-radius:8px"><a href="${url}" style="display:inline-block;padding:12px 22px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px">${label}</a></td></tr></table>`;
 }
 
 // The text/plain twin of shell()'s footer. shell() renders HTML only, so every
@@ -76,16 +115,16 @@ export function composeConfirmEmail(confirmToken: string, token: string): EmailM
   const url = confirmUrl(confirmToken);
   const subject = "Confirm your Paddle to Water alerts";
   const html = shell(
-    `<p style="font-size:16px;font-weight:600;margin:0 0 8px">Confirm your alerts</p>
-     <p style="font-size:14px;line-height:1.5;margin:0 0 12px">You asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle.</p>
-     <a href="${url}" style="display:inline-block;background:#0E6FD1;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px">Confirm alerts</a>
-     <p style="font-size:13px;color:#556A7E;line-height:1.5;margin:16px 0 0">One email a day at most, only when a spot's good to paddle. Unsubscribe any time in one tap.</p>
-     <p style="font-size:13px;color:#556A7E;line-height:1.5;margin:8px 0 0">Didn't sign up? Ignore this email and nothing happens.</p>`,
+    `${eyebrow("One more step")}
+     <p class="ptw-text" style="font-size:21px;font-weight:700;line-height:1.3;color:#0B2A47;margin:0 0 10px">Confirm your alerts</p>
+     <p class="ptw-text" style="font-size:14px;line-height:1.6;color:#0B2A47;margin:0 0 18px">You asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle.</p>
+     ${button(url, "Confirm alerts")}
+     <p class="ptw-muted" style="font-size:13px;color:#556A7E;line-height:1.5;margin:16px 0 0">At most one email a day, only when a spot's good to paddle. Didn't sign up? Ignore it: nothing happens.</p>`,
     unsubscribeUrl(token),
     "Confirm to start getting paddle alerts for your spots."
   );
   const text =
-    `Confirm your Paddle to Water alerts.\n\nYou asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle:\n${url}\n\nOne email a day at most, only when a spot's good to paddle. Unsubscribe any time in one tap.\n\nDidn't sign up? Ignore this email and nothing happens.` +
+    `Confirm your Paddle to Water alerts.\n\nYou asked us to keep an eye on your paddling spots. Confirm and we'll email you when one is good to paddle:\n${url}\n\nAt most one email a day, only when a spot's good to paddle. Didn't sign up? Ignore it: nothing happens.` +
     textFooter(unsubscribeUrl(token));
   return { subject, html, text };
 }
@@ -301,6 +340,29 @@ function extrasLine(extras: AlertEmailInput["extras"]): string {
   return `Also good: ${named.join("; ")}${more > 0 ? `, and ${more} more` : ""}.`;
 }
 
+// HTML twin of extrasLine (item 68): a tinted card with one row per named spot,
+// so the extras read as a scannable list instead of a run-on sentence. The
+// text/plain part still uses extrasLine (a sentence is correct there). Heading
+// distinguishes same-day extras ("today") from later-in-the-horizon ones ("soon").
+function extrasCardHtml(extras: AlertEmailInput["extras"], allSameDay: boolean): string {
+  if (extras.length === 0) return "";
+  const heading = allSameDay ? "Also good today" : "Also good soon";
+  const named = extras.slice(0, MAX_NAMED_EXTRAS);
+  const more = extras.length - named.length;
+  const rows = named
+    .map((e, i) => {
+      const padBottom = i === named.length - 1 && more === 0 ? "10px" : "0";
+      const line = `${e.name}, ${weekdayFromKey(e.windowKey)} ${formatHourRange(e.startHour, e.endHour)}`;
+      return `<tr><td class="ptw-text" style="padding:6px 14px ${padBottom};font-size:13px;color:#0B2A47;line-height:1.6">${escapeHtml(line)}</td></tr>`;
+    })
+    .join("");
+  const moreRow =
+    more > 0
+      ? `<tr><td class="ptw-muted" style="padding:2px 14px 10px;font-size:13px;color:#556A7E;line-height:1.6">And ${more} more.</td></tr>`
+      : "";
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="ptw-card-neutral" style="background:#F2F7FC;border:1px solid #DCE7F0;border-radius:8px;margin:0 0 14px"><tr><td style="padding:10px 14px 2px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#0E6FD1">${heading}</span></td></tr>${rows}${moreRow}</table>`;
+}
+
 export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
   const {
     spotName,
@@ -346,26 +408,29 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
   // window's wind, and is omitted below 5 mph or when direction is unknown.
   // `proTipLine` (item 41) is generic technique that rotates daily and always
   // renders. Item 36's `tipIncluded` guardrail counts only the former.
-  const tipHtml = tip
-    ? `<p style="font-size:13px;color:#556A7E;line-height:1.5;margin:0 0 12px">${escapeHtml(tip)}</p>`
+  // Good-window callout: the window length (with wind folded in) plus the
+  // optional launch-direction tip, together in one tinted box. This is the
+  // email's reason to exist, so it carries the most visual weight.
+  const tipInCallout = tip
+    ? `<p class="ptw-muted" style="font-size:13px;line-height:1.5;color:#42607A;margin:6px 0 0">${escapeHtml(tip)}</p>`
     : "";
+  const calloutHtml = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="ptw-card-good" style="background:#DBF3F0;border:1px solid #0E7F78;border-radius:8px;margin:0 0 14px"><tr><td style="padding:12px 14px"><p class="ptw-text" style="font-size:14px;font-weight:500;line-height:1.5;color:#0B2A47;margin:0">${escapeHtml(lengthLine)}</p>${tipInCallout}</td></tr></table>`;
+
   const proTipLine = `Pro tip: ${proTip}`;
-  const proTipHtml = `<p style="font-size:13px;color:#556A7E;line-height:1.5;margin:0 0 12px">${escapeHtml(proTipLine)}</p>`;
-  const extrasHtml = extras.length
-    ? `<p style="font-size:14px;line-height:1.5;margin:0 0 12px">${escapeHtml(extrasLine(extras))}</p>`
-    : "";
+  const proTipHtml = `<p class="ptw-muted" style="font-size:13px;line-height:1.5;color:#556A7E;margin:0 0 14px"><strong style="color:#0E6FD1">Pro tip:</strong> ${escapeHtml(proTip)}</p>`;
+  const extrasHtml = extrasCardHtml(extras, allSameDay);
   const notesHtml = notes
-    ? `<p style="font-size:13px;color:#556A7E;line-height:1.5;margin:0 0 16px">${escapeHtml(notes)}</p>`
+    ? `<p class="ptw-muted" style="font-size:13px;line-height:1.5;color:#556A7E;margin:0 0 18px">${escapeHtml(notes)}</p>`
     : "";
 
   const html = shell(
-    `<p style="font-size:16px;font-weight:600;margin:0 0 8px">${escapeHtml(headline)}</p>
-     <p style="font-size:14px;line-height:1.5;margin:0 0 12px">${escapeHtml(lengthLine)}</p>
-     ${tipHtml}
+    `${eyebrow("Paddle alert")}
+     <p class="ptw-text" style="font-size:21px;font-weight:700;line-height:1.3;color:#0B2A47;margin:0 0 14px">${escapeHtml(headline)}</p>
+     ${calloutHtml}
      ${proTipHtml}
      ${extrasHtml}
      ${notesHtml}
-     <a href="${openUrl}" style="display:inline-block;background:#0E6FD1;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px">${escapeHtml(v.cta)}</a>`,
+     ${button(openUrl, escapeHtml(v.cta))}`,
     unsubscribeUrl(token),
     preheader
   );

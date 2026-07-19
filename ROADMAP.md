@@ -119,6 +119,32 @@ Problems to fix:
 
 ---
 
+## Owner item, added 2026-07-18 (email polish; queued top-most on purpose)
+
+## 68. [done] Polish the alert + confirm email design and copy: brand header, visual hierarchy, color (deployed 2026-07-18)
+
+**Shipped 2026-07-18 (studio loop; design-lead spec, editor copy, lawyer gate clear).** Rewrote the shared `shell()` in `lib/email/templates.ts` from a `<div>` layout to a **table-based, fully-inline-styled** email shell: a branded **masthead** (a new azure paddle-glyph PNG at `public/email-logo.png`, served from `${SITE_URL}/email-logo.png`, alongside a live-text "Paddle to Water" Georgia-serif wordmark, so it stays branded with images blocked), an explicit **dark-mode** `<style>` media query (owns the palette instead of leaving clients to auto-invert), and a restructured footer with the safety line boxed. Both emails now carry an azure eyebrow kicker + a large bold headline; the alert's good-window sits in a teal callout (length + wind + launch tip), the pro-tip gets an azure `Pro tip:` lead-in, and the extra spots render as a titled "Also good today/soon" card instead of a run-on sentence. Copy (editor): confirm fine-print merged to one line ("At most one email a day, only when a spot's good to paddle. Didn't sign up? Ignore it: nothing happens."), dropping the "unsubscribe any time" filler now that the footer link is azure-prominent. Guardrails preserved byte-identical: CAN-SPAM postal, visible unsubscribe (both parts), item-34 safety line, `text/plain` twin, 7 rotating headlines + 5 technique tips. New CSS class `ptw-card-good` (not `-calm`) to avoid the template's no-"calm" copy guard. **Photo hero deferred** (kept out of scope: adds CC-attribution/IP + images-off complexity). Verified: 47 template tests (6 new redesign guards) + 354 suite green, build clean, lawyer verdict `clear`, and rendered headlessly in **light and dark** (Playwright) plus the prod logo asset returns `200 image/png`. **Real email-client rendering (Gmail/Outlook/Apple Mail, images-off) is the owner's final check**, the loop can't send-and-inspect a real inbox; send yourself a confirm email to eyeball it.
+
+**Owner-reported 2026-07-18.** The emails are "unappealing, no visual or picture of logo, only paragraph after paragraph of words of similar color." Grounded in `lib/email/templates.ts`: the shared `shell()` (lines 50-64) wraps BOTH emails (confirm + alert) and it is all `<p>` text blocks in two colors, dark ink `#0B2A47` and muted `#556A7E`, with the azure CTA button (`#0E6FD1`) the only accent. There is **no logo/brand image anywhere** (the "Paddle to Water" wordmark exists only as plain footer text), and **no hosted logo asset exists in `public/`** to drop in, so one has to be produced. Both the confirm email (`composeConfirmEmail`) and the daily alert (`composeAlertEmail`) share this shell, so fixing `shell()` + the block styles fixes both.
+
+**This is a design-lead + editor pass.** Route it through both: design-lead owns the visual system, editor owns the words. Concrete direction (design-lead refines):
+- **Brand header:** a real masthead with the Paddle to Water wordmark/logo at the top. Needs a **hosted image asset** (create one; `public/` has none email-ready) referenced by absolute URL, plus a **text wordmark fallback** so it still brands with images off (see constraint below).
+- **Visual hierarchy + color:** break the wall of same-color paragraphs. Use the Meltwater palette's accents (azure, and the water-type teal/rust/azure coding already in `lib/types.ts`) for structure, not just dark + muted. Give the headline, the window/hours, the pro-tip, and the "also good" list distinct visual weight instead of near-identical `<p>`s.
+- **Reuse the spot photo (nice-to-have):** alert emails could embed the spot's own photo (item 31/56 assets, `getSpotPhoto`) as a hero. If so, it MUST carry the CC attribution the app renders (IP), and it MUST NOT be load-bearing (images-off fallback below).
+- **Editor:** the copy is already house-clean (7-variant rotation, no em dashes), so editor's job is tightening for the new layout and writing any new brand/masthead microcopy, not a full rewrite.
+
+**Email-specific hard constraints (this is why it needs designer scrutiny, not a quick HTML swap):**
+- **Client compatibility:** email HTML is not web HTML. Use table-based layout + fully inline styles (Gmail/Outlook/Apple Mail), not the current div-and-flex approach, or it breaks in real inboxes. Test the rendered HTML in a real client, not just a browser.
+- **Images are blocked by default** in most clients, so **nothing load-bearing can be an image**: the logo needs `alt` text and a text fallback, a hero photo must degrade to a clean text email. Design the images-off state deliberately.
+- **Dark mode:** many clients invert or recolor; do not rely on a light `#EEF5FB` background surviving. Check the dark-mode render.
+- **Keep in sync + keep the guardrails:** the `text/plain` twin (`textFooter` + each `text` field) must stay in sync with any HTML change; keep the CAN-SPAM postal address + the visible unsubscribe link (legal, D5) and the "guidance only, not a safety guarantee" safety line (item 34); keep `lib/email/templates.test.ts` green (update it for new structure). No em dashes.
+- If the redesign touches anything legally load-bearing (new footer claims, the safety line, image rights), run the lawyer gate.
+
+**Acceptance:**
+- Both emails render with a branded masthead (logo image + text fallback), clear visual hierarchy, and more than two text colors, verified in at least one real email client (light AND dark), and with images OFF.
+- `text/plain` twin still in sync; CAN-SPAM postal + visible unsubscribe + safety line all still present; `templates.test.ts` green; no em dashes.
+- design-lead + editor sign-off before send; if a hosted logo/hero image is added, it is committed to `public/` (or a stable host) with alt text and an images-off fallback.
+
 ## Owner item, added 2026-07-18 (mobile sheet polish; queued top-most on purpose)
 
 ## 64. [done] Mobile sheet app bar: brand wordmark + back affordance (design-lead pass, deployed 2026-07-18)

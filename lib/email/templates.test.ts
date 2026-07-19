@@ -51,6 +51,85 @@ describe("composeConfirmEmail", () => {
   });
 });
 
+describe("email redesign shell (item 68): masthead, table layout, dark mode", () => {
+  const alert = composeAlertEmail({
+    spotName: "Richardson Bay",
+    spotId: 7,
+    windowKey: "2026-07-11",
+    startHour: 7,
+    endHour: 10,
+    maxWindMph: 6,
+    extras: [],
+    token: "tok7",
+  });
+  const confirm = composeConfirmEmail("confirmtok", "unsubtok");
+
+  it("renders a branded masthead: logo image + live-text wordmark (survives images off)", () => {
+    for (const msg of [alert, confirm]) {
+      expect(msg.html).toContain("email-logo.png");
+      // the wordmark is live HTML text, not baked into the image, so images-off still brands
+      expect(msg.html).toContain("Paddle to Water</span>");
+    }
+  });
+
+  it("is table-based (role=presentation), not div-flex, so it renders in Outlook/Gmail", () => {
+    for (const msg of [alert, confirm]) {
+      expect(msg.html).toContain('role="presentation"');
+    }
+  });
+
+  it("owns dark mode explicitly instead of leaving it to client auto-invert", () => {
+    for (const msg of [alert, confirm]) {
+      expect(msg.html).toContain("prefers-color-scheme: dark");
+      expect(msg.html).toContain('name="color-scheme"');
+    }
+  });
+
+  it("labels each email with an eyebrow kicker", () => {
+    expect(alert.html).toContain("Paddle alert");
+    expect(confirm.html).toContain("One more step");
+  });
+});
+
+describe("email redesign copy (item 68)", () => {
+  it("confirm email merges the fine print into one line and drops the unsubscribe-promise filler", () => {
+    const msg = composeConfirmEmail("confirmtok", "unsubtok");
+    expect(msg.html).toContain("Didn't sign up? Ignore it: nothing happens.");
+    expect(msg.text).toContain("Didn't sign up? Ignore it: nothing happens.");
+    // the footer's Unsubscribe link now carries this, so the sentence is cut
+    expect(msg.html).not.toContain("Unsubscribe any time in one tap");
+    expect(msg.html).not.toContain("Ignore this email and nothing happens");
+  });
+
+  it("renders extras as a titled card, not a run-on sentence, in the html", () => {
+    const base = {
+      spotName: "Richardson Bay",
+      spotId: 7,
+      windowKey: "2026-07-11",
+      startHour: 7,
+      endHour: 10,
+      maxWindMph: 6,
+      token: "tok7",
+    };
+    const sameDay = composeAlertEmail({
+      ...base,
+      extras: [{ name: "Foster City Lagoons", windowKey: "2026-07-11", startHour: 8, endHour: 11 }],
+    });
+    expect(sameDay.html).toContain("Also good today");
+    const soon = composeAlertEmail({
+      ...base,
+      extras: [{ name: "Shoreline Lake", windowKey: "2026-07-12", startHour: 9, endHour: 13 }],
+    });
+    expect(soon.html).toContain("Also good soon");
+    const extra = (name: string, h: number) => ({ name, windowKey: "2026-07-11", startHour: h, endHour: h + 2 });
+    const overflow = composeAlertEmail({
+      ...base,
+      extras: [extra("A", 8), extra("B", 9), extra("C", 10), extra("D", 11), extra("E", 12)],
+    });
+    expect(overflow.html).toContain("And 2 more.");
+  });
+});
+
 describe("hour + weekday formatters", () => {
   it("formatHour renders 12-hour am/pm without minutes", () => {
     expect(formatHour(7)).toBe("7am");

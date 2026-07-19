@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-18 · Item 68 shipped: the alert + confirm emails redesigned (masthead, color, dark mode)
+
+**Your move:** one optional check, send yourself a confirmation email (or wait for the next alert) and glance at it in your actual inbox. The loop can render the HTML but can't send-and-inspect a real Gmail/Apple Mail, so real-client rendering is the one thing I couldn't verify for you. Otherwise nothing.
+
+**TL;DR:** The two emails went from a wall of same-color paragraphs with no logo to a properly branded, scannable design: a masthead with a new paddle logo, an azure/teal color hierarchy, a good-window callout, a titled "also good" list, and a real dark-mode render. Purely design + light copy; every function, legal guardrail, and rotating-copy variant is unchanged.
+
+**Appendix:**
+- **Item 68 -> done** (deployed 2026-07-18). Rewrote the shared email shell to table-based, inline-styled HTML (the only thing that renders in real inboxes), added a branded masthead (new azure paddle-glyph logo at `public/email-logo.png`, hosted and returning 200 on prod, plus a live-text wordmark so it stays branded with images off), and an explicit dark-mode style block. Both emails now have an eyebrow + bold headline; the alert's window sits in a teal callout and the extra spots are a titled card, not a run-on sentence.
+- **Copy (editor pass):** confirm email's fine print merged to one line and the "unsubscribe any time" filler dropped (the footer link now carries it, recolored azure to be prominent). The 7 rotating headlines and 5 technique tips are untouched.
+- **Gates:** design-lead spec + editor copy + lawyer verdict `clear` (CAN-SPAM postal, visible unsubscribe, and the safety line all preserved byte-identical in HTML and text). 354 tests green (6 new redesign guards), build clean. Verified light + dark headlessly.
+- **Deferred on purpose:** embedding the spot's own photo as a hero. It adds CC-attribution/IP and images-off complexity; noted in the item for a later pass.
+
 ## 2026-07-18 · Item 66 copy fixed + deployed; design-lead + editor agents patched for the judgment gap
 
 **Your move:** nothing required. Backlog is dry; D24 (reviews) is the one open decision if you want to unblock 43/44.

@@ -1,0 +1,11 @@
+<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+  <rect width="72" height="72" rx="15" fill="#0E6FD1"/>
+  <!-- paddle: T-grip, shaft, blade -->
+  <g fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 18 H42"/>
+    <path d="M36 18 V37"/>
+  </g>
+  <path d="M36 37 C29.5 39.5 28.5 47.5 36 54 C43.5 47.5 42.5 39.5 36 37 Z" fill="#ffffff"/>
+  <!-- ripple beneath -->
+  <path d="M20 61 q4.5 -5 9 0 q4.5 5 9 0 q4.5 -5 9 0" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+</svg>
