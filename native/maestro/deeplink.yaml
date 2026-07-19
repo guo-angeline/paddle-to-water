@@ -1,0 +1,18 @@
+# Deep-link smoke: paddletowater://spot/32 opens the spot sheet.
+# openLink triggers iOS's "Open in ..." confirmation (they can queue up);
+# drain them, then wait for the sheet.
+appId: com.paddletowater.app
+---
+- launchApp:
+    stopApp: false
+- openLink: paddletowater:///spot/32
+- repeat:
+    while:
+      visible: "Open in .*"
+    commands:
+      - tapOn: "Open"
+- extendedWaitUntil:
+    visible: "CONDITIONS TODAY"
+    timeout: 20000
+- assertVisible: ".*Watch.*"
+- tapOn: "Back to the map"

@@ -1,0 +1,29 @@
+# Simulator smoke: list, sheet, conditions, save, Watching. Run with
+#   maestro test maestro/smoke.yaml
+# (expo run:ios dev build installed; Metro running; app already launched once.)
+#
+# NOTE: controls inside the full-screen SpotSheet use POINT taps. Maestro's
+# element-targeted taps compute stale frames for children of the absolute
+# overlay (the tap reports success but lands elsewhere); real touches and
+# coordinate taps work. Assertions still use text.
+appId: com.paddletowater.app
+---
+- launchApp:
+    stopApp: false
+- assertVisible: "Paddle to Water"
+- tapOn: "List"
+- assertVisible: "Alviso Marina.*"
+- tapOn: "Alviso Marina.*"
+- extendedWaitUntil:
+    visible: "CONDITIONS TODAY"
+    timeout: 20000
+- assertVisible: "Watch this spot"
+# Watch button (Alviso layout; below the conditions card)
+- tapOn:
+    point: 50%,94%
+- assertVisible: ".*Watching"
+# Back chevron in the sheet app bar
+- tapOn:
+    point: 7%,10%
+- assertVisible: "WATCHING"
+- assertVisible: "Turn on alerts"

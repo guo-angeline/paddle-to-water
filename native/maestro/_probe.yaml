@@ -1,0 +1,7 @@
+appId: com.paddletowater.app
+---
+- launchApp:
+    stopApp: false
+- tapOn:
+    point: 50%,94%
+- assertVisible: ".*Watching"
