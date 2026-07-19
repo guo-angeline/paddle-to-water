@@ -564,7 +564,9 @@ export default function InstallPrompt() {
   // render, so React doesn't remount the subtree each render.
   const header = (title: React.ReactNode, sub?: React.ReactNode) => (
     <>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+      {/* items-center so the icon badge sits on the same row as the headline,
+          vertically centered (item 66 alignment fix, owner 2026-07-18). */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {badge}
         {/* paddingRight clears the corner × so a long headline wraps before it. */}
         <p className="font-['Newsreader']" style={{ margin: 0, flex: 1, minWidth: 0, paddingRight: 28, fontWeight: 600, fontSize: 16, lineHeight: 1.25, color: "var(--dark)" }}>{title}</p>
@@ -736,7 +738,7 @@ export default function InstallPrompt() {
     // Desktop leads with email: install is near-useless, desktop push rarely seen.
     // Desktop is the one surface excluded from the dual-CTA card (E5: desktop
     // never offers push).
-    body = emailForm("Get alerts by email", "We'll email you when a spot you watch is good to paddle.");
+    body = emailForm("Get alerts by email", "Get an email when a spot you watch is good to paddle.");
   } else {
     // Installed (standalone) with push hard-denied: the only mobile surface the
     // dual-CTA card excludes. Rescue with email instead of the old
