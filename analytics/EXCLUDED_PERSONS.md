@@ -42,6 +42,19 @@ These are also the owner's dogfood subscriptions, so they may generate real
 `email_sends` / `email_opens` rows: filter them from metrics, do not treat as
 signal. If the owner adds more addresses for testing, append them here.
 
+**PostHog loop-funnel events overcount the owner (verified 2026-07-18).** The
+owner has also submitted the enrollment form from browser sessions whose PostHog
+`person_id` is NOT in the device list above, so client events like
+`email_capture_submitted` and `alert_optin_shown` count those owner submissions
+as "ex-owner". Measured: PostHog showed **3** ex-owner `email_capture_submitted`
+in the clean window when Supabase `email_subscriptions` held **1** real (the
+other 2 were owner). Do not report enrollment/confirm/send/open counts from
+PostHog alone: read them from Supabase (`email_subscriptions`,
+`push_subscriptions`, `alert_sends`/`alert_opens`, `email_sends`/`email_opens`)
+and reconcile. The owner's leaking `person_id`s are not yet identified (PostHog
+is anonymous / `$is_identified:false`); if they can be pinned later, add them to
+the device table above.
+
 ## Excluded push subscriptions (WIRED 2026-07-15, D9 resolved (a) 2026-07-11)
 
 The PUSH Supabase tables (`push_subscriptions`, `alert_opens`, `alert_sends`) are
