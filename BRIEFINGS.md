@@ -1,5 +1,17 @@
 # Briefings: the board log
 
+## 2026-07-20 · Item 70 shipped: the full-screen mobile spot sheet is now a real accessible dialog
+
+**Your move:** Nothing needed.
+
+**TL;DR:** When the mobile spot sheet went full-screen (items 63/64), it started covering the whole screen without telling assistive tech it was a dialog or keeping keyboard focus inside it, so a keyboard or screen-reader user could tab "behind" it into content they couldn't see. That's fixed: the sheet now announces itself as a dialog, pulls focus in, traps it, makes the background inert, and hands focus back where it came from on close. Desktop is deliberately untouched.
+
+**Appendix:**
+- **Item 70 -> done** (deployed `99ac3de`, verified live at 390px and on prod). On the full-screen mobile branch only: `role="dialog"` + `aria-modal` + a label pointing at the spot name; focus moves into the sheet on open and returns to the list row/pin on close; Tab is trapped; the background is marked inert (the backdrop is skipped so tap-to-dismiss still works). Escape and all existing dismiss paths unchanged.
+- **Desktop is a persistent side panel, not a modal, so it correctly gets none of this** (verified live at 1280px: no dialog role, no inert). A test locks that in (exactly one `role:"dialog"`, inside the mobile branch), so a future edit can't accidentally trap desktop.
+- **Gates:** 424 tests (6 new), lint + tsc + build clean, zero console errors. No analytics event (a11y semantics on an existing surface, not a new interaction) and no legal surface, so no changelog or lawyer gate.
+- This is the second of the two verify-loop a11y/UX findings cleared today (item 73's 404 page was the first). Next `[ready]` is item 69 (a one-word email grammar fix).
+
 ## 2026-07-20 · Item 73 shipped: a branded 404 page instead of a dead end
 
 **Your move:** Nothing needed.
