@@ -22,6 +22,7 @@ import { syncWatchedSpots, reportAlertOpen } from "@/lib/push";
 import { reportEmailOpen } from "@/lib/email/client";
 import { cacheEmailSubscriptionState } from "@/lib/email/subscriptionState";
 import { BACK_SWIPE_CONFIG } from "@/lib/backGesture";
+import { useBackGesture } from "@/lib/useBackGesture";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
@@ -401,6 +402,17 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [mobileHistory, selected]);
+
+  // Item 71: left-edge back-swipe. Only attaches while a sheet is open under
+  // the mobile history model, so at the home root with nothing open it never
+  // traps a touch and never fights Leaflet's own pan handling. onBack routes
+  // through goBackProgrammatically("gesture") so the popstate handler above
+  // (not this hook) does the actual close and logs spot_sheet_dismissed with
+  // method "edge_swipe".
+  useBackGesture({
+    enabled: !!selected && mobileHistory,
+    onBack: () => goBackProgrammatically("gesture"),
+  });
 
   useEffect(() => {
     // Don't write until we've loaded, or the empty initial set would clobber
