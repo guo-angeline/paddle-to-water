@@ -224,6 +224,22 @@ Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
+## 73. [ready] Custom 404 page: a stale/hidden spot link dead-ends on the bare Next.js 404 with no way back
+
+**Found by the 2026-07-19 verify loop.** There is no `app/not-found.tsx`, so every 404 renders the bare Next.js default. Confirmed on production for `https://paddletowater.com/spot/54` (spot 54, just hidden via D26): a centered "404 / This page could not be found." with **no branding and zero links** in the body (an anchor grep returned nothing). The user hits a dead end with no path back to the app.
+
+**Why it matters (not a cosmetic nit):** these URLs are hit by real people, not just typos:
+- **Hidden spots** now 404: spot 54 (D26) and spot 79 (fabrication) return this page, and any spot hidden in future will too.
+- **Stale shared links.** Growth is word-of-mouth (strategy section: ~82% direct), so shared `/spot/<id>` links ARE the acquisition channel. A link shared before a spot was hidden/renumbered lands a prospective user on a dead end with no CTA.
+- **Search-engine cached** URLs to removed/renumbered spots.
+
+A branded 404 with a "browse all spots / back to the map" CTA recovers these arrivals instead of bouncing them, and it is squarely on the retention/acquisition goal.
+
+**Fix (small, design-lead sign-off on copy + look):**
+- Add `app/not-found.tsx` (App Router convention; it catches `notFound()` from `app/spot/[id]/page.tsx` and unknown routes) styled in the Meltwater palette + house fonts, with the Paddle to Water masthead.
+- One friendly line (a hidden/removed spot and a genuine typo can share copy, e.g. "We couldn't find that spot.") and a primary CTA link to `/` ("Browse all spots" / "Back to the map"). No em dashes.
+- Keep it a real 404 status (Next's not-found already returns 404); do not soft-200. Verify `/spot/54`, `/spot/99999`, and a bad route all render the branded page with a working home link, and still return HTTP 404.
+
 ## 70. [ready] Full-screen mobile spot sheet is not an accessible dialog: no focus move, no focus trap, no role (a11y)
 
 **Found by the 2026-07-18 verify loop.** Items 63/64 made the mobile spot sheet a viewport-covering surface (`position:fixed; inset:0`, `components/SpotDrawer.tsx` panel ~line 224), but it is not marked or managed as a modal dialog. Measured at 390px, opening a spot from the list:
