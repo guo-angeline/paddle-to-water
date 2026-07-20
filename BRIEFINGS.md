@@ -1,5 +1,18 @@
 # Briefings: the board log
 
+## 2026-07-20 · Item 71 shipped: mobile left-edge back-swipe + the history fix under it
+
+**Your move:** one optional check, open the installed PWA on your phone and (a) swipe from the left edge to leave a spot, (b) press the hardware/OS Back after opening a spot. Both should return you to the map instead of exiting the app. I verified the underlying history behavior on the live site, but the true installed-PWA edge-swipe feel is the one thing an emulator can't reproduce. Otherwise nothing.
+
+**TL;DR:** Phones now behave the way people expect: a left-edge swipe (and the hardware Back button) closes an open spot and returns to the map, instead of dumping you out of the site. The real fix underneath is that opening a spot finally creates a back target at all, which also repairs the browser Back button. Mobile/touch only, desktop is byte-unchanged, and the whole thing is behind a kill switch.
+
+**Appendix:**
+- **Item 71 -> done** (deployed `ca80b0a`, verified live on paddletowater.com). Two coupled parts, both mobile/touch-scoped behind a `back-swipe-gesture` kill switch (default ON): (1) opening a spot now `pushState`s a `?spot=<id>` history entry instead of `replaceState`, with one `popstate` handler that closes the sheet, so the gesture and hardware/browser Back both work; (2) a pure edge-zone + direction gesture module so a left-edge swipe navigates back without breaking Leaflet map pan or list scroll. Deep-link / share / email / alert arrivals still land on the spot and Back from them goes home, not into a re-loop.
+- **Live proof:** at 390px on prod, opening a spot pushed a history entry (`?spot=1`) and hardware Back closed the sheet back to `/` with zero console errors. 412 tests (38 new), lint + tsc + production build all clean, and the new `edge_swipe`/`os_back` event values are in the shipped bundle.
+- **Two things worth knowing.** The branch's own new stricter typing surfaced a real build-blocking `tsc` error at the legacy drag path (`SpotDrawer.tsx`); I fixed it, otherwise the Vercel build would have failed. And a concurrent README-only commit landed on main mid-run, so I rebased onto it before deploying, nothing of yours was reverted.
+- **Process note:** the pipeline hit the session usage limit at its final verification gate and returned needs-attention; the limit reset, I resumed it (cached replay), got a clean whole-branch verify + `clear` legal gate, then verified live and deployed myself.
+- **Analytics:** `spot_sheet_dismissed.method` is now a compile-enforced union (new `edge_swipe`/`os_back`, kept distinct from item-64's on-screen `back`); changelog updated; adoption query staged. At single-digit daily volume this is directional only, per the no-A/B-under-DAU-100 rule.
+
 ## 2026-07-18 · Item 68 shipped: the alert + confirm emails redesigned (masthead, color, dark mode)
 
 **Your move:** one optional check, send yourself a confirmation email (or wait for the next alert) and glance at it in your actual inbox. The loop can render the HTML but can't send-and-inspect a real Gmail/Apple Mail, so real-client rendering is the one thing I couldn't verify for you. Otherwise nothing.
