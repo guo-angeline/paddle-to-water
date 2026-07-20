@@ -173,7 +173,8 @@ export interface AlertEmailInput {
 // ── Copy rotation (owner request 2026-07-13: same paragraph every day is boring) ──
 // Seven wording sets, same facts, rotated by UTC day so consecutive daily emails
 // never repeat. Variant 0 is the original copy. Editor-written 2026-07-13.
-// Placeholders: {spot} {weekday} {hours} {lengthHours} {wind} {count}.
+// Placeholders: {spot} {weekday} {hours} {lengthHours} {wind} {count} {a} {A}.
+// {a}/{A} are the sound-correct indefinite article for {lengthHours} (item 69).
 
 interface AlertVariant {
   name: string;
@@ -195,11 +196,11 @@ export const ALERT_VARIANTS: readonly AlertVariant[] = [
     subjectMultiSameDay: "{count} spots look good to paddle {weekday}",
     subjectMultiSoon: "{count} spots look good to paddle soon",
     headline: "{spot} looks good to paddle {weekday}, {hours}.",
-    bodyNoWind: "The forecast shows about a {lengthHours}-hour window.",
-    bodyWithWind: "The forecast shows about a {lengthHours}-hour window, with wind topping out at {wind} mph.",
+    bodyNoWind: "The forecast shows about {a} {lengthHours}-hour window.",
+    bodyWithWind: "The forecast shows about {a} {lengthHours}-hour window, with wind topping out at {wind} mph.",
     cta: "See the forecast",
-    preheaderNoWind: "{hours}, about a {lengthHours}-hour window.",
-    preheaderWithWind: "{hours}, about a {lengthHours}-hour window, with wind topping out at {wind} mph.",
+    preheaderNoWind: "{hours}, about {a} {lengthHours}-hour window.",
+    preheaderWithWind: "{hours}, about {a} {lengthHours}-hour window, with wind topping out at {wind} mph.",
   },
   {
     name: "plain-report",
@@ -219,11 +220,11 @@ export const ALERT_VARIANTS: readonly AlertVariant[] = [
     subjectMultiSameDay: "{weekday} looks good at {count} of your spots",
     subjectMultiSoon: "{count} of your spots look good soon",
     headline: "{spot} looks good {weekday}, {hours}.",
-    bodyNoWind: "The forecast has a {lengthHours}-hour stretch there.",
-    bodyWithWind: "The forecast has a {lengthHours}-hour stretch there, with wind no higher than {wind} mph.",
+    bodyNoWind: "The forecast has {a} {lengthHours}-hour stretch there.",
+    bodyWithWind: "The forecast has {a} {lengthHours}-hour stretch there, with wind no higher than {wind} mph.",
     cta: "See the hours",
-    preheaderNoWind: "Looks good {hours}, a {lengthHours}-hour stretch.",
-    preheaderWithWind: "Looks good {hours}, a {lengthHours}-hour stretch, wind no higher than {wind} mph.",
+    preheaderNoWind: "Looks good {hours}, {a} {lengthHours}-hour stretch.",
+    preheaderWithWind: "Looks good {hours}, {a} {lengthHours}-hour stretch, wind no higher than {wind} mph.",
   },
   {
     name: "hours-first",
@@ -255,11 +256,11 @@ export const ALERT_VARIANTS: readonly AlertVariant[] = [
     subjectMultiSameDay: "Forecast: {count} spots good to paddle {weekday}",
     subjectMultiSoon: "Forecast: {count} spots good to paddle soon",
     headline: "Forecast says {spot} is good to paddle {weekday}, {hours}.",
-    bodyNoWind: "A {lengthHours}-hour run in the hourly forecast.",
-    bodyWithWind: "A {lengthHours}-hour run in the hourly forecast, peak wind {wind} mph.",
+    bodyNoWind: "{A} {lengthHours}-hour run in the hourly forecast.",
+    bodyWithWind: "{A} {lengthHours}-hour run in the hourly forecast, peak wind {wind} mph.",
     cta: "See the numbers",
-    preheaderNoWind: "{weekday} {hours}, a {lengthHours}-hour run in the hourly forecast.",
-    preheaderWithWind: "{weekday} {hours}, a {lengthHours}-hour run, peak wind {wind} mph.",
+    preheaderNoWind: "{weekday} {hours}, {a} {lengthHours}-hour run in the hourly forecast.",
+    preheaderWithWind: "{weekday} {hours}, {a} {lengthHours}-hour run, peak wind {wind} mph.",
   },
   {
     name: "pencil-it-in",
@@ -267,11 +268,11 @@ export const ALERT_VARIANTS: readonly AlertVariant[] = [
     subjectMultiSameDay: "Worth penciling in {weekday}: {count} spots",
     subjectMultiSoon: "{count} spots worth penciling in",
     headline: "Worth penciling in: {spot}, {weekday}, {hours}.",
-    bodyNoWind: "That's a {lengthHours}-hour window in the forecast to work with.",
-    bodyWithWind: "That's a {lengthHours}-hour window in the forecast to work with, with wind maxing out at {wind} mph.",
+    bodyNoWind: "That's {a} {lengthHours}-hour window in the forecast to work with.",
+    bodyWithWind: "That's {a} {lengthHours}-hour window in the forecast to work with, with wind maxing out at {wind} mph.",
     cta: "See spot details",
-    preheaderNoWind: "Worth penciling in: {weekday} {hours}, a {lengthHours}-hour window.",
-    preheaderWithWind: "Worth penciling in: {weekday} {hours}, a {lengthHours}-hour window, wind maxing out at {wind} mph.",
+    preheaderNoWind: "Worth penciling in: {weekday} {hours}, {a} {lengthHours}-hour window.",
+    preheaderWithWind: "Worth penciling in: {weekday} {hours}, {a} {lengthHours}-hour window, wind maxing out at {wind} mph.",
   },
 ];
 
@@ -324,6 +325,18 @@ export function techniqueTipForDay(nowMs: number): number {
 
 function fill(template: string, vals: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (_, k: string) => String(vals[k] ?? ""));
+}
+
+// Item 69: pick "a"/"an" by the number's spoken sound, not its first letter, so
+// an 8/11/18-hour window reads "an ... window" (eight, eleven, eighteen all
+// start with a vowel sound). Fed to fill() as {a} (and {A} for a sentence-
+// initial position) so a new copy variant can't silently re-introduce "a 8".
+// Window lengths are single/low-double-digit hours; the 80s are covered for
+// safety (eighty...), which is the only other vowel-sound band in range.
+function indefiniteArticle(n: number): "a" | "an" {
+  const abs = Math.abs(Math.trunc(n));
+  if (abs === 8 || abs === 11 || abs === 18 || (abs >= 80 && abs <= 89)) return "an";
+  return "a";
 }
 
 // Name up to this many extra spots before collapsing the rest into "and N more".
@@ -386,7 +399,17 @@ export function composeAlertEmail(input: AlertEmailInput): EmailMessage {
   const hours = formatHourRange(startHour, endHour);
   const lengthHours = endHour - startHour;
   const count = extras.length + 1;
-  const vals = { spot: spotName, weekday, hours, lengthHours, wind: maxWindMph ?? 0, count };
+  const article = indefiniteArticle(lengthHours);
+  const vals = {
+    spot: spotName,
+    weekday,
+    hours,
+    lengthHours,
+    wind: maxWindMph ?? 0,
+    count,
+    a: article,
+    A: article === "an" ? "An" : "A",
+  };
 
   // Only claim a shared weekday in the multi-spot subject when every spot really
   // is good that same day; extras can fall on different days in the 3-day horizon.

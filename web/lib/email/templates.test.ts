@@ -186,6 +186,43 @@ describe("composeAlertEmail", () => {
     expect(composeAlertEmail({ ...base, maxWindMph: 0 }).text).not.toMatch(/mph/);
   });
 
+  // Item 69: the indefinite article must match the number's spoken sound, so an
+  // 8/11/18-hour window reads "an ..." not "a 8-hour". Only the variants that
+  // put an article before {lengthHours} are affected: baseline(0),
+  // friendly-local(2), weather-nerd(5), pencil-it-in(6).
+  describe("indefinite article agrees with the window length (item 69)", () => {
+    const AFFECTED = [0, 2, 5, 6];
+    const win = (startHour: number, endHour: number, variant: number) =>
+      composeAlertEmail({ ...base, startHour, endHour, variant });
+
+    for (const variant of AFFECTED) {
+      it(`variant ${variant}: "an" before 8- and 11-hour, "a" before 3-hour`, () => {
+        // 8 hours (7->15): "eight" starts with a vowel sound -> "an"
+        expect(win(7, 15, variant).text).toMatch(/an 8-hour/i);
+        expect(win(7, 15, variant).html).toMatch(/an 8-hour/i);
+        // 11 hours (7->18): "eleven" -> "an"
+        expect(win(7, 18, variant).text).toMatch(/an 11-hour/i);
+        // 3 hours (7->10): "three" -> "a", and never "an 3-hour"
+        expect(win(7, 10, variant).text).toMatch(/a 3-hour/i);
+        expect(win(7, 10, variant).text).not.toMatch(/an 3-hour/i);
+      });
+    }
+
+    it("capitalizes the sentence-initial article (weather-nerd: 'An 8-hour run')", () => {
+      expect(win(7, 15, 5).text).toContain("An 8-hour run");
+      expect(win(7, 10, 5).text).toContain("A 3-hour run");
+    });
+
+    it("never emits the ungrammatical 'a 8'/'a 11'/'a 18' in any affected variant", () => {
+      for (const variant of AFFECTED) {
+        for (const [sh, eh] of [[7, 15], [7, 18], [0, 18]] as const) {
+          const t = win(sh, eh, variant).text;
+          expect(t).not.toMatch(/\ba 8-hour|\ba 11-hour|\ba 18-hour/i);
+        }
+      }
+    });
+  });
+
   it("uses the app-free CTA (email is the no-install channel)", () => {
     const msg = composeAlertEmail(base);
     expect(msg.html).toContain("See the forecast");
