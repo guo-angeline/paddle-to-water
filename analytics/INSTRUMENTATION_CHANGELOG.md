@@ -934,3 +934,11 @@ Supersedes today's earlier "stubs only" entry. Three changes, one shipping unit:
 3. **Native emission starts** once the owner sets `EXPO_PUBLIC_POSTHOG_KEY` in `native/.env` (until then the native app emits nothing). Native events stamp `event_category` identically. Native's "genuine view" dwell gate is a 1000ms mount-dwell inside the always-full-screen sheet (`useGenuineDwell`), mirroring the web's IntersectionObserver+1000ms; `conditions_loaded.trigger` is always `"mount"` on native (no foreground-refresh port yet). Owner exclusion on native is the `ptw-internal` AsyncStorage flag gated inside the wrapper (no `before_send` in posthog-react-native); the owner's native `person_id` must ALSO be added to analytics/EXCLUDED_PERSONS.md once first seen.
 
 - **Comparability:** every event's total volume can rise from the date native emission begins, because a new surface starts reporting, not because web behavior changed. Segment by `display_mode` for apples-to-apples web series (`standalone`/`browser` slices are unaffected). `alert_optin_shown.channel` on native is always `"push"` (single-channel card; the web dual-CTA `"both"` value never appears on native). Simulator/dev traffic before the owner's device exclusion lands should be treated as internal.
+
+---
+
+## 2026-07-19 (3): native emission confirmed live; SDK lifecycle events appear (added, SDK-default)
+
+Native analytics verified end-to-end in PostHog (11-event simulator burst, `display_mode: native_ios`, library `posthog-react-native`; sim person `019f7cc0-eb59-7360-86ab-13080a457f23` added to EXCLUDED_PERSONS). posthog-react-native also auto-captures **`Application Opened` / `Application Became Active` / `Application Backgrounded`** lifecycle events. These are SDK defaults, not in our typed unions, and carry NO `event_category` stamp.
+
+- **Comparability:** three new event names exist from 2026-07-19, native-only, uncategorized. Queries keying on `event_category IN ('system','intent')` are unaffected; "total event volume" counts now include native lifecycle noise, so exclude `event IN ('Application Opened','Application Became Active','Application Backgrounded')` (or filter `event_category IS NOT NULL`) in any volume read. They are decent native session/retention markers if ever needed, but are availability-of-the-app signals, never engagement.
