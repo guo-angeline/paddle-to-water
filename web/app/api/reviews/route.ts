@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { getRequestUserId, getServerAuthSupabase } from "@/lib/supabase/server-auth";
 import { validateReviewSubmit } from "@/lib/reviews/validation";
+import { validateDisplayName } from "@/lib/account/displayName";
 import { composeReviewModerationEmail } from "@/lib/email/templates";
 import { sendOperatorEmail } from "@/lib/email/sender";
 import { ALL_SPOTS } from "@/lib/spots";
@@ -68,10 +69,16 @@ export async function POST(req: Request) {
   if (!spot) return NextResponse.json({ error: "unknown spot" }, { status: 404 });
 
   // Byline comes from the verified session, never from the request body.
+  //
+  // Item 77: it is the name the person CHOSE, held in user metadata. It was
+  // previously taken from the local part of their address, which published a
+  // piece of that address on a public page: for firstname.lastname@company.com
+  // that is their real name. No chosen name means no byline; the UI renders
+  // "A paddler". Never fall back to the address.
   const authed = await getServerAuthSupabase();
   const { data: userData } = (await authed?.auth.getUser()) ?? { data: { user: null } };
-  const email = userData?.user?.email ?? null;
-  const displayName = email ? email.split("@")[0] : null;
+  const chosen = validateDisplayName(userData?.user?.user_metadata?.display_name);
+  const displayName = chosen.ok && chosen.value !== "" ? chosen.value : null;
 
   const db = getSupabaseAdmin();
   const { data: inserted, error } = await db

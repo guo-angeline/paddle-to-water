@@ -6,6 +6,7 @@ import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { authEnabled } from "@/lib/supabase/config";
 import { getAnonId } from "@/lib/push";
 import { trackIntent, setPersona } from "@/lib/analytics";
+import { validateDisplayName } from "@/lib/account/displayName";
 
 // Item 44: optional Google accounts. This hook is the single entry point for
 // auth UI. When auth is not configured it reports `enabled: false` and no-ops,
@@ -44,6 +45,14 @@ export interface AccountState {
   enabled: boolean;
   user: User | null;
   loading: boolean;
+  /**
+   * Item 77: the public byline the user chose, or "" if they never set one.
+   * Deliberately NOT derived from the email address, which is what it used to
+   * be. "" means "publish as A paddler", never "fall back to the address".
+   */
+  displayName: string;
+  /** Persist a chosen display name. Resolves to an error string, or null. */
+  saveDisplayName: (name: string) => Promise<string | null>;
   /** Primary path: email a 6-digit code. Resolves to an error string, or null on success. */
   sendEmailCode: (email: string) => Promise<string | null>;
   /** Second step of the email path. Resolves to an error string, or null on success. */
@@ -155,5 +164,39 @@ export function useAccount(): AccountState {
     void supabase.auth.signOut();
   }
 
-  return { enabled, user, loading, sendEmailCode, verifyEmailCode, signInWithGoogle, signOut };
+  // Item 77. Stored in Supabase user metadata rather than a new table, so it
+  // needs no migration. It is user-writable by design (it is their own name),
+  // and it is re-validated server-side at review submit, where it matters.
+  // Abuse is covered by the fact that no review publishes without a human
+  // approving it, byline included.
+  const rawName = user?.user_metadata?.display_name;
+  const parsedName = validateDisplayName(rawName);
+  const displayName = parsedName.ok ? parsedName.value : "";
+
+  async function saveDisplayName(name: string): Promise<string | null> {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return "Sign-in is unavailable right now.";
+    const checked = validateDisplayName(name);
+    if (!checked.ok) return checked.error;
+    const { data, error } = await supabase.auth.updateUser({
+      data: { display_name: checked.value },
+    });
+    if (error) return error.message;
+    // updateUser does not always emit onAuthStateChange, so adopt the returned
+    // user directly or the form would still see the old (empty) name.
+    if (data.user) setUser(data.user);
+    return null;
+  }
+
+  return {
+    enabled,
+    user,
+    loading,
+    displayName,
+    saveDisplayName,
+    sendEmailCode,
+    verifyEmailCode,
+    signInWithGoogle,
+    signOut,
+  };
 }

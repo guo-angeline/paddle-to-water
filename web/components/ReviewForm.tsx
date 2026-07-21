@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { TERMS_VERSION, MAX_BODY_LENGTH } from "@/lib/reviews/validation";
 import { trackIntent } from "@/lib/analytics";
+import { useAccount } from "@/lib/useAccount";
+import { MAX_DISPLAY_NAME } from "@/lib/account/displayName";
 import type { Spot } from "@/lib/types";
 
 // Item 43: the review submit form. Two things here are legally load-bearing and
@@ -29,11 +31,16 @@ export default function ReviewForm({
   onSubmitted: () => void;
   onCancel: () => void;
 }) {
+  const { displayName, saveDisplayName } = useAccount();
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
   const [agreed, setAgreed] = useState(false); // NEVER default true
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Item 77: asked once, on the first review, then reused. Starts EMPTY: never
+  // prefill from the email address, which is the defect this replaces.
+  const [name, setName] = useState("");
+  const needsName = displayName === "";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +48,16 @@ export default function ReviewForm({
     setBusy(true);
     setError(null);
     try {
+      // Save the chosen name first: the server reads the byline from the
+      // account, so it has to be stored before the review row is written.
+      if (needsName && name.trim() !== "") {
+        const nameErr = await saveDisplayName(name);
+        if (nameErr) {
+          setError(nameErr);
+          setBusy(false);
+          return;
+        }
+      }
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -103,6 +120,31 @@ export default function ReviewForm({
         placeholder="What was the put-in like? Parking, access, what you saw."
         className="mt-1 w-full rounded-lg border border-(--border) px-3 py-2 text-sm text-(--dark) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
       />
+
+      {/* Item 77: asked once. Sits above the assent row so the checkbox stays
+          adjacent to submit, which the terms require. */}
+      {needsName && (
+        <>
+          <label htmlFor="review-name" className="mt-3 block text-sm font-medium text-(--dark)">
+            Display name <span className="font-normal text-(--muted)">(optional)</span>
+          </label>
+          <input
+            id="review-name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value.slice(0, MAX_DISPLAY_NAME))}
+            maxLength={MAX_DISPLAY_NAME}
+            autoComplete="nickname"
+            placeholder="Shown on your review"
+            aria-describedby="review-name-hint"
+            className="mt-1 w-full rounded-lg border border-(--border) px-3 py-2 text-sm text-(--dark) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
+          />
+          <p id="review-name-hint" className="mt-1 text-xs text-(--muted)">
+            Public, and reused on your later reviews. Leave it blank to post as
+            &ldquo;A paddler&rdquo;. Not your email.
+          </p>
+        </>
+      )}
 
       {/* Assent: unchecked by default, directly above submit, link inside the label. */}
       <label className="mt-3 flex items-start gap-2 text-sm text-(--dark)">
