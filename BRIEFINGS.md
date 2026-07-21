@@ -1,3 +1,19 @@
+## 2026-07-21 — Item 78: account management, and a live privacy leak caught in testing
+
+**Your move.** One thing, when convenient: run the account-deletion pre-enable test once with a real hand-clicked Google sign-in (the runbook's "Pre-enable test"). I exercised the actual delete endpoint end to end against a seeded account and it passed cleanly, but the lawyer's gate asks for one human-driven run before the promise is relied on for a real request.
+
+**TL;DR.** Signed-in users now have a real account surface, reachable from the header identity. And while testing it I found the item-77 email-byline fix had missed one live review; that's fixed too.
+
+**What shipped.** Tapping your name in the header opens an account sheet: edit your display name (it now propagates to your existing reviews, not just future ones), see your reviews with their moderation status, see what the account holds, sign out, and delete your account. Deletion is in-product now instead of "email hello@", which matters because that address bounced yesterday. It follows the deletion runbook exactly: your reviews are unpublished and dissociated but the 3-year moderation record is kept, both alert subscriptions are deleted, the account and saved spots go. Two-step confirm, and it aborts safely if any step fails.
+
+**The leak I found.** Your review on spot 16 was still published with the byline "qg47" — the email fragment item 77 was meant to kill. It slipped through because it was submitted 19 minutes before the item-77 deploy, and my item-77 cleanup only cleared the one review that existed when I looked. I corrected every live byline to its author's chosen name; spot 16 now reads "Angeline", and no email fragment remains anywhere. Lesson: a point-in-time data cleanup misses rows created in the same window, so the fix has to be an invariant, not a one-shot.
+
+**Legal.** Ran the lawyer agent on the deletion path. Verdict needs-changes, not blocked. The gating action was proving the delete actually works end to end, which I did against the real endpoint; I also added the per-step error checks it flagged. One residual it noted and I left as a known edge (documented): an anonymous alert set up under a different address than your account email isn't caught by a self-service delete, same as the manual runbook.
+
+**Also visible now.** Four real accounts exist and are actively reviewing: your two (cornell + gmail, both "Angeline"), camila.parra98, and a fourth, qig6789 ("Sunny"). Spots 16, 17, 18, 50, 53 have real reviews. This is the first genuine UGC on the site.
+
+**Verification.** 501 tests, lint + tsc + build clean. On production all three account methods return 401 unauthenticated; the account sheet renders with reviews, statuses, and account contents; spot 16 no longer leaks the email fragment. Deployed b1ff4c7.
+
 ## 2026-07-21 — Backlog dry: the studio is waiting on promotion, not on ideas
 
 Item 43 was the last `[ready]` item. Nothing is `[in-progress]`, no decision is `[OPEN]`, and every owner item queued since 2026-07-13 has shipped. The loop stays alive on its 30-minute cron and will pick up whatever you promote; it will not keep pinging about this.
