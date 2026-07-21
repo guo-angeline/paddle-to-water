@@ -101,7 +101,23 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 - A regression guard that fails if the auth email regains a clickable link, or if the app is left unable to complete a link landing.
 - The consumed-token case produces a distinct, honest error string.
 
-**UPDATE 2026-07-21 20:44Z: it is a RACE, not a hard failure, which is worse.** The owner retried and succeeded, and the timings say why:
+**ROOT CAUSE FOUND 2026-07-21 21:0xZ, and the "race" reading below was WRONG.** Opening the actual templates settled it:
+
+- **"Confirm sign up"** (sent to brand-new addresses) was **link-only**: `<p><a href="{{ .ConfirmationURL }}">Confirm email address</a></p>` and **no `{{ .Token }}` anywhere**. A first-time email user received an email containing **no code at all**, while the app asked them for a code. That is a 100% failure for every first-time email sign-in, not an intermittent one.
+- **"Magic link or OTP"** (sent to addresses that already exist) was already code-only and already branded. It works.
+
+So the two attempts differed by **template, not by timing**. Attempt 1 hit Confirm-sign-up and contained no code. The Safe Links scanner then clicked the only thing in the message, which confirmed the address as a side effect. Attempt 2 hit Magic-link **because the address was now confirmed**, and that template carries the code. The owner did not win a race; they were silently moved onto the working template by the scanner's click.
+
+The scanner evidence is still real and still worth defending against, but it is the second-order problem. The first-order one was a template with no code in it.
+
+**FIXED 2026-07-21:** "Confirm sign up" is now code-only (`{{ .Token }}`, no URL), subject "Your Paddle to Water sign-in code", verified persisted after reload. "Magic link or OTP" needed no change.
+
+**STILL OPEN (the hardening, why this item stays):**
+1. Nothing prevents a link returning to either template. Assert it.
+2. `createBrowserClient` uses PKCE, so a link followed from a mail client can never complete a session. If a link ever reappears, the failure is silent again.
+3. "That code did not work" cannot distinguish a consumed/expired token from a wrong code, which is why this took server logs to diagnose instead of being readable from the UI.
+
+**Superseded reading (kept for the record, do not act on it): "it is a RACE, not a hard failure".** The owner retried and succeeded, and the timings say why:
 
 | attempt | code sent | outcome | gap |
 |---|---|---|---|
