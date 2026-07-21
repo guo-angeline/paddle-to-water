@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAccount } from "@/lib/useAccount";
 
-// Item 44 (email-first revision): the sign-in surface. Email a 6-digit code is
+// Item 44 (email-first revision): the sign-in surface. An emailed code is
 // the PRIMARY path; Google is secondary. Email is the default because the whole
 // retention loop is already email (alerts, double opt-in, verified sender), so
 // users have already given us this address, and it collects less personal data
@@ -16,7 +16,13 @@ import { useAccount } from "@/lib/useAccount";
 // Dialog semantics follow the item-70 pattern: role=dialog + aria-modal,
 // focus moved in on open, Escape closes, focus restored to the opener.
 
-const CODE_LENGTH = 6;
+// Supabase's Email OTP Length is a SERVER-SIDE setting (6 to 10 digits), not a
+// constant we get to pick. Hard-coding 6 truncated a real 8-digit code to its
+// first 6 characters, so every verification failed with "Token has expired or
+// is invalid" while the code on screen looked right. Accept the whole range and
+// let the server decide.
+const MIN_CODE_LENGTH = 6;
+const MAX_CODE_LENGTH = 10;
 
 export default function SignInSheet({ onClose }: { onClose: () => void }) {
   const { sendEmailCode, verifyEmailCode, signInWithGoogle } = useAccount();
@@ -137,7 +143,7 @@ export default function SignInSheet({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <p className="mt-1 text-sm text-(--muted)">
-              We sent a {CODE_LENGTH}-digit code to <span className="text-(--dark)">{email}</span>.
+              We sent a code to <span className="text-(--dark)">{email}</span>.
             </p>
 
             <form onSubmit={onVerify} className="mt-4">
@@ -151,7 +157,7 @@ export default function SignInSheet({ onClose }: { onClose: () => void }) {
                 required
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={CODE_LENGTH}
+                maxLength={MAX_CODE_LENGTH}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                 placeholder="123456"
@@ -159,7 +165,7 @@ export default function SignInSheet({ onClose }: { onClose: () => void }) {
               />
               <button
                 type="submit"
-                disabled={busy || code.length < CODE_LENGTH}
+                disabled={busy || code.length < MIN_CODE_LENGTH}
                 className="mt-3 w-full rounded-lg bg-(--accent) px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
               >
                 {busy ? "Checking…" : "Sign in"}

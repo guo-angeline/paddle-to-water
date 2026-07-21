@@ -25,8 +25,12 @@ describe("sign-in is email-first (item 44 revision)", () => {
     expect(hook).not.toContain("emailRedirectTo");
     expect(sheet).toContain('autoComplete="one-time-code"');
     expect(sheet).toContain('inputMode="numeric"');
-    expect(sheet).toMatch(/maxLength=\{CODE_LENGTH\}/);
-    expect(sheet).toMatch(/const CODE_LENGTH = 6/);
+    // Supabase's Email OTP Length is a server-side setting (6-10). Hard-coding
+    // 6 truncated a real 8-digit code and made every verification fail.
+    expect(sheet).toMatch(/maxLength=\{MAX_CODE_LENGTH\}/);
+    expect(sheet).toMatch(/const MAX_CODE_LENGTH = 10/);
+    expect(sheet).toMatch(/const MIN_CODE_LENGTH = 6/);
+    expect(sheet).not.toMatch(/const CODE_LENGTH = 6/);
   });
 
   it("keeps Google available as a secondary path", () => {
