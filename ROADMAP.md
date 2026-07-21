@@ -529,7 +529,7 @@ All 47 SF Bay Water Trail designated trailheads were classified, none guessed:
 
 **Owner promoted both to `[ready]` on 2026-07-17, with the tension above understood.** This is the owner exercising the call the note reserves, not a default. Recorded so a later reader does not mistake it for the thesis changing: retention is still the bottleneck; the retention read is still the number that matters. Both items carry a lawyer gate before deploy (43: FTC fake-review rule + UGC moderation + Section 230; 44: personal data + OAuth + privacy-policy update). Items 39, 40, 41, 42, 45 never carried this tension.
 
-## 43. [blocked(44 + attorney-ToS)] Real user reviews on a spot (the crowd-sourced half of ratings)
+## 43. [blocked(44 + ToS-prereqs)] Real user reviews on a spot (the crowd-sourced half of ratings)
 
 **D24 RESOLVED 2026-07-20.** Q1 yes (attorney reviews the UGC ToS; studio lawyer drafted it under `docs/legal/`), Q2 required sign-in (so this needs item 44's auth to ship first), Q3 binary queue + email-on-submit + no auto-publish ever, all spots. No longer decision-gated; now gated on two real artifacts: (a) the attorney-reviewed ToS live, (b) item 44 shipped. Do not build the review-post path until both exist.
 
