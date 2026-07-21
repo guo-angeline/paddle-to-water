@@ -75,6 +75,22 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## 78. [proposed] There is no account management surface at all
+
+**Found 2026-07-21 answering "how does sign-in let people pick a name or manage their account".** The answer was: it doesn't. The entire account UI is a header control that shows a label and a **Sign out** button (`components/AccountButton.tsx`). Item 77 fixed the most urgent half by letting people choose a review byline at submit time. This is the rest.
+
+**Missing:**
+1. **Editing the display name after the fact.** Item 77 asks once, on the first review. There is no way to change it later, and `spot_reviews.display_name` is denormalised onto each row, so an edit must also propagate to existing reviews or the change is cosmetic.
+2. **Seeing your own reviews.** A submission goes into a moderation queue and disappears. The contributor cannot see that it is pending, that it was published, or that it was rejected. That is also the thing most likely to generate a "did my review work?" support email.
+3. **Deleting your account in-product.** The Privacy Policy and Contributor Terms §9.3 tell users to email `hello@paddletowater.com`, and item 75 established that address bounced. A delete button backed by the runbook's own steps makes the promise real without depending on a mail hop. This is the piece with legal weight (FTC Act Section 5, per the item-44 lawyer gate).
+4. **Seeing what the account holds.** Saved spots now sync (item 76) and alert subscriptions are claimed on sign-in, none of which is visible anywhere.
+
+**Shape:** an account sheet opened from the header control, reusing the `SignInSheet` dialog pattern (item 70 gave it focus trap, `inert`, restore). Display name, your reviews with status, saved spot count, sign out, delete account.
+
+**Note on the header label.** It still renders `email.split("@")[0]`. That is acceptable where it is (you are the only one who sees your own header) and it is NOT the same defect as item 77, which was publishing that fragment to everyone. If a display name exists, prefer it there too.
+
+---
+
 ## 75. [proposed] Review moderation cannot depend on an email that can bounce silently
 
 **Found 2026-07-21 by a real bounce.** The first genuine user review (spot 18, from `qg47`) submitted fine, but the moderation notice to `hello@paddletowater.com` **bounced** ("Generic Temporary Delivery Failure"). `hello@` is a Cloudflare Email Routing alias that forwards onward, and the onward hop rejected it. The review sat `pending` with nobody told.
