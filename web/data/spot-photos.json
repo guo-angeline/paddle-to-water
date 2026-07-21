@@ -1,7 +1,7 @@
 {
   "generated": "raw-data/select_photos.mjs (automated pick, owner directive 2026-07-18, no manual curation)",
   "source": "Wikimedia Commons, free licenses only, self-hosted sized derivatives",
-  "total_with_photo": 92,
+  "total_with_photo": 94,
   "photos": {
     "1": {
       "file": "/spot-photos/1.jpg",
@@ -598,6 +598,10 @@
       "distance_m": 67,
       "score": 17
     },
+    "101": {
+      "file": "/spot-photos/101.jpg",
+      "source": "owner"
+    },
     "102": {
       "file": "/spot-photos/102.jpg",
       "author": "Dicklyon",
@@ -720,6 +724,10 @@
       "source": "flickr",
       "source_page": "https://www.flickr.com/photos/7633518@N08/7901172638",
       "title": "silver lake from treasure island"
+    },
+    "120": {
+      "file": "/spot-photos/120.jpg",
+      "source": "owner"
     },
     "123": {
       "file": "/spot-photos/123.jpg",
@@ -883,5 +891,5 @@
       "score": 20
     }
   },
-  "curation": "Vision-curated 2026-07-18: from 111 auto-picks, 57 verified as genuine location photos; 54 rejected (wildlife/objects/buildings/signs/maps that title-scoring could not filter). Rejected spot ids left photo-less for a later re-pick/backfill pass. | 2026-07-18 backfill slice A (item 56): +3 re-picked from rejects (19,86,128); top-alternate re-pick low-yield, rest need widened multi-source search. | slice B (item 56): +18 via Wikidata P18 (coord-verified, vision-checked; dropped aerials/satellite/dam/power-plant/sign). | slice C (item 56): +4 via Openverse/Flickr (text-search noisy, vision-kept 4 of 24). Free sources (Commons+Wikidata+Openverse) exhausted at this coverage. | 2026-07-18 owner first-party import: +12 owner-supplied photos (source:\"owner\", no attribution overlay)."
+  "curation": "Vision-curated 2026-07-18: from 111 auto-picks, 57 verified as genuine location photos; 54 rejected (wildlife/objects/buildings/signs/maps that title-scoring could not filter). Rejected spot ids left photo-less for a later re-pick/backfill pass. | 2026-07-18 backfill slice A (item 56): +3 re-picked from rejects (19,86,128); top-alternate re-pick low-yield, rest need widened multi-source search. | slice B (item 56): +18 via Wikidata P18 (coord-verified, vision-checked; dropped aerials/satellite/dam/power-plant/sign). | slice C (item 56): +4 via Openverse/Flickr (text-search noisy, vision-kept 4 of 24). Free sources (Commons+Wikidata+Openverse) exhausted at this coverage. | 2026-07-18 owner first-party import: +12 owner-supplied photos (source:\"owner\", no attribution overlay). | 2026-07-21 owner first-party import: +2 owner-supplied photos (spots 101, 120; source:\"owner\", no attribution overlay)."
 }
