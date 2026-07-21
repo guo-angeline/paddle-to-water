@@ -22,6 +22,8 @@ import { useKillSwitch } from "@/lib/experiments";
 import { syncWatchedSpots, reportAlertOpen } from "@/lib/push";
 import { reportEmailOpen } from "@/lib/email/client";
 import { cacheEmailSubscriptionState } from "@/lib/email/subscriptionState";
+import { useAccount } from "@/lib/useAccount";
+import { syncSavedSpots, pushSave, pushUnsave } from "@/lib/account/savedSync";
 import { BACK_SWIPE_CONFIG } from "@/lib/backGesture";
 import { useBackGesture } from "@/lib/useBackGesture";
 
@@ -88,6 +90,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   // hydration mismatch (a flash) for exactly the returning savers we care about.
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+  // Item 76: signed-in saves live on the server. The ref lets the sync effect
+  // read the current set without depending on `favorites`, which would restart
+  // the sync on every toggle.
+  const { user: accountUser } = useAccount();
+  const accountUserId = accountUser?.id ?? null;
+  const favoritesRef = useRef(favorites);
   // Set only when the app opened from a push alert with a window label to
   // show (see composeAlert in lib/alerts/select.ts). Cleared on dismiss or
   // once the user navigates away from the alerted spot.
@@ -423,6 +431,29 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     catch { /* storage full / private mode */ }
   }, [favorites, favoritesLoaded]);
 
+  useEffect(() => {
+    favoritesRef.current = favorites;
+  }, [favorites]);
+
+  // Item 76: pull the account's saves down. Runs after local hydration so the
+  // first sync can union local saves up before the server becomes authoritative.
+  // A null result means the server was unreachable: leave local state alone
+  // rather than showing an empty map to someone who has saves.
+  useEffect(() => {
+    if (!favoritesLoaded || !accountUserId) return;
+    let active = true;
+    const local = [...favoritesRef.current];
+    syncSavedSpots(accountUserId, local).then((server) => {
+      if (!active || !server) return;
+      const changed =
+        server.size !== favoritesRef.current.size ||
+        [...server].some((id) => !favoritesRef.current.has(id));
+      if (changed) setFavorites(server);
+      trackSystem("saved_spots_synced", { count: server.size });
+    });
+    return () => { active = false; };
+  }, [accountUserId, favoritesLoaded]);
+
   function toggleFavorite(id: number) {
     const adding = !favorites.has(id);
     const spot = ALL_SPOTS.find((s) => s.id === id);
@@ -440,6 +471,13 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
       setPersona({ saves_spots: true, favorite_count: next.size });
       return next;
     });
+    // Item 76: write through so the change reaches the account's other devices.
+    // Optimistic and best-effort: localStorage already has it, and the next
+    // sync reconciles if this request failed.
+    if (accountUserId) {
+      if (adding) pushSave(id);
+      else pushUnsave(id);
+    }
     if (adding) {
       window.dispatchEvent(
         new CustomEvent("ptw:spotsaved", { detail: { spotName: spot?.water ?? "this spot" } })

@@ -657,7 +657,7 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
 
       {signInFor === spot.id && (
         <SignInSheet
-          reason="Signing in keeps it to one review per paddler, per spot."
+          reason="Sign in or sign up to leave a review."
           onClose={() => setSignInFor(null)}
         />
       )}

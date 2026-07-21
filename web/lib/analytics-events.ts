@@ -54,7 +54,12 @@ export type SystemEventName =
   // SYSTEM, not intent: the app acted, the user did not toggle Near Me.
   | "location_auto_applied"
   // An enrollment prompt was withheld for a confirmed email subscriber (item 47).
-  | "enrollment_prompt_suppressed";
+  | "enrollment_prompt_suppressed"
+  // The signed-in account's saved spots came back from the server and the
+  // device reconciled with them (item 76). SYSTEM: the app synced, the user did
+  // not act. `count` is the reconciled set size, so it measures whether sync
+  // works and how much people actually keep, never engagement.
+  | "saved_spots_synced";
 
 /**
  * INTENT / engagement events. Fire only on a deliberate user act or a

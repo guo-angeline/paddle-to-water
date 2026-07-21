@@ -16,17 +16,14 @@ import { trackIntent, setPersona } from "@/lib/analytics";
 // The server route is idempotent anyway; this just avoids redundant calls.
 const linkedUsers = new Set<string>();
 
-function readSavedSpotIds(): number[] {
-  try {
-    const raw = localStorage.getItem("ptw-favorites");
-    const arr = raw ? (JSON.parse(raw) as unknown[]) : [];
-    return arr.filter((n): n is number => typeof n === "number");
-  } catch {
-    return [];
-  }
-}
-
-// Fire-and-forget: claim this device's anonymous data for the account.
+// Fire-and-forget: claim this device's still-anonymous SUBSCRIPTIONS for the
+// account.
+//
+// Item 76: this no longer uploads saved spots. It ran on every page load, so
+// re-sending localStorage each time would resurrect a spot the user had deleted
+// on another device. Saved-spot reconciliation now happens exactly once per
+// account per device, owned by the sync in `lib/account/savedSync.ts`, after
+// which the server is the source of truth.
 async function linkDeviceToAccount(userId: string) {
   if (linkedUsers.has(userId)) return;
   linkedUsers.add(userId);
@@ -34,7 +31,7 @@ async function linkDeviceToAccount(userId: string) {
     await fetch("/api/account/link", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ anonId: getAnonId(), savedSpotIds: readSavedSpotIds() }),
+      body: JSON.stringify({ anonId: getAnonId(), savedSpotIds: [] }),
     });
   } catch {
     // Best-effort; a failed link just means the next sign-in retries. Do not

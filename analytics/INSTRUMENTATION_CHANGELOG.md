@@ -14,6 +14,25 @@ without touching this file.
 
 ---
 
+## 2026-07-21 (item 76): `saved_spots_synced` (added)
+
+SYSTEM event, fired when a signed-in device finishes reconciling its saved spots
+with the account's (`lib/account/savedSync.ts`). Carries `count`, the reconciled
+set size.
+
+**Read it as availability, not engagement.** It fires when the app syncs, not
+when anyone acts, so it answers "does cross-device sync work, and how many spots
+do signed-in people actually keep". It must never be read as saving activity:
+`favorite_toggled` (INTENT) remains the only measure of someone choosing to save
+or unsave.
+
+**Comparability:** new event, no history, so no metric breaks. One caveat for
+later: it can fire more than once per user per day (once per page load with a
+session), so count distinct users rather than events. Volume is bounded by the
+signed-in population, which is 3 accounts as of today.
+
+---
+
 ## 2026-07-21 (item 43 follow-up): `review_form_opened` now fires from the action row (semantics-changed)
 
 The review trigger moved out of the reviews section (a lone "Write a review"
