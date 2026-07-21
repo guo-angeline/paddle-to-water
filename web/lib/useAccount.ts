@@ -47,6 +47,11 @@ export interface AccountState {
   enabled: boolean;
   user: User | null;
   loading: boolean;
+  /** Primary path: email a 6-digit code. Resolves to an error string, or null on success. */
+  sendEmailCode: (email: string) => Promise<string | null>;
+  /** Second step of the email path. Resolves to an error string, or null on success. */
+  verifyEmailCode: (email: string, code: string) => Promise<string | null>;
+  /** Secondary path, kept alongside email. */
   signInWithGoogle: () => void;
   signOut: () => void;
 }
@@ -93,10 +98,37 @@ export function useAccount(): AccountState {
     };
   }, []);
 
+  // PRIMARY path: email a 6-digit code. Chosen over a magic link deliberately.
+  // A link opens in whatever browser the mail app decides, which on mobile is
+  // usually an in-app webview, so the session lands somewhere the user is not.
+  // A typed code works in every context, including the installed PWA.
+  async function sendEmailCode(email: string): Promise<string | null> {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return "Sign-in is unavailable right now.";
+    trackIntent("account_sign_in_started", { method: "email" });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    return error ? error.message : null;
+  }
+
+  async function verifyEmailCode(email: string, code: string): Promise<string | null> {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return "Sign-in is unavailable right now.";
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+    if (error) return error.message;
+    // onAuthStateChange fires SIGNED_IN, which sets the persona and runs the
+    // migrate-on-sign-in link, so nothing else to do here.
+    trackIntent("account_sign_in_completed", { method: "email" });
+    return null;
+  }
+
+  // SECONDARY path, kept alongside email.
   function signInWithGoogle() {
     const supabase = getBrowserSupabase();
     if (!supabase) return;
-    trackIntent("account_sign_in_started", {});
+    trackIntent("account_sign_in_started", { method: "google" });
     const origin = window.location.href;
     void supabase.auth.signInWithOAuth({
       provider: "google",
@@ -111,5 +143,5 @@ export function useAccount(): AccountState {
     void supabase.auth.signOut();
   }
 
-  return { enabled, user, loading, signInWithGoogle, signOut };
+  return { enabled, user, loading, sendEmailCode, verifyEmailCode, signInWithGoogle, signOut };
 }

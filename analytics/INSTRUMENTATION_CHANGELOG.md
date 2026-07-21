@@ -14,6 +14,21 @@ without touching this file.
 
 ---
 
+## 2026-07-21 (item 44, email-first revision): account_sign_in_started / _completed gain a `method` prop (props-changed)
+
+Sign-in became email-first: a 6-digit emailed code is now the primary path and
+Google is secondary. Both INTENT events now carry `method: "email" | "google"`
+so the two paths can be compared (which one people pick, and where each drops
+off between started and completed). `account_sign_out` is unchanged.
+
+**Comparability:** `account_sign_in_started` / `_completed` existed before this
+date but had NO `method` prop and, in practice, zero real volume (Google
+sign-in only went live 2026-07-21 and only the owner used it). Treat any event
+without `method` as the Google-only pre-launch period and exclude it rather
+than bucketing it as Google. The email path additionally cannot produce events
+until Supabase SMTP + the `{{ .Token }}` email template are configured, so the
+first non-zero `method:"email"` day is the true email launch date.
+
 ## 2026-07-21 (item 44): optional Google accounts, three new INTENT events + a `signed_in` person property (added)
 
 Item 44 adds optional Google sign-in (Supabase Auth). New INTENT events:
