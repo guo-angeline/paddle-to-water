@@ -90,7 +90,12 @@ export type IntentEventName =
   | "email_capture_submitted"
   | "email_capture_confirmed"
   | "email_alert_opened"
-  | "email_confirm_resend_clicked";
+  | "email_confirm_resend_clicked"
+  // Item 44: optional Google accounts. INTENT (deliberate taps); _completed
+  // fires after the OAuth round-trip resolves to a signed-in session.
+  | "account_sign_in_started"
+  | "account_sign_in_completed"
+  | "account_sign_out";
 
 export type EventName = SystemEventName | IntentEventName;
 

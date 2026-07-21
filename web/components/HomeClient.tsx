@@ -10,6 +10,7 @@ import SpotList from "@/components/SpotList";
 import SpotDrawer from "@/components/SpotDrawer";
 import AlertInterstitial from "@/components/AlertInterstitial";
 import FeedbackModal from "@/components/FeedbackModal";
+import AccountButton from "@/components/AccountButton";
 import ViewportDiagnostic from "@/components/ViewportDiagnostic";
 import { distanceMiles } from "@/lib/distance";
 import { searchSpots } from "@/lib/search";
@@ -741,6 +742,10 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           >
             Feedback
           </button>
+
+          {/* Item 44: optional Google sign-in. Renders nothing unless the
+              `accounts` kill switch is on AND auth env is configured. */}
+          <AccountButton />
         </div>
       </header>
 

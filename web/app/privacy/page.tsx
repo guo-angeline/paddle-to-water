@@ -126,7 +126,7 @@ export default function PrivacyPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
           <Section title="What we collect">
-            <p style={{ marginBottom: "0.75rem" }}>Only these four things, and three of them are your choice:</p>
+            <p style={{ marginBottom: "0.75rem" }}>Only these five things, and four of them are your choice:</p>
 
             <div style={rowStyle}>
               <strong>Analytics, on every visit.</strong> We use PostHog to count page views, clicks, and which
@@ -138,7 +138,17 @@ export default function PrivacyPage() {
 
             <div style={rowStyle}>
               <strong>Your saved spots, if you save any.</strong> These live in your own browser&apos;s local
-              storage. They are not sent to us, and they do not follow you to another device or browser.
+              storage. Unless you sign in (below), they are not sent to us, and they do not follow you to
+              another device or browser.
+            </div>
+
+            <div style={rowStyle}>
+              <strong>Your Google account, only if you choose to sign in.</strong> Sign-in is optional; the whole
+              site works without it. If you sign in with Google, we receive your email address and basic profile
+              (your name and, if set, your avatar) from Google, and store it through our sign-in provider so your
+              saved spots and alerts can sync across your devices. On sign-in, the saved spots and any alert
+              subscription already on that device are attached to your account. You can sign out at any time, and
+              you can ask us to delete your account and its data (see below).
             </div>
 
             <div style={rowStyle}>

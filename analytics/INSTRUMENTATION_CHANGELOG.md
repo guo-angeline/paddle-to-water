@@ -14,6 +14,23 @@ without touching this file.
 
 ---
 
+## 2026-07-21 (item 44): optional Google accounts, three new INTENT events + a `signed_in` person property (added)
+
+Item 44 adds optional Google sign-in (Supabase Auth). New INTENT events:
+`account_sign_in_started` (tap), `account_sign_in_completed` (OAuth round-trip
+resolved to a session), `account_sign_out` (tap). A `signed_in` boolean person
+property is set via `setPersona` on sign-in/out. We do NOT call
+`posthog.identify()`/`reset()` (CLAUDE.md rule): `anon_id` stays the analytics
+primary key so experiment buckets and the owner-exclusion + retention queries
+are unaffected; the account is only a person-property overlay.
+
+**Comparability:** all three events are brand new, zero volume before this ships.
+They can produce NOTHING until the owner provisions the Google OAuth app + the
+`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` env and the escalated
+deploy lands; the whole feature is env-gated + behind the `accounts` kill switch,
+so treat the first non-zero day as the true launch, not this changelog date. No
+existing event changed.
+
 ## 2026-07-20 (item 71): spot_sheet_dismissed `method` gains `os_back` and `edge_swipe`, typed as a compile-enforced union (props-values-changed)
 
 Item 71 adds two new mobile in-app back paths for the spot sheet: a left-edge
