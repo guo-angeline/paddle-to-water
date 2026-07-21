@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "What Paddle to Water collects, why, who processes it, and how to get it deleted. Anonymous by default: no account is needed to use the map.",
 };
 
-const LAST_UPDATED = "July 16, 2026";
+const LAST_UPDATED = "July 21, 2026";
 
 // Every claim on this page must be verified against the code, not asserted.
 // The lawyer gate caught TWO false claims in the first draft of this page,
@@ -189,8 +189,8 @@ export default function PrivacyPage() {
                 <strong>Vercel</strong> hosts the site and sees the requests your browser makes to it.
               </li>
               <li>
-                <strong>Supabase</strong> is the database that stores email subscriptions and push
-                subscriptions.
+                <strong>Supabase</strong> is the database that stores email subscriptions, push
+                subscriptions, and (if you sign in) your account identity and synced saved spots.
               </li>
               <li>
                 <strong>PostHog</strong> (United States) processes the analytics described above.

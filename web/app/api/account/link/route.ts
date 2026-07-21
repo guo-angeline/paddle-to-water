@@ -34,6 +34,13 @@ export async function POST(request: Request) {
   const admin = getSupabaseAdmin();
 
   // Claim this device's still-anonymous subscriptions.
+  // FOLLOW-UP (lawyer gate, low risk): anonId comes from the request body, so a
+  // caller who knew another device's anon_id could attach that person's still-
+  // anonymous subscription to their own account. anon_id is a v4 UUID
+  // (unguessable), so exploitability is near-zero; the robust fix is to bind the
+  // claim to a server-readable anon_id cookie instead of trusting the body,
+  // which is a broader change to the localStorage-based anon model. Tracked as a
+  // hardening follow-up, not a launch blocker.
   if (anonId) {
     for (const table of ["push_subscriptions", "email_subscriptions"] as const) {
       await admin.from(table).update({ user_id: userId }).eq("anon_id", anonId).is("user_id", null);
