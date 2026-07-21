@@ -9,7 +9,12 @@ import { ALL_SPOTS } from "@/lib/spots";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODERATOR_EMAIL = "hello@paddletowater.com";
+// Operator mail must NOT depend on a forwarding hop. `hello@paddletowater.com`
+// is a Cloudflare Email Routing alias that forwards onward, and on 2026-07-21 a
+// moderation notice bounced there ("Generic Temporary Delivery Failure"), so a
+// real review sat pending with nobody told. Point this at a mailbox that
+// receives directly; it falls back to the alias only if the env var is unset.
+const MODERATOR_EMAIL = process.env.MODERATOR_EMAIL || "hello@paddletowater.com";
 
 /**
  * GET /api/reviews?spot_id=N
