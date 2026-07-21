@@ -88,6 +88,45 @@ describe("signed-out users get a way in, not a wall (item 43)", () => {
   });
 });
 
+describe("the section stays hidden until a spot earns one (item 43)", () => {
+  it("renders nothing when there are no published reviews", () => {
+    expect(section).toMatch(/if \(!hasReviews && !formOpen && !justSubmitted\) return null;/);
+  });
+
+  it("has no empty state left to show", () => {
+    expect(section).not.toContain("No reviews yet");
+  });
+
+  it("still renders when the form is open, so the trigger is not a dead tap", () => {
+    // The trigger lives in SpotDrawer's action row; the form renders in here.
+    // If the null-return ever stops excepting formOpen, tapping Review does
+    // nothing at all on the 140 spots that have no reviews yet.
+    expect(section).toContain("formOpen");
+    expect(section).toMatch(/\{formOpen && \(\s*<ReviewForm/);
+  });
+});
+
+describe("the form carries no copy the owner cut (item 43)", () => {
+  const form2 = read("./ReviewForm.tsx");
+
+  it("drops the pre-submit guidance and moderation notice", () => {
+    expect(form2).not.toContain("Write what you saw");
+    expect(form2).not.toContain("Nothing publishes automatically");
+  });
+
+  it("keeps the moderation promise where it is still made", () => {
+    // Cutting the notice from the form is a copy decision, not a policy one:
+    // /privacy still states it, and the post-submit confirmation still tells
+    // the submitter. If both of those ever go, the promise is unstated.
+    expect(section).toContain("goes to a person for review before it appears");
+    expect(read("../app/privacy/page.tsx")).toContain("read by a person before they appear");
+  });
+
+  it("submits with the short label", () => {
+    expect(form2).toMatch(/busy \? "Sending…" : "Review"/);
+  });
+});
+
 describe("Review is a peer of Share, not a stray control (item 43)", () => {
   const drawer = read("./SpotDrawer.tsx");
 

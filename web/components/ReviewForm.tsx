@@ -103,10 +103,6 @@ export default function ReviewForm({
         placeholder="What was the put-in like? Parking, access, what you saw."
         className="mt-1 w-full rounded-lg border border-(--border) px-3 py-2 text-sm text-(--dark) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
       />
-      <p className="mt-1 text-xs text-(--muted)">
-        Write what you saw, not what you concluded. Keep factual claims about a business to what you
-        witnessed yourself.
-      </p>
 
       {/* Assent: unchecked by default, directly above submit, link inside the label. */}
       <label className="mt-3 flex items-start gap-2 text-sm text-(--dark)">
@@ -135,7 +131,7 @@ export default function ReviewForm({
           disabled={busy || rating < 1 || !agreed}
           className="flex-1 rounded-lg bg-(--accent) px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
         >
-          {busy ? "Sending…" : "Submit review"}
+          {busy ? "Sending…" : "Review"}
         </button>
         <button
           type="button"
@@ -145,10 +141,6 @@ export default function ReviewForm({
           Cancel
         </button>
       </div>
-
-      <p className="mt-2 text-xs text-(--muted)">
-        Reviews are read by a person before they appear. Nothing publishes automatically.
-      </p>
 
       {error && (
         <p role="alert" className="mt-2 text-sm text-(--river)">

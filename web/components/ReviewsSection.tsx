@@ -70,6 +70,13 @@ export default function ReviewsSection({ spot, formOpen, onCloseForm, ref }: Pro
 
   if (!authEnabled || !reviewsOn) return null;
 
+  // Nothing to show until a spot actually has one. An empty review block on
+  // all 140 spots advertises a feature the site cannot deliver yet. The
+  // section appears the moment the first one publishes, and while the form is
+  // open (the form renders in here; the trigger sits in the action row below).
+  const hasReviews = reviews !== null && reviews.length > 0;
+  if (!hasReviews && !formOpen && !justSubmitted) return null;
+
   return (
     <div
       // Two refs on one node: the dwell observer (a callback ref) and the
@@ -81,14 +88,14 @@ export default function ReviewsSection({ spot, formOpen, onCloseForm, ref }: Pro
       }}
       className="mt-5 mb-5 border-t border-(--border) pt-4"
     >
-      <h3 className="font-['Newsreader'] text-base font-bold text-(--dark)">
-        Paddler reviews
-        {reviews && reviews.length > 0 && (
+      {hasReviews && (
+        <h3 className="font-['Newsreader'] text-base font-bold text-(--dark)">
+          Paddler reviews
           <span className="ml-1.5 font-sans text-sm font-normal text-(--muted)">
-            {reviews.length}
+            {reviews!.length}
           </span>
-        )}
-      </h3>
+        </h3>
+      )}
 
       {justSubmitted && (
         <p className="mt-2 rounded-lg bg-(--fill) px-3 py-2 text-sm text-(--dark)">
@@ -96,13 +103,9 @@ export default function ReviewsSection({ spot, formOpen, onCloseForm, ref }: Pro
         </p>
       )}
 
-      {reviews === null ? (
-        <p className="mt-2 text-sm text-(--muted)">Loading…</p>
-      ) : reviews.length === 0 ? (
-        <p className="mt-2 text-sm text-(--muted)">No reviews yet.</p>
-      ) : (
+      {hasReviews && (
         <ul className="mt-2 flex flex-col gap-3">
-          {reviews.map((r) => (
+          {reviews!.map((r) => (
             <li key={r.id} className="text-sm">
               <div className="flex items-center gap-2">
                 <span aria-hidden className="text-(--accent)">
