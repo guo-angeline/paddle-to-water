@@ -382,9 +382,6 @@ const styles = StyleSheet.create({
   },
   notesBlock: {
     marginBottom: 12,
-    paddingLeft: 12,
-    borderLeftWidth: 2,
-    borderLeftColor: "#E5E7EB",
   },
   notesText: {
     fontFamily: fonts.body,

@@ -549,7 +549,7 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
 
           {/* Notes — truncated on mobile, full on desktop */}
           {spot.notes && (
-            <div className="mb-3 pl-3 border-l-2 border-gray-200">
+            <div className="mb-3">
               <p className="text-sm text-gray-600 leading-relaxed">
                 {/* Mobile: truncate unless expanded */}
                 <span className="md:hidden">
