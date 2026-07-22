@@ -437,7 +437,7 @@ Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
-## 86. [ready] The `reviews` kill switch only half-works: the spot LIST keeps blending contributor ratings when it is off
+## 86. [in-progress] 2026-07-22T08:38:13-07:00 The `reviews` kill switch only half-works: the spot LIST keeps blending contributor ratings when it is off
 
 **Found by the lawyer re-gate on item 85 (2026-07-22), independently verified in code.** The `reviews` kill switch exists to pull user-generated content in a hurry, `ReviewsSection.tsx:47-50` says so directly ("this is the surface most likely to need pulling in a hurry (UGC)"). It does not cover the list.
 

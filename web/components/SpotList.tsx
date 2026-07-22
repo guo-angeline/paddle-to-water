@@ -8,6 +8,7 @@ import { isEmailConfirmed } from "@/lib/email/subscriptionState";
 import { useGenuineView } from "@/lib/useGenuineView";
 import SpotCard from "./SpotCard";
 import { useReviewAggregates } from "@/lib/useReviewAggregates";
+import { useKillSwitch } from "@/lib/experiments";
 import { rankSavedSpotsByConditions, type SavedConditionState } from "@/lib/savedConditions";
 import ConditionsBadge from "./ConditionsBadge";
 
@@ -34,6 +35,14 @@ export default function SpotList({
 }: Props) {
   // Item 43: one aggregate fetch for the whole list, passed down per card.
   const aggregates = useReviewAggregates();
+  // Item 86: the `reviews` kill switch has to reach the LIST too, not just the
+  // sheet. It exists to pull contributor content in a hurry, and until now
+  // flipping it off left every card still showing a number blended from
+  // published contributor ratings, labelled as our take, with the reviews
+  // themselves hidden and no route to the terms explaining the blend. In the
+  // incident the switch is for, the owner would have believed contributor
+  // input was pulled and been wrong. Must stay identical to SpotDrawer's gate.
+  const reviewsOn = useKillSwitch("reviews");
   const selectedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -144,7 +153,7 @@ export default function SpotList({
             <div key={spot.id} ref={selected?.id === spot.id ? selectedRef : null}>
               <SpotCard
                 spot={spot}
-                crowd={aggregates[spot.id]}
+                crowd={reviewsOn ? aggregates[spot.id] : undefined}
                 selected={selected?.id === spot.id}
                 onClick={() => onSelect(spot, "list")}
                 distance={distanceMap?.[spot.id]}
@@ -170,7 +179,7 @@ export default function SpotList({
             <div key={spot.id} ref={selected?.id === spot.id ? selectedRef : null}>
               <SpotCard
                 spot={spot}
-                crowd={aggregates[spot.id]}
+                crowd={reviewsOn ? aggregates[spot.id] : undefined}
                 selected={selected?.id === spot.id}
                 onClick={() => {
                   trackIntent("recent_spot_clicked", { spot_id: spot.id, region: spot.region });
@@ -192,7 +201,7 @@ export default function SpotList({
         <div key={spot.id} ref={selected?.id === spot.id ? selectedRef : null}>
           <SpotCard
             spot={spot}
-            crowd={aggregates[spot.id]}
+            crowd={reviewsOn ? aggregates[spot.id] : undefined}
             selected={selected?.id === spot.id}
             onClick={() => onSelect(spot, "list")}
             distance={distanceMap?.[spot.id]}

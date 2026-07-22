@@ -231,7 +231,10 @@ describe("the displayed rating only says what it can back up (item 43, D24 amend
     const list = read("./SpotList.tsx");
     const usages = list.split("<SpotCard").length - 1;
     expect(usages).toBeGreaterThan(0);
-    expect(list.split("crowd={aggregates[spot.id]}").length - 1).toBe(usages);
+    // Item 86 wrapped the prop in the `reviews` kill switch, so the literal
+    // changed. The rule this guard exists for did not: every card must be
+    // passed the totals, not just the pinned strips.
+    expect(list.split("crowd={reviewsOn ? aggregates[spot.id] : undefined}").length - 1).toBe(usages);
   });
 
   it("keeps the blended score out of structured data", () => {
