@@ -70,7 +70,7 @@ export default function TermsPage() {
             <p style={pStyle}>
               Paddle to Water (&ldquo;the Site,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) is a free
               informational website operated by an individual in California. It lists
-              paddleboard and kayak launch spots in the San Francisco Bay Area and shows
+              paddleboard and kayak launch spots in California and shows
               weather and conditions data compiled from public sources. It is a planning
               tool and nothing more. We are not a guide service, an outfitter, an
               instructor, or a safety authority, and we do not inspect, control, or manage

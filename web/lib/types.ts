@@ -69,6 +69,12 @@ export const REGIONS = [
   "Sierra Nevada",
   "Central Valley",
   "Central Coast",
+  // Item 92: the brand is California (owner, 2026-07-22). Regions are ADDED,
+  // never renamed: the existing nine feed 139 records, the map filter, and the
+  // `region` analytics prop, so renaming one would break historical
+  // comparability for no user-visible gain. Add SoCal regions as their spots
+  // land, not speculatively.
+  "Los Angeles",
 ] as const;
 
 export const DIFFICULTIES: Difficulty[] = ["flatwater", "bay", "river"];

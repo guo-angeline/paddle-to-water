@@ -736,7 +736,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           users. sr-only is real text in the DOM for crawlers and screen
           readers at every viewport, and leaves the visual design untouched. */}
       {initialSpotId === undefined && (
-        <h1 className="sr-only">Paddleboard and kayak launch spots across the Bay Area</h1>
+        <h1 className="sr-only">Paddleboard and kayak launch spots across California</h1>
       )}
 
       {/* Header */}
@@ -752,7 +752,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
           Paddle to Water
         </button>
         <div className="flex items-center gap-2 md:gap-3">
-          <span className="hidden lg:inline text-xs text-(--muted)">Paddleboard &amp; kayak spots across the Bay Area</span>
+          <span className="hidden lg:inline text-xs text-(--muted)">Paddleboard &amp; kayak spots across California</span>
 
           {/* Desktop inline search */}
           <div className="relative hidden md:block">

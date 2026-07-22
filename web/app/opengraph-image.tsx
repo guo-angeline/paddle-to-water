@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { ALL_SPOTS } from "@/lib/spots";
 
-export const alt = "Paddle to Water: paddleboard and kayak launch spots across the Bay Area";
+export const alt = "Paddle to Water: paddleboard and kayak launch spots across California";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -48,7 +48,7 @@ export default function OGImage() {
             fontFamily: "sans-serif",
           }}
         >
-          {`${ALL_SPOTS.length} paddleboard & kayak spots across the Bay Area`}
+          {`${ALL_SPOTS.length} paddleboard & kayak spots across California`}
         </div>
       </div>
     ),

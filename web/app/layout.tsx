@@ -16,26 +16,31 @@ export const viewport: Viewport = {
   themeColor: "#0E6FD1",
 };
 
-const TITLE = "Paddle to Water: Paddleboard & Kayak Spots in the Bay Area";
+const TITLE = "Paddle to Water: Paddleboard & Kayak Spots in California";
 const DESCRIPTION =
-  `Find stand-up paddleboard and kayak launch spots across the SF Bay Area and Northern California. ${SPOT_COUNT} spots with maps, launch fees, and live conditions.`;
+  `Find stand-up paddleboard and kayak launch spots across California, from the SF Bay Area to Los Angeles. ${SPOT_COUNT} spots with maps, launch fees, and live conditions.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
   keywords: [
+    // Item 92: the brand is California, but 139 of the spots are still Bay
+    // Area, so the Bay terms stay. Broadening the SITE title is the change;
+    // throwing away keyword equity that matches most of the data is not.
+    "paddleboard spots California",
+    "SUP launch California",
+    "kayak launch spots California",
     "paddleboard spots SF Bay Area",
     "SUP launch Bay Area",
     "stand up paddleboard San Francisco",
     "kayak launch spots Bay Area",
     "paddleboarding near me SF",
     "SUP spots Northern California",
-    "Bay Area water sports",
+    "paddleboard Los Angeles",
     "paddleboard East Bay",
     "paddleboard North Bay",
     "paddleboard South Bay",
-    "flatwater paddleboard California",
   ],
   alternates: {
     canonical: SITE_URL,

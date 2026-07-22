@@ -70,7 +70,7 @@ export default async function SpotPage(
         {spot.city ? `, ${spot.city}` : ""}: paddleboard and kayak launch
       </h1>
       <nav aria-label="More paddleboard spots" className="sr-only">
-        <Link href="/">All Bay Area paddleboard and kayak spots</Link>
+        <Link href="/">All California paddleboard and kayak spots</Link>
         <h2>More paddleboard spots in {spot.region}</h2>
         <ul>
           {related.map((s) => (

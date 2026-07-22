@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Paddle to Water",
     short_name: "Paddle to Water",
-    description: "Find paddleboard & kayak launch spots across the SF Bay Area.",
+    description: "Find paddleboard & kayak launch spots across California.",
     start_url: "/",
     display: "standalone",
     background_color: "#0B2A47",
