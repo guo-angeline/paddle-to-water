@@ -158,6 +158,12 @@ export const TIDE_STATIONS: TideStation[] = [
   { id: "TWC0413", name: "Quivira Basin, Mission Bay", lat: 32.7667, lng: -117.2333 },
   { id: "TWC0427", name: "Los Patos", lat: 33.7167, lng: -118.05 },
   { id: "TWC0419", name: "San Clemente", lat: 33.4167, lng: -117.6167 },
+  // Orange County, added with the Newport Harbor spots. Without these the whole
+  // county fell back to Los Patos, 9 to 12 miles away, which is inside
+  // MAX_STATION_MI and so would have looked fine while reporting another
+  // harbour's tide. Range is not the same thing as relevance.
+  { id: "9410580", name: "Newport Bay Entrance, Corona del Mar", lat: 33.6033, lng: -117.883 },
+  { id: "9410583", name: "Balboa Pier, Newport Beach", lat: 33.6, lng: -117.9 },
 ];
 
 /** Ids the tides proxy will forward upstream. */

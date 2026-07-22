@@ -76,6 +76,7 @@ export const REGIONS = [
   // land, not speculatively.
   "Los Angeles",
   "San Diego",
+  "Orange County",
 ] as const;
 
 export const DIFFICULTIES: Difficulty[] = ["flatwater", "bay", "river"];
