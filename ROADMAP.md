@@ -198,7 +198,7 @@ Not user-visible today (native is gated on Apple Developer Program enrollment, i
 
 ## Owner items, added 2026-07-21 (rating + reviews copy removal; both [ready], queued top-most on purpose)
 
-## 84. [ready] Drop the "Paddle score" label next to the rating number
+## 84. [in-progress] 2026-07-21T21:55:45-07:00 Drop the "Paddle score" label next to the rating number
 
 **Owner-directed 2026-07-21.** Remove the "Paddle score" wording that sits beside the rating numbers.
 

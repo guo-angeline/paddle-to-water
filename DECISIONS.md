@@ -625,7 +625,7 @@ Answer: (owner, 2026-07-20, in chat).
 
 Build prerequisites before item 44 can DEPLOY a working sign-in: (1) Google OAuth client id + secret in env (owner, Q1); (2) auth lawyer-gate `clear` (privacy-policy update for the new PII, run in the ship pipeline); (3) for the Apple half only, Apple Developer Program enrollment complete. The loop may start building the Google/web + Supabase-Auth + migration code now (tests with mocked auth) and escalate the deploy for the real credentials + lawyer gate.
 
-## D30 [OPEN] 2026-07-21 · D24 amended: the displayed score now blends your rating with paddler reviews, and the legal gate wants two answers
+## D30 [RESOLVED] 2026-07-21 · D24 amended: the displayed score now blends your rating with paddler reviews, and the legal gate wants two answers
 
 **Shipped in the same change (owner-directed, in chat 2026-07-21).** The number shown for a spot is now `(5 x your rating + sum of paddler ratings) / (5 + review count)`. Your pre-generated rating carries the weight of five reviews; each published review carries one. You chose per-review weighting (so the crowd overtakes you as reviews accumulate) and display from the first review, over the alternatives.
 
@@ -652,6 +652,8 @@ Consequence to keep in view, recorded so it is not rediscovered as a surprise: w
 
 ### Appended 2026-07-21 (item 83 legal gate): the same question, with more volume behind it
 
+**MOVED to D31 on 2026-07-22.** Q1 and Q2 above are answered, so this entry now reads as resolved; leaving the unanswered LLC question inside it would have hidden it. The text is kept here for continuity and the live version is D31.
+
 The collectables gate returned `needs-changes` (all findings fixed before deploy) but escalated one thing, and asked for it to land here rather than as a new decision, because it is D30 Q1 with a second input.
 
 You are now deliberately increasing the volume of contributor prose about named private businesses (marinas, private launches, paddle shops), via a mark called "In your own words" that exists specifically to reward writing sentences. At the same time you publish a score you author part of (D30 itself). Neither change alone moves the legal posture. Together they raise the frequency of the risk the Contributor Terms already name as the largest un-researched item in the document: defamation and anti-SLAPP exposure from hosting reviews of named businesses. D25 Q2 (LLC) and Q3 (insurance) are both still deferred, so it lands on you personally.
@@ -663,5 +665,19 @@ Why this is a counsel question and not one I should answer: anti-SLAPP coverage 
 - **(c)** Engage a licensed attorney on the combined host-versus-co-author and anti-SLAPP question, answering D30 Q1 and this at once.
 
 Also recorded, so it is not re-litigated later: **marks staying private is a legal constraint, not a v1 scoping choice.** The day a mark is visible to a reader it becomes site-conferred credibility attached to third-party speech, which re-opens Q1 directly and adds FTC exposure. Any future public display needs its own gate.
+
+Answer:
+
+## D31 [OPEN] 2026-07-22 · Form the LLC before contributor prose volume grows (moved out of D30)
+
+Split from D30 by the studio loop: D30's own Q1/Q2 were answered on 2026-07-21, so that entry is now `[RESOLVED]`, and this question would have been invisible inside it. Nothing has changed about the question itself.
+
+The item-83 legal gate escalated it. You are deliberately increasing the volume of contributor prose about named private businesses (marinas, private launches, paddle shops), via a mark called "In your own words" that exists to reward writing sentences. At the same time you publish a score you author part of. Neither alone moves the legal posture; together they raise the frequency of the risk your own Contributor Terms name as the largest un-researched item in the document: defamation and anti-SLAPP exposure from hosting reviews of named businesses. D25 Q2 (LLC) and Q3 (insurance) are both still deferred, so it lands on you personally.
+
+Why it is a counsel question: anti-SLAPP coverage is state by state, there is a federal-circuit split on whether a state anti-SLAPP motion is available in federal court, and none of that was verified. The realistic downside stays a demand letter rather than a judgment, but the cost of winning a meritless speech suit in a weak anti-SLAPP state does not scale down with your traffic.
+
+- **(a)** Proceed as planned, revisit when D25 Q2/Q3 are answered.
+- **(b) [recommended]** Proceed, and bound the exposure now by forming the LLC before contributor prose volume grows. The only step that is cheap, helps against every version of this risk, and costs nothing to reverse.
+- **(c)** Engage a licensed attorney on the combined host-versus-co-author and anti-SLAPP question, answering D30 Q1 and this at once.
 
 Answer:

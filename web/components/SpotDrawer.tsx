@@ -462,13 +462,17 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
                 ) : null}
                 {spot.city} &middot; {spot.region}
               </p>
-              {/* Owner direction 2026-07-21: the breakdown line under the score
-                  (owner rating vs raw paddler average, plus the sentence about
-                  the 5-review weighting) is gone from the sheet. The blend is
-                  still labelled as ours by the "Paddle score" text in
-                  SpotRating, and every individual review is still listed below,
-                  so the inputs stay visible. reviews-guards.test.ts asserts the
-                  removed strings do not come back by accident. */}
+              {/* Owner direction 2026-07-21, in two steps: the breakdown line
+                  under the score (owner rating vs raw paddler average, plus the
+                  5-review weighting sentence) went first, then item 84 removed
+                  the "Paddle score" label from SpotRating. So a blended number
+                  now has NO visible provenance on this surface. What remains is
+                  the screen-reader description in SpotRating and the individual
+                  reviews listed below, from which a reader can work out the
+                  paddler average themselves. Both removals reversed required
+                  actions from the 2026-07-21 legal gate (D30 actions 2 and 3);
+                  item 84 re-gated the resulting state before shipping.
+                  reviews-guards.test.ts asserts the removed strings stay gone. */}
             </div>
             <button
               onClick={() => dismiss("close")}

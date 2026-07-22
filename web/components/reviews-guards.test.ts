@@ -176,17 +176,20 @@ describe("the displayed rating only says what it can back up (item 43, D24 amend
   // form. They are not style rules.
   it("never credits a blended number to the contributors who did not produce it", () => {
     const blended = ratingUI.slice(ratingUI.indexOf("rating.blended ? ("), ratingUI.indexOf(") : rating.count > 0"));
-    expect(blended).toContain("Paddle score");
     expect(blended).toContain("combining our own rating with");
     // The bare parenthesized count is the crowd-average idiom. Not on a blend.
     expect(blended).not.toMatch(/\(\{rating\.count\}\)/);
     expect(blended).not.toMatch(/from \$\{rating\.count\}/);
   });
 
-  it("names the blended number as ours, visibly and not only to a screen reader", () => {
-    // A star + number with no label reads as a consumer aggregate. The label
-    // has to be in the visible tree, so `aria-hidden` (sighted) text carries it.
-    expect(ratingUI).toMatch(/aria-hidden[\s\S]{0,80}Paddle score/);
+  it("keeps the accessible description explaining what the number blends", () => {
+    // Item 84 (owner-directed) removed the visible "Paddle score" label, so a
+    // sighted reader now gets a bare star and number. The screen-reader
+    // description is the ONLY provenance left in this component: it must never
+    // shrink to a bare "out of 5", which would leave the number claiming
+    // nothing about where it came from on every surface at once.
+    expect(ratingUI).not.toMatch(/aria-hidden[\s\S]{0,80}Paddle score/);
+    expect(ratingUI).toMatch(/sr-only[\s\S]{0,160}combining our own rating with/);
   });
 
   it("keeps the plain-average display for spots the owner never rated", () => {
@@ -196,16 +199,20 @@ describe("the displayed rating only says what it can back up (item 43, D24 amend
     expect(crowdOnly).toMatch(/\(\{rating\.count\}\)/);
   });
 
-  it("keeps the blend labelled as ours after the breakdown line was removed", () => {
-    // The owner removed the "Our take X · paddlers Y" breakdown and the
-    // weighting sentence from the sheet on 2026-07-21, after the legal gate
-    // had asked for them. What remains carrying that job: the visible
-    // "Paddle score" label on the number, and the individual reviews listed
-    // in the sheet. If either of those goes too, a blended number would be
-    // presented with nothing marking it as ours.
+  it("tracks what is left carrying provenance after two owner removals", () => {
+    // Owner direction removed BOTH disclosures the legal gate asked for: the
+    // "Our take X · paddlers Y" breakdown plus the weighting sentence
+    // (2026-07-21), then the visible "Paddle score" label (item 84). This
+    // guard is deliberately a ledger of what remains, so the next removal
+    // cannot happen without someone reading this list:
+    //   1. the screen-reader description in SpotRating, and
+    //   2. the individual reviews listed in the sheet, from which a reader can
+    //      work out the paddler average themselves.
+    // If either goes, a blended number is presented with NOTHING marking it as
+    // ours anywhere. Re-gate with the lawyer before that ships.
     expect(drawer).not.toContain("Our take");
     expect(drawer).not.toContain("counts as five reviews");
-    expect(ratingUI).toMatch(/aria-hidden[\s\S]{0,80}Paddle score/);
+    expect(ratingUI).toMatch(/combining our own rating with/);
     expect(drawer).toContain("<ReviewsSection");
   });
 
