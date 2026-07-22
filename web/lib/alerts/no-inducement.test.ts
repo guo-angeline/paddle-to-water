@@ -47,6 +47,15 @@ const DIRECTIVES = [
   /\bgo now\b/i,
   /\bdon'?t miss\b/i,
   /\bmake sure you\b/i,
+  // Item 102 (2026-07-22). Timing imperatives, added when data/spots.json came
+  // into this sweep. These are the shapes that were actually live in the spot
+  // notes, found by grepping the corpus rather than by recalling what we wrote:
+  // "push off about an hour before low" (1), "Time the flood tide" (77),
+  // "Start on a flood tide" (72). Each matches exactly its target across all
+  // 177 records and nothing else, measured before they were added.
+  /\bpush off\b/i,
+  /\btime the\b/i,
+  /\bstart on a\b/i,
 ];
 
 /**
@@ -61,6 +70,14 @@ const OUTCOME_PROMISES = [
   /\byou'?ll be fine\b/i,
   /\beasy (paddle|return|trip)\b/i,
   /\bsafe to\b/i,
+  // Item 102. THE EXISTING FOUR PATTERNS DID NOT CATCH THE LIVE DEFECT. Spot 72
+  // shipped "Start on a flood tide so you're not fighting the current under the
+  // Highway 1 bridge ON THE WAY BACK", which is the same return-leg
+  // representation item 34 stripped out of launchDirectionTip, and not one of
+  // the patterns above matched it. Adding spots.json to the sweep without these
+  // would have gone green over the exact copy the sweep exists to stop.
+  /\bon the way back\b/i,
+  /\bso you'?re not\b/i,
 ];
 
 /** Manufactured scarcity: pressure on a decision that should be unhurried. */
@@ -194,6 +211,30 @@ describe("item 34: alert copy cannot read as an instruction to launch", () => {
       const literals = asProse(read(f)).match(/"[^"]{12,}"|`[^`]{12,}`/g)?.join(" ") ?? "";
       for (const re of [...DIRECTIVES, ...URGENCY, ...OUTCOME_PROMISES]) {
         expect(literals, `${f} contains copy matching ${re}`).not.toMatch(re);
+      }
+    }
+  });
+
+  it("SPOT NOTES carry no directive or outcome promise either (item 102)", () => {
+    // data/spots.json was outside every sweep until 2026-07-22, and it is not a
+    // minor surface: SpotDrawer renders `notes` DIRECTLY ABOVE the conditions
+    // panel with no separator, on a public page, for every spot.
+    //
+    // What was live there: spot 72, "Start on a flood tide so you're not
+    // fighting the current under the Highway 1 bridge on the way back." That is
+    // an imperative plus a return-leg representation, the same pair item 34
+    // removed from launchDirectionTip, and it survived because no guard had
+    // ever read this file.
+    //
+    // HIDDEN RECORDS ARE CHECKED TOO. `hidden` is reversible, and un-hiding is
+    // an owner decision that will not re-run a copy review. Spot 79 was hidden
+    // and carried one of these.
+    const spots = JSON.parse(read("data/spots.json")) as { id: number; notes?: string | null }[];
+    for (const spot of spots) {
+      const notes = spot.notes ?? "";
+      if (!notes) continue;
+      for (const re of [...DIRECTIVES, ...URGENCY, ...OUTCOME_PROMISES]) {
+        expect(notes, `spot ${spot.id} notes match ${re}`).not.toMatch(re);
       }
     }
   });
