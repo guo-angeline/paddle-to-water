@@ -77,7 +77,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
-## Owner item, added 2026-07-22 (first-review prompt; [ready], queued top-most on purpose)
+## Owner items, added 2026-07-22 (first-review prompt + conditions rethink; both [ready], queued top-most on purpose)
 
 ## 89. [ready] Prompt the first review on a spot that has none, with a mark for writing it
 
@@ -793,6 +793,26 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Add `app/terms/page.tsx`: express assumption-of-risk (user accepts inherent risks of paddling including drowning/death), release/waiver of liability for ordinary negligence, AS-IS / no warranties, limitation-of-liability cap, indemnification.
 - Conspicuous assent: persistent footer link plus a one-time "By using this site you agree to the Terms and Disclaimer" acceptance at alert enrollment (`InstallPrompt.tsx`); link beside the existing Disclaimer link in `HomeClient.tsx` / `SpotList.tsx`.
 - **Escalate before shipping:** waiver enforceability for a paddling death and the LLC/insurance decision are California-specific and warrant ~1 hr of licensed-attorney review (CA LLC carries ~$800/yr franchise tax). Draft the ToS/waiver text for the attorney to bless rather than originate; open a DECISIONS.md memo for the owner on entity + insurance.
+
+## 89. [blocked(owner-lookup)] LA County ingest from CCC YourCoast: 11 real candidates, blocked on a put-in coordinate and access rules
+
+**Owner-directed 2026-07-22: start statewide expansion with LA.** Full analysis and the lookup list: `reports/la-ingest-candidates-2026-07-22.md`.
+
+**What the source actually yields for LA.** 230 CCC records, 37 flagged `BOATING=Yes`, **51 paddle-plausible after filtering, of which only 11 carry an explicit launch type**. None is within 500 m of an existing spot, so all 11 are genuine coverage. Field completeness is the reason to use this source at all: **FEE 50/51, PARKING 51/51, RESTROOMS 50/51, ADA 51/51**.
+
+**Ingest from the 11, NOT the 51, and this is a safety call rather than a data-quality one.** The other 40 are overwhelmingly **Malibu open-ocean surf beaches and cliff-stairway accesses**: El Matador, El Pescador, La Piedra, Leo Carrillo, Point Dume, Broad Beach, Carbon Beach, Lechuza, and five separate Puerco Beach stairways. Exposed Pacific with shore break, several reachable only by bluff stairs. CCC catalogues coastal ACCESS; it never claimed these were launches. Listing them as put-ins on a site carrying drowning-risk exposure is the "ingested a good source and lost what it meant" failure in its purest form.
+
+**A useful refinement to the statewide coordinate warning.** The inventory's "20 of 20 CCC coordinates are not put-ins" test was run on hand/kayak/**beach**-launch types. Checked against OSM slipways here, two boat-ramp-typed records (**Cabrillo Beach Boat Ramp**, **South Shore Launch Ramp**) sit **4 m** from a mapped slipway, i.e. their coordinates are good. **The coordinate risk is concentrated in the hand and beach launches, which is exactly where this app's best spots are.**
+
+**The 11:** Mother's Beach (MdR), Fiji Way ramp (MdR), King Harbor (Redondo), Cabrillo Beach + Cabrillo Beach Boat Ramp (San Pedro), South Shore Launch Ramp, Long Beach City Beach, Belmont Shore, Alamitos Bay, Marine Park, Marine Stadium (all Long Beach).
+
+**BLOCKED ON THE OWNER**, per `reports/la-ingest-candidates-2026-07-22.md`, section A and B:
+- A put-in coordinate for 7 of the 11 (3 unknown because the Marina del Rey Overpass box timed out twice; 4 have no slipway within 400 m).
+- **Cabrillo Beach is ambiguous by name**: the inner harbour beach is protected and the outer is open ocean. That distinction decides whether it is safe to list at all.
+- Access rules **no dataset carries**: permits, launch fees beyond parking, event closures at Marine Stadium, whether the Fiji Way ramp is trailer-only, and Cabrillo's water-quality advisory history. CCC has **no ownership or access field**.
+- `tide_sensitive` is **published by no source**, and it gates the conditions engine.
+
+**Acceptance:** only the 11 (minus any the owner rejects) are ingested; every record carries per-field provenance; `BT_FACIL_TYPE` is used verbatim and never upgraded into "ramp"; each coordinate is a put-in verified against a second source; each is cross-checked against DBW's `Open To` for public/private; no existing `lat`/`lng` changes; data guards and `npm test` pass.
 
 ## 88. [ready] Lake Tahoe Water Trail: a proven-model registry for one region (one input to item 45's statewide scope)
 
