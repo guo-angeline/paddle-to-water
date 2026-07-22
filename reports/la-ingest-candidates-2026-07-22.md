@@ -84,3 +84,40 @@ CCC has **no ownership or access field at all**, which is its single biggest gap
 - Carry `FEE`, `PARKING`, `RESTROOMS`, `DSABLDACSS` straight from CCC with per-field provenance.
 - Use `BT_FACIL_TYPE` verbatim, never upgrading "Hand Launch" into "ramp".
 - Cross-check each against DBW for its `Open To` (public / private / club) value, which is the one ownership signal that exists anywhere.
+
+
+---
+
+# OWNER ANSWERS, 2026-07-22, and what they resolved
+
+| # | Site | Owner answer | Verification |
+|---|---|---|---|
+| 1 | Mother's Beach, MdR | `33.9816134,-118.4586594` | **54 m from CCC's pin.** Reverse-geocodes to adjacent parking, which is normal for a launch. **Accept.** |
+| 2 | Fiji Way ramp, MdR | **"exclude this spot"** | Dropped. |
+| 3 | King Harbor, Redondo | `33.843795,-118.3953065` | 401 m from CCC's pin, i.e. deliberately moved toward the hand launch. Lands in the King Harbor Marina polygon. **Accept.** |
+| 4 | Cabrillo | **inner**, `33.7128558,-118.2837329` (Cabrillo Launch Ramp) | **66 m from a mapped OSM slipway and 69 m from CCC's pin. Best-corroborated of the set. Accept.** Resolves the inner-vs-outer safety question: inner. |
+| 5 | Long Beach City Beach | "3 miles of frontage" | **Not a put-in. Exclude.** |
+| 6 | Belmont Shore | "same as above" | **Not a put-in. Exclude.** |
+| 7 | Alamitos Bay | fee=No, parking=Yes, restrooms=Yes; launch anywhere on Bayshore Beach or `33.7518661,-118.1309381` | **See open question 2.** The coordinate is **1,388 m** from CCC's "Alamitos Bay" record, which sits at the San Gabriel River mouth. These are two different places. Also corrects CCC's parking and restrooms values, which said No. |
+| 8 | Marine Park | `33.7576838,-118.1196352` | 106 m from CCC's pin; reverse-geocodes to a picnic site named "Mother's Beach", confirming Marine Park **is** Mother's Beach Long Beach. **Accept.** |
+| 9 | Marine Stadium | "Yes" (paddling allowed) | Access answered. **Coordinate still missing.** |
+
+**Ingest-ready: 4** (Mother's Beach MdR, King Harbor, Cabrillo Launch Ramp, Marine Park).
+**Excluded: 3** (Fiji Way, Long Beach City Beach, Belmont Shore).
+**Open: 2** (Alamitos Bay identity, Marine Stadium coordinate), plus `tide_sensitive`.
+
+## Owner's extra source: sites.google.com/site/dave2kayak
+
+An enthusiast index organised north-to-south, with per-location pages, maps and blog links. Covers Marina del Rey, Malibu, Point Dume, the Palos Verdes coves (Bluff Cove, Malaga Cove, Point Vicente, Royal Palms), Huntington Harbor, and Naples/Alamitos including Mother's Beach with a water-quality link.
+
+**Verdict: verification tier / local knowledge, NOT a data source.** No coordinates, no structured fields. Its real value is the judgment a dataset cannot give: whether a listed access is somewhere a person actually launches. **Its text is copyrighted** (personal site, no stated licence), so it may inform a verification decision but must never be copied into `notes`.
+
+## BLOCKER FOUND, and it is bigger than the records
+
+**The app is framed Bay Area end to end, so LA spots cannot ship until that changes.**
+
+- `REGIONS` in `lib/types.ts` is a closed enum: South Bay, Peninsula, East Bay, San Francisco, North Bay, Sacramento, Sierra Nevada, Central Valley, Central Coast. **There is no valid region value for an LA spot.** A record cannot be added without extending it.
+- `app/layout.tsx` title: "Paddleboard & Kayak Spots in the **Bay Area**"; description "across the SF Bay Area and Northern California"; keywords "paddleboard spots SF Bay Area", "SUP launch Bay Area", "kayak launch spots Bay Area", "Bay Area water sports".
+- The header tagline and the new `<h1>` both say "across the Bay Area".
+
+Shipping LA spots under a Bay Area banner would make the site's own copy false, and it would waste the SEO signal on the wrong region. **The framing change is a prerequisite item, not a follow-up.**

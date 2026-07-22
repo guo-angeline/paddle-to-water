@@ -838,7 +838,21 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Conspicuous assent: persistent footer link plus a one-time "By using this site you agree to the Terms and Disclaimer" acceptance at alert enrollment (`InstallPrompt.tsx`); link beside the existing Disclaimer link in `HomeClient.tsx` / `SpotList.tsx`.
 - **Escalate before shipping:** waiver enforceability for a paddling death and the LLC/insurance decision are California-specific and warrant ~1 hr of licensed-attorney review (CA LLC carries ~$800/yr franchise tax). Draft the ToS/waiver text for the attorney to bless rather than originate; open a DECISIONS.md memo for the owner on entity + insurance.
 
-## 90. [blocked(owner-lookup)] LA County ingest from CCC YourCoast: 11 real candidates, blocked on a put-in coordinate and access rules
+## 91. [ready] Statewide framing: the app says "Bay Area" everywhere, which blocks any spot outside it
+
+**Prerequisite for item 90 (LA) and for item 45 generally.** Found while verifying the first LA candidates: the records are ready and cannot be added, because the product is Bay Area by construction.
+
+- **`REGIONS` in `lib/types.ts` is a closed enum** (South Bay, Peninsula, East Bay, San Francisco, North Bay, Sacramento, Sierra Nevada, Central Valley, Central Coast). There is no value an LA spot could take. This is the hard blocker; the rest is copy.
+- **`app/layout.tsx`**: title "Paddleboard & Kayak Spots in the Bay Area", description "across the SF Bay Area and Northern California", and keywords including "paddleboard spots SF Bay Area", "SUP launch Bay Area", "kayak launch spots Bay Area", "Bay Area water sports".
+- **Header tagline** and the **`<h1>`** added in item 81 both say "across the Bay Area".
+
+**Decisions for the owner, this is a brand question not just a string change:** is the product now "California", or "Bay Area + LA", or does it stay Bay-first with a second region badge? The answer changes the title, the h1, the OG image copy, and the region filter's shape (9 regions is already a lot of pills at 390px; adding SoCal regions needs a design call, possibly grouping).
+
+**Watch the SEO trade.** The current title ranks, or is meant to rank, on Bay Area terms across 139 spot pages. Broadening the wording dilutes that signal for the 139 in exchange for a signal on 4 new LA spots. **Do not broaden the per-spot titles until the LA set is large enough to justify it**; the site-level title and the region enum are the parts that must change first.
+
+**Acceptance:** a spot outside the Bay Area can be added with a valid region; the site title, description, keywords, tagline and `<h1>` no longer claim a coverage area the data contradicts; the region filter still fits at 390px without wrapping; `npm test`, lint and build pass; no existing `lat`/`lng` changes.
+
+## 90. [blocked(item-91)] LA County ingest from CCC YourCoast: 4 verified and ready, blocked on the app's Bay Area framing
 
 **Owner-directed 2026-07-22: start statewide expansion with LA.** Full analysis and the lookup list: `reports/la-ingest-candidates-2026-07-22.md`.
 
@@ -856,7 +870,11 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Access rules **no dataset carries**: permits, launch fees beyond parking, event closures at Marine Stadium, whether the Fiji Way ramp is trailer-only, and Cabrillo's water-quality advisory history. CCC has **no ownership or access field**.
 - `tide_sensitive` is **published by no source**, and it gates the conditions engine.
 
-**Acceptance:** only the 11 (minus any the owner rejects) are ingested; every record carries per-field provenance; `BT_FACIL_TYPE` is used verbatim and never upgraded into "ramp"; each coordinate is a put-in verified against a second source; each is cross-checked against DBW's `Open To` for public/private; no existing `lat`/`lng` changes; data guards and `npm test` pass.
+**OWNER ANSWERED 2026-07-22 (`reports/la-ingest-candidates-2026-07-22.md`).** Four are verified and ready: **Mother's Beach MdR** (54 m from CCC's pin), **King Harbor** (moved 401 m to the hand launch), **Cabrillo Launch Ramp, inner** (66 m from a mapped OSM slipway, best-corroborated of the set, and the inner-vs-outer safety question is resolved as inner), and **Marine Park** (106 m; confirmed to be Mother's Beach Long Beach). Three excluded by the owner: the Fiji Way ramp, plus Long Beach City Beach and Belmont Shore, which are "3 miles of frontage" rather than put-ins. Still open: Marine Stadium's coordinate (access confirmed, coordinate not given), the Alamitos Bay identity question (the owner's point is **1,388 m** from CCC's record, which sits at the San Gabriel River mouth, so they are two different places), and `tide_sensitive`, which no source publishes.
+
+**NOW BLOCKED ON ITEM 91, not on the owner.** The app has no valid region for an LA spot: `REGIONS` in `lib/types.ts` is a closed enum ending at Central Coast, and the title, description, keywords, header tagline and the new `<h1>` all say Bay Area. Shipping LA records under that banner would make the site's own copy false and aim the SEO signal at the wrong region.
+
+**Acceptance:** only the verified set is ingested; every record carries per-field provenance; `BT_FACIL_TYPE` is used verbatim and never upgraded into "ramp"; each coordinate is a put-in verified against a second source; each is cross-checked against DBW's `Open To` for public/private; no existing `lat`/`lng` changes; data guards and `npm test` pass.
 
 ## 88. [ready] Lake Tahoe Water Trail: a proven-model registry for one region (one input to item 45's statewide scope)
 
