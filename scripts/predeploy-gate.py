@@ -79,7 +79,13 @@ def is_prod_deploy(command):
     this project actually runs skipped the gate entirely. Match on the two
     tokens that any prod deploy carries instead of one exact string.
     """
-    c = command.lower()
+    # Ignore quoted text so a command that merely MENTIONS the deploy string in a
+    # commit message, echo, or heredoc body ("git commit -m '... vercel --prod
+    # ...'", or a python heredoc writing these very docs) does not trip the gate.
+    # Only an actual unquoted invocation should. Found immediately after the
+    # item-106 broadening blocked a doc-writing commit.
+    unquoted = re.sub(r"\"[^\"]*\"|'[^']*'", " ", command)
+    c = unquoted.lower()
     return "vercel" in c and "--prod" in c
 
 
@@ -262,6 +268,10 @@ def selftest():
         "vercel deploy --cwd web",           # a PREVIEW deploy, no --prod
         "npm run build",
         "git commit -m 'vercel prod notes'",  # mentions the words, not a deploy...
+        # ...and the real regression: the deploy command QUOTED inside a message
+        # or heredoc must not gate, only a bare invocation should.
+        "git commit -m 'docs: run vercel deploy --prod --cwd web to ship'",
+        "echo 'to deploy: vercel deploy --prod --cwd web'",
     ]
     for c in caught:
         if not is_prod_deploy(c):
