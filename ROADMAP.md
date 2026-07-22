@@ -77,6 +77,39 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner item, added 2026-07-22 (first-review prompt; [ready], queued top-most on purpose)
+
+## 89. [ready] Prompt the first review on a spot that has none, with a mark for writing it
+
+**Owner-directed 2026-07-22.** In the spot sheet, on a spot with no published reviews, invite the reader to write the first one and name what they get for it. Owner's phrasing: *"be the first to review this spot to earn a [gold badge etc.] by your name"*.
+
+**Read item 83 before designing this. It names this exact mechanic as gated.** Item 83's "Never without a specific gate" list includes **"first to report"**, alongside check-ins, streaks, leaderboards and novelty rewards. The owner is that gate and has now opened it, so this is `[ready]`, not a conflict to resolve upward. But the reasons the line existed do not disappear, and they constrain the build:
+
+- **Nothing may reward getting on the water.** A first-review prompt rewards *writing*, which is on the right side of that line. Keep it there: the copy must never imply going, visiting, or launching.
+- **The existing `first-report` mark is your first report anywhere, not first at a spot** (`web/lib/marks.ts:67`, criterion "One report written"). The owner's ask is a per-spot novelty. Decide deliberately whether this reuses `first-report` (nothing new to earn, the prompt just surfaces an existing mark) or adds a seventh mark. **Recommendation: reuse.** A per-spot novelty mark is a collect-them-all mechanic over 140 launch sites, which is the one shape item 83 was built to refuse, and it would need a denominator to feel like anything, which is banned outright.
+- **"By your name" means the account display name, not a legal name** (owner clarification, 2026-07-22). That is the name set in the account sheet (`PATCH /api/account`, item 78), shown in the header identity (`components/AccountButton.tsx`) and as the review byline (`components/ReviewsSection.tsx`, `r.display_name ?? "A paddler"`). The owner named both surfaces: **top right and on comments.** So the mark is meant to sit beside the display name in the header and beside the byline on every published review.
+- **That makes the mark public, and today marks are private to the earner** (item 83 decision 3). This is not a naming question, it is a visibility one: the *byline* is already public, the *mark* is not. Showing it next to the byline is item 83's staged **v2, public standing as a factual qualifier**, arriving early, and item 83 says v2 needs a fresh lawyer gate. Scope it as v2 rather than slipping it in as prompt copy. v2's own constraint still binds: a factual qualifier ("Angeline · 6 reports"), **never a rank**, so no tiering, no leaderboard, and nothing that lets two bylines be compared. The header instance is the easier half (self-visible only) and could ship first if the gate splits them.
+
+**Required first step: run the `lawyer` agent.** This is a stronger material connection than anything gated so far. Items 83 and 85 both turned on the incentive being weak, private, valueless and unconditioned; a prompt that dangles a specific reward *at the moment of asking for a review* is an incentive acting on the writer at the point of writing, and making it public would compound it. Specifics to put in front of the gate:
+- Does the existing writer-side disclosure (`DISCLOSURE` in `web/lib/markCopy.ts`, rendered above the assent box in `components/ReviewForm.tsx`) still cover this, or does the prompt itself need one? Item 87b recorded that the item-85 verdict depends on that disclosure continuing to exist; this item must not weaken it.
+- Reader-side: item 85 removed the in-line disclosure to readers on the grounds that the incentive was disclosed at the point of writing. A louder incentive may move that answer back.
+- 16 CFR Part 465 is not the risk here (the reward still cannot read a rating), but Endorsement Guides materiality is.
+- The public half specifically: a mark rendered beside a byline tells a *reader* that this reviewer was rewarded, which is arguably disclosure rather than a new risk, but it also decorates the review it sits next to. Ask whether a visible mark changes how the aggregate reads, and whether the header instance (self-visible) and the byline instance (reader-visible) need the same answer.
+
+**Truthfulness problem, must be solved not hand-waved.** Reviews are pre-moderated: a submission lands `pending` and only a human Approve publishes it (item 43). So "be the first" can be false in three ways: someone already submitted and is in the queue; two readers are both told they will be first; the reader writes one and it is rejected. Do not promise the outcome. Word it as an invitation ("No one has written about this spot yet"), and make the post-submit moment carry the honest state, which `confirmation()` in `markCopy.ts` already does.
+
+**Where it goes.** `components/ReviewsSection.tsx:145-151` returns `null` when a spot has no published reviews and the form is closed. That early return was deliberate: *"An empty review block on all 140 spots advertises a feature the site cannot deliver yet."* This item reverses that decision on purpose, so replace the comment with the new reasoning rather than deleting it. Note the blast radius: this renders on **all 140 spots minus the handful with reviews**, so it is the highest-traffic new surface in the app. It must be quiet. Also check the review trigger in the action row, so the sheet does not end up with two competing asks.
+
+**Sign-in.** Submitting requires an account (item 44). The prompt is shown to signed-out readers too, so the flow has to survive the auth hop without losing the spot context, and the copy should not read as a promise to someone who then hits a sign-in wall.
+
+**Kill switch, not an A/B** (DAU < 100). Fold it into the existing `reviews` switch or add its own; do not build an arm comparison that can never be called.
+
+**Measurement.** New INTENT events for the prompt impression (dwell-gated, per the house rule, not on mount) and its click, both carrying `spot_id` + `region`. Goal metric is reviews submitted per prompt shown, read from **Supabase**, not PostHog. Guardrail: `spot_action{action:"directions"}` per spot open must not step up, the same accidental-inducement check item 83 pre-registered. `analytics/INSTRUMENTATION_CHANGELOG.md` entry required, with a comparability note that `reviews_viewed` volume changes meaning once the section renders on spots with zero reviews.
+
+**Acceptance:** a spot with no published reviews shows one quiet invitation with an honest, non-promissory claim; the reward named is real and matches what the code actually awards; the lawyer verdict is recorded (DECISIONS.md if it escalates); the writer-side disclosure and its guards are intact or deliberately updated; no denominator, no progress meter, no per-spot collectable marker (item 83's guard forbids the last one); if a mark ships beside the display name it is a factual qualifier with no rank or tier, and a guard asserts that; verified at 390px and desktop, signed-in and signed-out. No em dashes.
+
+---
+
 ## 75. [proposed] Review moderation cannot depend on an email that can bounce silently
 
 **Found 2026-07-21 by a real bounce.** The first genuine user review (spot 18, from `qg47`) submitted fine, but the moderation notice to `hello@paddletowater.com` **bounced** ("Generic Temporary Delivery Failure"). `hello@` is a Cloudflare Email Routing alias that forwards onward, and the onward hop rejected it. The review sat `pending` with nobody told.
