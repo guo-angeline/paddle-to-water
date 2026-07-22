@@ -643,6 +643,13 @@ Build prerequisites before item 44 can DEPLOY a working sign-in: (1) Google OAut
 - Options: **(a)** keep 5; **(b)** lower the weight (3 reaches a 50/50 split at 3 reviews instead of 5); **(c)** keep 5 but surface the paddler average on the CARD too whenever it is more than a point below the blended score (the gate's suggested mitigation, ~20 lines).
 - Recommended: **(c)**, cheap and targeted at the only case that actually worries me.
 
+Answer: (owner, 2026-07-21, in chat) **Q1 = (a)**, **Q2 = (a)**. Both keep what is already live, so neither needed a code change.
+
+- **Q1 = (a):** keep the blend as shipped and accept the host-versus-co-author exposure, revisiting alongside D25 Q2 (LLC) and Q3 (insurance).
+- **Q2 = (a):** `OWNER_WEIGHT` stays **5**, and the card-level safeguard is declined (the owner also declined it earlier when choosing "deploy as built"). The recommendation was (c); the owner chose (a) with the failure mode in front of them.
+
+Consequence to keep in view, recorded so it is not rediscovered as a surprise: with weight 5, a spot the owner rated 5.0 that receives one 1-star review describing a hazard still displays **4.3 on the card**. The spot sheet discloses both inputs ("Our take 5.0 · paddlers 1.0 from 1 review"); the card does not. The standing guardrail is the safety metric in the item-83 changelog entry, `spot_action{action:"directions"}` per spot open, watched for a step change and never optimised.
+
 ### Appended 2026-07-21 (item 83 legal gate): the same question, with more volume behind it
 
 The collectables gate returned `needs-changes` (all findings fixed before deploy) but escalated one thing, and asked for it to land here rather than as a new decision, because it is D30 Q1 with a second input.
