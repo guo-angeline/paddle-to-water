@@ -11,6 +11,22 @@ const submitRoute = read("../app/api/reviews/route.ts");
 const moderateRoute = read("../app/api/reviews/moderate/route.ts");
 const aggRoute = read("../app/api/reviews/aggregates/route.ts");
 const card = read("./SpotCard.tsx");
+// Every component + page source, so an absence guard is proven against the
+// tree rather than against the files someone remembered to list.
+const sweep = (): string[] => {
+  const out: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of fs.readdirSync(path.resolve(__dirname, dir), { withFileTypes: true })) {
+      if (e.name === "node_modules" || e.name.startsWith(".")) continue;
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) walk(rel);
+      else if (/\.tsx?$/.test(e.name) && !e.name.endsWith(".test.ts")) out.push(rel);
+    }
+  };
+  walk(".");
+  walk("../app");
+  return out;
+};
 const migration = fs.readFileSync(
   path.resolve(__dirname, "../../supabase/migrations/20260722_reviews.sql"),
   "utf-8"
@@ -173,19 +189,49 @@ describe("the form carries no copy the owner cut (item 43)", () => {
   });
 });
 
-describe("Review is a peer of Share, not a stray control (item 43)", () => {
+describe("Review is a primary CTA, not a stray control (item 43, restyled 2026-07-21)", () => {
   const drawer = read("./SpotDrawer.tsx");
+  const flat = drawer.replace(/\s+/g, " ");
 
-  it("sits in the action row with Share, sharing its exact treatment", () => {
-    // Share and Review must be the ONLY two controls carrying this exact
-    // half-width accent-outline treatment. Counting is what makes the guard
-    // bite: restyle either one and the count drops to 1.
-    // Indentation differs (Review is inside a conditional), so normalize it.
-    const flat = drawer.replace(/\s+/g, " ");
-    const TREATMENT =
+  it("gets its own full-width row in the filled-accent treatment Watch uses", () => {
+    // Owner direction 2026-07-21: Review is promoted out of the half-width
+    // outline pair and given Watch's filled-accent look. Assert the fill
+    // itself, so downgrading Review back to an outline fails here.
+    const FILL = '{ borderColor: "transparent", color: "#fff", background: "var(--accent)" }';
+    // Watch's unsaved branch + Review. Watch writes it inside a ternary, so
+    // match the object literal, not the whole style= attribute.
+    expect(flat.split(FILL).length - 1).toBe(2);
+    expect(flat).toContain(
+      'className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold border transition-colors" ' +
+      "style={" + FILL + "} > Review <"
+    );
+  });
+
+  it("leaves Share as the only half-width accent-outline control", () => {
+    // Counting is what makes the guard bite: restyle Share, or restore a
+    // second outline peer next to it, and this moves off 1.
+    const OUTLINE =
       'className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50" ' +
       'style={{ borderColor: "var(--accent)", color: "var(--accent)" }}';
-    expect(flat.split(TREATMENT).length - 1).toBe(2);
+    expect(flat.split(OUTLINE).length - 1).toBe(1);
+  });
+
+  it("pairs Share with Get directions in the bottom row, Share first", () => {
+    // Match rendered labels, not prose: the section comment above these
+    // buttons names them too, and would satisfy a naive indexOf.
+    expect(flat.indexOf('"Copied!" : "Share"')).toBeGreaterThan(flat.indexOf("> Review <"));
+    expect(flat.indexOf("> Get directions <")).toBeGreaterThan(flat.indexOf('"Copied!" : "Share"'));
+  });
+
+  it("has no Photos button (removed 2026-07-21) on any surface", () => {
+    // Sweep every component/page, not just the drawer: the button's absence is
+    // only real if no file renders it and nothing still logs its event.
+    for (const f of sweep()) {
+      const src = read(f);
+      expect(src, f).not.toMatch(/>\s*Photos\s*</);
+      expect(src, f).not.toContain('action: "photos"');
+      expect(src, f).not.toContain("photosUrl");
+    }
   });
 
   it("is labelled Review, not the old lone-button copy", () => {

@@ -264,7 +264,6 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
 
   const diff = DIFF_STYLES[spot.difficulty] ?? DIFF_STYLES.unknown;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`;
-  const photosUrl = `https://www.google.com/maps/search/${encodeURIComponent(`${spot.water} ${spot.city ?? ""} California`)}/`;
 
   const tags: string[] = [];
   if (spot.dog_friendly)        tags.push("Dog friendly");
@@ -585,9 +584,9 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
             onCloseForm={() => setReviewFormFor(null)}
           />
 
-          {/* Actions — hierarchy optimizes for Save (retention) first, Share
-              (virality) second; Get Directions + Photos are demoted to a neutral
-              row. Shipped to 100% per owner direction 2026-07-09 (explicit
+          {/* Actions — hierarchy optimizes for Save (retention) first, Review
+              (UGC) second; Share + Get directions share the demoted bottom row.
+              Shipped to 100% per owner direction 2026-07-09 (explicit
               exception to the A/B-flag policy, recorded in DECISIONS.md). */}
           <div className="flex flex-col gap-2">
             {onToggleFavorite && (
@@ -604,10 +603,19 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
                 <span>{isFavorite ? "Watching" : "Watch this spot"}</span>
               </button>
             )}
-            {/* Share + Review are peers: same weight, same outline, one row.
-                Review used to be a lone bordered button buried in the reviews
-                section, which read as a different kind of control than every
-                other thing you can do to a spot. */}
+            {/* Review gets its own full-width row and the same filled-accent
+                treatment as Watch: writing a review is the other thing we want
+                from a visitor, and as a half-width outline it read as a lesser
+                control than the two links below it. */}
+            {reviewsOn && authOn && (
+              <button
+                onClick={handleReview}
+                className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold border transition-colors"
+                style={{ borderColor: "transparent", color: "#fff", background: "var(--accent)" }}
+              >
+                Review
+              </button>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={handleShare}
@@ -616,17 +624,6 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
               >
                 {copied ? "Copied!" : "Share"}
               </button>
-              {reviewsOn && authOn && (
-                <button
-                  onClick={handleReview}
-                  className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors hover:bg-gray-50"
-                  style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
-                >
-                  Review
-                </button>
-              )}
-            </div>
-            <div className="flex gap-2">
               <a
                 href={mapsUrl}
                 target="_blank"
@@ -636,16 +633,6 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
                 style={{ borderColor: "var(--border)", color: "var(--dark)" }}
               >
                 Get directions
-              </a>
-              <a
-                href={photosUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackIntent("spot_action", { ...spotEventProps, action: "photos" })}
-                className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-medium border transition-colors hover:bg-gray-50"
-                style={{ borderColor: "var(--border)", color: "var(--dark)" }}
-              >
-                Photos
               </a>
             </div>
           </div>

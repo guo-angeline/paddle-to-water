@@ -14,6 +14,36 @@ without touching this file.
 
 ---
 
+## 2026-07-21: `spot_action` loses `action: "photos"` (removed); CTA row re-ordered
+
+Owner direction: the **Photos** button is gone from the spot sheet. It opened a
+Google Maps photo search for the spot name, which duplicated the in-sheet photo
+(item 31) and sent people off-site. Removing the button removes its only call
+site, so `spot_action` with `action: "photos"` **stops firing entirely** as of
+this date. `action: "share"` and `action: "directions"` are unchanged in name,
+props, and emitter (`trackIntent`, `SpotDrawer`).
+
+The same change re-arranges the remaining CTAs: **Watch this spot** (full-width,
+filled accent) -> **Review** (full-width, now the same filled-accent treatment,
+previously a half-width outline button paired with Share) -> **Share + Get
+directions** (one half-width row, Share keeps its accent outline, Get directions
+its neutral border).
+
+**Comparability:**
+- `spot_action` **total counts are discontinuous from 2026-07-21** and drop by
+  however much `photos` contributed. Any time series on `spot_action` without an
+  `action` breakdown must be segmented, or read as two separate eras. The
+  `photos` series itself terminates on this date. This is a removed control, not
+  users losing interest in photos.
+- `review_form_opened` (INTENT, fired by the same Review button) is expected to
+  **rise** from this date: the button went from half-width outline to full-width
+  filled. Layout/emphasis effect, not a behavior change. No control arm (100%,
+  no A/B per the DAU-100 directive), so the only counterfactual is the
+  pre-2026-07-21 baseline.
+- `spot_action` `action: "directions"` may also move: it changed row position
+  (bottom row, right half) and now sits next to Share rather than Photos. Same
+  event, different placement.
+
 ## 2026-07-21 (item 79): `review_submitted` no longer means "queued" (semantics-changed)
 
 Owner decision amending D24: a rating submitted with **no text** is now published
