@@ -869,7 +869,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Conspicuous assent: persistent footer link plus a one-time "By using this site you agree to the Terms and Disclaimer" acceptance at alert enrollment (`InstallPrompt.tsx`); link beside the existing Disclaimer link in `HomeClient.tsx` / `SpotList.tsx`.
 - **Escalate before shipping:** waiver enforceability for a paddling death and the LLC/insurance decision are California-specific and warrant ~1 hr of licensed-attorney review (CA LLC carries ~$800/yr franchise tax). Draft the ToS/waiver text for the attorney to bless rather than originate; open a DECISIONS.md memo for the owner on entity + insurance.
 
-## 92. [ready] Statewide framing: the app says "Bay Area" everywhere, which blocks any spot outside it
+## 92. [done] Statewide framing: the brand is California (deployed 2026-07-22, 764378a)
 
 **Prerequisite for item 90 (LA) and for item 45 generally.** Found while verifying the first LA candidates: the records are ready and cannot be added, because the product is Bay Area by construction.
 
@@ -883,7 +883,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Acceptance:** a spot outside the Bay Area can be added with a valid region; the site title, description, keywords, tagline and `<h1>` no longer claim a coverage area the data contradicts; the region filter still fits at 390px without wrapping; `npm test`, lint and build pass; no existing `lat`/`lng` changes.
 
-## 90. [blocked(item-92)] LA County ingest from CCC YourCoast: 4 verified and ready, blocked on the app's Bay Area framing
+## 90. [in-progress] LA County ingest: first 4 shipped 2026-07-22 (764378a); Marine Stadium + Alamitos still open
 
 **Owner-directed 2026-07-22: start statewide expansion with LA.** Full analysis and the lookup list: `reports/la-ingest-candidates-2026-07-22.md`.
 
@@ -904,6 +904,14 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 **OWNER ANSWERED 2026-07-22 (`reports/la-ingest-candidates-2026-07-22.md`).** Four are verified and ready: **Mother's Beach MdR** (54 m from CCC's pin), **King Harbor** (moved 401 m to the hand launch), **Cabrillo Launch Ramp, inner** (66 m from a mapped OSM slipway, best-corroborated of the set, and the inner-vs-outer safety question is resolved as inner), and **Marine Park** (106 m; confirmed to be Mother's Beach Long Beach). Three excluded by the owner: the Fiji Way ramp, plus Long Beach City Beach and Belmont Shore, which are "3 miles of frontage" rather than put-ins. Still open: Marine Stadium's coordinate (access confirmed, coordinate not given), the Alamitos Bay identity question (the owner's point is **1,388 m** from CCC's record, which sits at the San Gabriel River mouth, so they are two different places), and `tide_sensitive`, which no source publishes.
 
 **NOW BLOCKED ON ITEM 92, not on the owner.** The app has no valid region for an LA spot: `REGIONS` in `lib/types.ts` is a closed enum ending at Central Coast, and the title, description, keywords, header tagline and the new `<h1>` all say Bay Area. Shipping LA records under that banner would make the site's own copy false and aim the SEO signal at the wrong region.
+
+**FIRST FOUR SHIPPED 2026-07-22 (`764378a`), together with the California rebrand so the site never claimed coverage it lacked:** Mother's Beach (Marina del Rey), King Harbor (Redondo), Cabrillo Beach Launch Ramp (San Pedro, inner harbour), Marine Park / Mother's Beach (Long Beach). All four verified live with NWS conditions via LOX gridpoints.
+
+**Two guards earned their keep during this ingest, record both:**
+1. **Reserializing `spots.json` rewrote 580 lat/lng lines.** Exactly the failure CLAUDE.md documents. Reverted and redone as a text-level append: 72 insertions, 0 deletions, 0 coordinate lines touched. **Never `JSON.stringify` this file.**
+2. **New spots have no NWS gridpoint until `scripts/precompute_gridpoints.py` is re-run**, so they would have shipped with no conditions, which is the app's differentiator. A test caught it. **Adding any spot requires re-running that script in the same change.**
+
+**Still open on this item:** Marine Stadium (owner confirmed paddling is allowed but gave no coordinate) and Alamitos Bay (the owner's Bayshore Beach point is 1,388 m from CCC's record at the San Gabriel River mouth, so it is a record-identity question: replace CCC's record, or add a second spot?).
 
 **Acceptance:** only the verified set is ingested; every record carries per-field provenance; `BT_FACIL_TYPE` is used verbatim and never upgraded into "ramp"; each coordinate is a put-in verified against a second source; each is cross-checked against DBW's `Open To` for public/private; no existing `lat`/`lng` changes; data guards and `npm test` pass.
 
