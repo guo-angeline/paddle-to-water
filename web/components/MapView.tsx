@@ -8,7 +8,24 @@ import { DIFFICULTY_COLOR } from "@/lib/types";
 import type { SpotViewedSource } from "@/lib/analytics";
 import "leaflet/dist/leaflet.css";
 
-const BAY_CENTER: [number, number] = [37.55, -122.25];
+// Item 108 (2026-07-22): the cold, no-location, unfiltered default frames the
+// whole STATE, not the Bay. The site rebranded to "across California" the same
+// week 29 SoCal spots (LA, San Diego, Orange County, Ventura) landed, but the
+// map still opened on [37.55, -122.25] zoom 9, so a first-time SoCal visitor,
+// exactly the audience the expansion was for, saw a Bay-only map that
+// contradicted the headline. Spots run lat 32.6 to 41.2, lng -124.2 to -117.1;
+// this center at zoom 6 shows every cluster. A granted location still overrides
+// via FlyToUser (zoom 11), and any filter/search tightens via FitBounds, so this
+// only sets the "just landed, no signal yet" frame.
+//
+// Center longitude is the spot centroid (~-120.5), NOT biased inland: at zoom 6
+// a 375px mobile viewport only spans ~8.2deg of longitude, and an inland center
+// (-119.7 was the first try) clipped the westernmost coast spots (-124.2) off
+// the left edge. -120.5 keeps both the outer coast and the eastern Sierra in
+// frame on mobile and desktop (verified with the Mercator viewport math, since
+// a concurrent dev server blocked a live browser check).
+const CA_CENTER: [number, number] = [37.0, -120.5];
+const CA_ZOOM = 6;
 
 function FlyTo({ spot }: { spot: Spot | null }) {
   const map = useMap();
@@ -39,9 +56,11 @@ function FitBounds({ spots, hasSelection, enabled }: { spots: Spot[]; hasSelecti
   // upstream, so the latest closure's hasSelection is current on that re-run.
   useEffect(() => {
     // Only fit when the user has actually narrowed the set (a filter or search).
-    // On the unfiltered full set, fitting all 140 spots spans Tahoe to Bakersfield
-    // and forces zoom 6 — a statewide blob of overlapping pins nobody can tap. In
-    // that case we keep the configured Bay center/zoom instead.
+    // On the unfiltered full set we do NOT fit: that would force a zoom where
+    // the Bay and SoCal clusters overlap into an untappable blob. The static
+    // CA_CENTER/CA_ZOOM default (item 108) already frames the whole state for a
+    // cold visitor, and the list panel is the tap surface at that overview zoom;
+    // fitting only kicks in once a filter or search narrows the set.
     if (!enabled) return;
     // Don't fight FlyTo when a spot is selected (e.g. landing on a /spot URL).
     if (hasSelection) return;
@@ -74,7 +93,7 @@ function FlyToUser({ location }: { location: UserLocation | null }) {
 // visible (Map tab shown), Leaflet still holds the stale zero size and paints
 // gray tiles. Recompute the size, then re-center on the current selection so the
 // "tap a spot in the List, switch to Map" path lands on that spot instead of the
-// default Bay overview. `selected` is read through a ref so the observer is set
+// default statewide overview. `selected` is read through a ref so the observer is set
 // up once per map, not re-subscribed on every selection change.
 function ResizeHandler({ selected }: { selected: Spot | null }) {
   const map = useMap();
@@ -121,8 +140,8 @@ export default function MapView({ spots, selected, onSelect, userLocation, fitTo
 
   return (
     <MapContainer
-      center={BAY_CENTER}
-      zoom={9}
+      center={CA_CENTER}
+      zoom={CA_ZOOM}
       className="h-full w-full isolate"
       zoomControl={false}
       preferCanvas={true}

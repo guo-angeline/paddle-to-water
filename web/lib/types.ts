@@ -60,25 +60,26 @@ export interface Spot {
 }
 
 export const REGIONS = [
-  "South Bay",
-  "Peninsula",
-  "East Bay",
-  "San Francisco",
+  // Item 108 (2026-07-22): ordered geographically NORTH to SOUTH so the pill row
+  // reads as a coherent sequence, not Bay-subregions-first with SoCal appended
+  // last in the order the regions happened to be added. Strings are only
+  // REORDERED here, never renamed: `region` is an analytics prop and a stored
+  // field keyed by value, so order is free to change but the strings are not.
+  // (The old add-order is in git history; item 92 added the SoCal five.)
+  "North Coast",
   "North Bay",
   "Sacramento",
   "Sierra Nevada",
+  "San Francisco",
+  "East Bay",
+  "Peninsula",
+  "South Bay",
   "Central Valley",
   "Central Coast",
-  // Item 92: the brand is California (owner, 2026-07-22). Regions are ADDED,
-  // never renamed: the existing nine feed 139 records, the map filter, and the
-  // `region` analytics prop, so renaming one would break historical
-  // comparability for no user-visible gain. Add SoCal regions as their spots
-  // land, not speculatively.
-  "Los Angeles",
-  "San Diego",
-  "Orange County",
   "Ventura",
-  "North Coast",
+  "Los Angeles",
+  "Orange County",
+  "San Diego",
 ] as const;
 
 export const DIFFICULTIES: Difficulty[] = ["flatwater", "bay", "river"];
