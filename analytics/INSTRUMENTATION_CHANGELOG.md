@@ -14,6 +14,21 @@ without touching this file.
 
 ---
 
+## 2026-07-22 (item 97): conditions readout completion, no event changes (no-instrumentation-change)
+
+**No events added, renamed, removed, or re-propped.** Recorded here anyway because the changelog is also where "we deliberately did NOT change instrumentation" belongs, so a later analyst does not go looking for a phantom event behind a UI change.
+
+Item 97 adds air temperature, precipitation, a storm badge, and a split wind-failure state to the conditions panel, all from data already fetched. The existing events are unchanged and keep their meaning:
+
+- `conditions_loaded` (SYSTEM, availability + `latency_ms`): still fires when both sources settle. **Acceptance required `latency_ms` not regress, and it cannot: the new fields are read off the payload `fetchWind` already downloads, no new request.** The one thing to watch post-deploy is that `latency_ms` is flat, which would confirm the zero-cost claim.
+- `conditions_viewed` (INTENT, dwell-gated): unchanged. It does NOT gain a temp/precip/storm prop. If a later item wants to segment engagement by "was it stormy", that is a new prop and its own entry.
+
+**Kill switch:** the whole bundle is behind `conditions-readout` (PostHog, default ON). A disable reverts the panel to its pre-bundle copy with no redeploy, and emits no differently, so toggling it does not create an instrumentation discontinuity.
+
+**This is the first of the 97/98/99 bundle** (temp/precip, tide direction, wind-tip port). They ship separately but read as one change; when the metric (distinct-days-with-a-conditions-check, item 91) is read, treat the bundle's ship dates as one boundary, not three.
+
+---
+
 ## 2026-07-22 (item 89): `first_review_prompt_shown` added; `reviews_viewed` changes meaning (added + semantics-changed)
 
 **Added: `first_review_prompt_shown`** (INTENT, dwell-gated via `useGenuineView`).

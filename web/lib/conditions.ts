@@ -87,6 +87,21 @@ export interface WindInfo {
   shortForecast: string;
   periodName: string;
   paddleability: Paddleability;
+  /**
+   * Item 97. These three arrive in the SAME NWS payload `fetchWind` already
+   * downloads; before 2026-07-22 they were dropped at the type annotation
+   * below. Zero extra requests, zero extra latency.
+   */
+  tempF: number | null;
+  /** Probability of precipitation, percent. NWS sends `{value: null}` at times. */
+  precipPct: number | null;
+  /**
+   * False when `periods[0]` is a NIGHT period. At 9pm that period is "Tonight"
+   * and its temperature is an overnight LOW, not a paddling temperature, so the
+   * UI must keep the period name attached to the number rather than presenting
+   * it as the current air temperature.
+   */
+  isDaytime: boolean;
 }
 
 export interface Conditions {
@@ -301,6 +316,24 @@ function parseWindSpeed(raw: string): [number, number] {
  * Honest, conservative read for flatwater paddling. Based on the high end of the
  * forecast range so it doesn't undersell a gusty afternoon. Guidance only.
  */
+/**
+ * Item 97. A thunderstorm buried in `shortForecast` used to change nothing: the
+ * verdict is computed from wind speed alone, so a lightning forecast with light
+ * wind still read "Calm. Light wind, good for flatwater."
+ *
+ * THIS IS A HEURISTIC, NOT NWS ALERTS. It keyword-matches the forecast text we
+ * already have. It catches "Thunderstorms Likely" and misses a severe-weather
+ * phrasing that avoids these words. That is a strict improvement over gating on
+ * nothing, and it is free. Do not let a later reader assume it is exhaustive:
+ * the real feed is the NWS Alerts endpoint, which this app does not fetch.
+ *
+ * Note this only ever DOWNGRADES what the panel shows. Precipitation and storm
+ * text can never turn a windy verdict calm.
+ */
+export function isStormyForecast(shortForecast: string | null | undefined): boolean {
+  return /thunderstorm|t-storm|tstorm|lightning/i.test(shortForecast ?? "");
+}
+
 export function paddleabilityFromWind(maxMph: number): Paddleability {
   if (maxMph <= 8) return "calm";
   if (maxMph <= 15) return "breezy";
@@ -350,6 +383,10 @@ async function fetchWind(lat: number, lng: number, signal: AbortSignal): Promise
         windSpeed: string;
         windDirection: string;
         shortForecast: string;
+        temperature?: number | null;
+        temperatureUnit?: string | null;
+        probabilityOfPrecipitation?: { value?: number | null } | null;
+        isDaytime?: boolean;
       }[];
     };
   };
@@ -363,6 +400,18 @@ async function fetchWind(lat: number, lng: number, signal: AbortSignal): Promise
     direction: period.windDirection || "",
     shortForecast: period.shortForecast,
     periodName: period.name,
+    // Only trust the number when NWS says it is Fahrenheit. It always is for
+    // these gridpoints, but a silent unit swap would render a Celsius value as
+    // an air temperature in F, which is worse than showing nothing.
+    tempF:
+      typeof period.temperature === "number" && period.temperatureUnit === "F"
+        ? period.temperature
+        : null,
+    precipPct:
+      typeof period.probabilityOfPrecipitation?.value === "number"
+        ? period.probabilityOfPrecipitation.value
+        : null,
+    isDaytime: period.isDaytime !== false,
     paddleability: paddleabilityFromWind(speedMax),
   };
 }

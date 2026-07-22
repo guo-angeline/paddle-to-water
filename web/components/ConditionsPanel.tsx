@@ -7,6 +7,7 @@ import {
   formatTideTime,
   formatFetchedAt,
   isNextDay,
+  isStormyForecast,
   CACHE_TTL_MS,
   type WindInfo,
   type WindOutcome,
@@ -76,20 +77,68 @@ interface TideSlot {
   fetchedAt: number;
 }
 
-function WindReading({ wind, isFlatwater }: { wind: WindInfo; isFlatwater: boolean }) {
+/**
+ * Item 97. The weather line: forecast text, air temperature, and rain chance,
+ * all from the payload wind already downloaded.
+ * - "Air" prefix is deliberate: water temp is absent from the stack and cold
+ *   shock, not air comfort, is the real safety variable, so a bare number must
+ *   not be mistaken for a water reading.
+ * - The rain clause shows only at >= 20%. "0% chance of rain" restates the
+ *   default and is cut. It is also suppressed under a storm badge, which has
+ *   already said the important thing.
+ * - The temperature keeps its period name attached (via the caller) so a night
+ *   "Tonight" low is never presented as today's paddling temperature.
+ */
+function weatherLine(wind: WindInfo, stormy: boolean, readoutOn: boolean): string {
+  const base = `${wind.periodName}: ${wind.shortForecast}`;
+  if (!readoutOn) return base;
+  let line = base;
+  if (wind.tempF !== null) line += `, Air ${wind.tempF}F`;
+  if (!stormy && wind.precipPct !== null && wind.precipPct >= 20) {
+    line += ` · ${wind.precipPct}% chance of rain`;
+  }
+  return line;
+}
+
+function WindReading({
+  wind,
+  isFlatwater,
+  readoutOn,
+}: {
+  wind: WindInfo;
+  isFlatwater: boolean;
+  readoutOn: boolean;
+}) {
+  const stormy = readoutOn && isStormyForecast(wind.shortForecast);
   return (
     <div>
-      {isFlatwater && wind.paddleability !== "unknown" && (
+      {/* A storm badge OWNS the pill slot, for every difficulty (lightning is
+          not a flatwater-only fact), and is mutually exclusive with the
+          calm/breezy/windy pill: a green "Calm" next to a storm warning would
+          undercut the warning. Reuses the --wind-alert token pair, already the
+          Windy pill's colours. */}
+      {stormy ? (
         <div
           className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 mb-2 text-xs font-semibold"
-          style={{
-            background: PADDLE_COPY[wind.paddleability].bg,
-            color: PADDLE_COPY[wind.paddleability].text,
-          }}
+          style={{ background: "var(--wind-alert-fill)", color: "var(--wind-alert)" }}
         >
-          <span>{PADDLE_COPY[wind.paddleability].label}</span>
-          <span className="font-normal opacity-90">{PADDLE_COPY[wind.paddleability].tone}</span>
+          <span>⚠ Storm risk</span>
+          <span className="font-normal opacity-90">Lightning risk on open water, per the forecast.</span>
         </div>
+      ) : (
+        isFlatwater &&
+        wind.paddleability !== "unknown" && (
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 mb-2 text-xs font-semibold"
+            style={{
+              background: PADDLE_COPY[wind.paddleability].bg,
+              color: PADDLE_COPY[wind.paddleability].text,
+            }}
+          >
+            <span>{PADDLE_COPY[wind.paddleability].label}</span>
+            <span className="font-normal opacity-90">{PADDLE_COPY[wind.paddleability].tone}</span>
+          </div>
+        )
       )}
       <div className="flex items-baseline gap-2">
         <span className="text-base font-semibold text-(--dark)">
@@ -107,9 +156,7 @@ function WindReading({ wind, isFlatwater }: { wind: WindInfo; isFlatwater: boole
         </span>
         {wind.direction && <span className="text-sm text-(--muted)">from {wind.direction}</span>}
       </div>
-      <p className="text-xs text-(--muted) mt-0.5">
-        {wind.periodName}: {wind.shortForecast}
-      </p>
+      <p className="text-xs text-(--muted) mt-0.5">{weatherLine(wind, stormy, readoutOn)}</p>
     </div>
   );
 }
@@ -129,6 +176,11 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
   // shown data is older than the cache TTL, so a returning user never reads a
   // stale morning forecast. Kill-switch flag (default ON, no A/B, DAU<100 rule).
   const refreshOn = useKillSwitch("conditions-foreground-refresh");
+  // Item 97/98/99 bundle. One switch for the whole readout-completion set (air
+  // temp, precip, storm badge, tide direction, split failure states). Default
+  // ON per the DAU<100 kill-switch rule; a PostHog disable reverts the panel to
+  // its pre-bundle output with no redeploy.
+  const readoutOn = useKillSwitch("conditions-readout");
   const [refreshTick, setRefreshTick] = useState(0);
   const fetchedAtRef = useRef<number | null>(null);
   const lastFetchSpot = useRef<number | null>(null);
@@ -265,9 +317,17 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
           {windLoading ? (
             <Skeleton />
           ) : windInfo ? (
-            <WindReading wind={windInfo} isFlatwater={isFlatwater} />
-          ) : (
+            <WindReading wind={windInfo} isFlatwater={isFlatwater} readoutOn={readoutOn} />
+          ) : !readoutOn ? (
             <p className="text-xs text-(--muted)">Wind forecast unavailable.</p>
+          ) : windOutcome?.ok ? (
+            // Item 97: fetch succeeded, no forecast for this coordinate (outside
+            // NWS coverage). A real, stable fact about the spot.
+            <p className="text-xs text-(--muted)">No forecast available for this spot.</p>
+          ) : (
+            // Fetch errored: transient. Mirrors the tide side's wording so the
+            // panel never conflates "no data exists" with "NWS is down".
+            <p className="text-xs text-(--muted)">Wind data is unavailable right now.</p>
           )}
 
           {/* Tides: only relevant on tidal spots. Distinguish a real "no station"

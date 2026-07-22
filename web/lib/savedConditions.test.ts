@@ -44,7 +44,7 @@ function conditions(paddleability: "calm" | "breezy" | "windy" | null): Conditio
   return {
     tide: null,
     wind: paddleability
-      ? { speedMin: 0, speedMax: 5, direction: "W", shortForecast: "x", periodName: "Today", paddleability }
+      ? { speedMin: 0, speedMax: 5, direction: "W", shortForecast: "x", periodName: "Today", paddleability, tempF: null, precipPct: null, isDaytime: true }
       : null,
     failed: paddleability === null,
     fetchedAt: 0,

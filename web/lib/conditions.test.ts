@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   precomputedForecastUrl,
+  isStormyForecast,
+  paddleabilityFromWind,
   nearestTideStation,
   TIDE_STATIONS,
   TIDE_STATION_IDS,
@@ -75,5 +77,29 @@ describe("tide station coverage", () => {
       expect(s.id).toMatch(/^[A-Z0-9]{6,8}$/);
     }
     expect(TIDE_STATION_IDS.size).toBe(TIDE_STATIONS.length);
+  });
+});
+
+describe("storm gating (item 97)", () => {
+  it("flags thunderstorm phrasings that the wind verdict alone would miss", () => {
+    for (const f of ["Thunderstorms Likely", "Chance T-storms", "Scattered Tstorms", "Lightning nearby"]) {
+      expect(isStormyForecast(f)).toBe(true);
+    }
+  });
+
+  it("does not flag ordinary or merely wet forecasts", () => {
+    for (const f of ["Sunny", "Partly Cloudy", "Chance Showers", "Rain Likely", "Windy", ""]) {
+      expect(isStormyForecast(f)).toBe(false);
+    }
+    expect(isStormyForecast(null)).toBe(false);
+  });
+
+  it("only ever downgrades: it is independent of the wind verdict, never softening it", () => {
+    // The two functions are orthogonal by construction. A storm forecast in
+    // light wind is the case that motivated the item; assert the wind verdict
+    // is unchanged by storm text, so nothing here can turn a windy day calm.
+    expect(paddleabilityFromWind(3)).toBe("calm");
+    expect(isStormyForecast("Thunderstorms")).toBe(true);
+    expect(paddleabilityFromWind(25)).toBe("windy");
   });
 });
