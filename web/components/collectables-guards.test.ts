@@ -113,6 +113,25 @@ describe("the whole feature is reversible and disclosed", () => {
     }
   });
 
+  it("keeps a reader's route to the Contributor Terms, ungated", () => {
+    // Item 85 removed the reader-facing marks sentence at the owner's request.
+    // The re-gate cleared that (marks are private, valueless and never
+    // conditioned on what a review says, so the material connection fails the
+    // Endorsement Guides materiality test) on ONE condition: the link stays.
+    // ReviewsSection is a reader's only route to that document; ReviewForm's
+    // link is writer-only, behind the form. Nothing was asserting the sentence
+    // before, which is why deleting it broke no test.
+    expect(section).not.toMatch(/participation marks/);
+    expect(section).toContain('href="/contributor-terms"');
+
+    // And the link must NOT sit behind the collectables switch. The terms
+    // explain the blended score too (s6.4), so killing marks must not also cut
+    // the path to the score's explanation.
+    const link = section.slice(0, section.indexOf('href="/contributor-terms"'));
+    const guardOnLastBlock = link.slice(link.lastIndexOf("{hasReviews"));
+    expect(guardOnLastBlock).not.toMatch(/collectablesOn/);
+  });
+
   it("shows the incentive disclosure where the incentive acts", () => {
     // In the form, next to the assent box, not buried in the terms.
     expect(form).toContain("{DISCLOSURE}");

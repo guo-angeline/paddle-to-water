@@ -216,7 +216,7 @@ Not user-visible today (native is gated on Apple Developer Program enrollment, i
 
 **Shipped 2026-07-22, with one correction from the re-gate.** "Paddle score" is gone everywhere and the accessible description keeps its meaning ("combining our own rating with N paddler reviews"). The item's own point 2 turned out to be the whole story: the label WAS doing provenance work, and the re-gate returned `needs-changes` on removing it outright. With the sheet's breakdown line already gone (8d9bfbe), a blended number would have had no visible provenance at all. The floor is one short visible attribution, so it ships as **"our take"**: the owner rejected the wording "Paddle score", not the concept. The sharpest finding was not FTC but defamation posture, an attributed rating is opinion (the strongest defence if a named business objects) while a bare aggregate under a "Paddler reviews N" heading reads as a factual report of paddler sentiment. Verified at 375px on blended and owner-only spots; no subtitle row truncates. Guards now assert the attribution is PRESENT (the version that asserted the old label's absence would have certified the rejected state).
 
-## 85. [ready] Remove the contributor-marks line from the paddler reviews section (NEEDS A LAWYER RE-GATE FIRST)
+## 85. [in-progress] 2026-07-21T22:14:09-07:00 Remove the contributor-marks line from the paddler reviews section
 
 **Owner-directed 2026-07-21.** Remove this from the reviews section (`components/ReviewsSection.tsx:182-189`):
 

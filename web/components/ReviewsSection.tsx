@@ -176,19 +176,6 @@ export default function ReviewsSection({ spot, formOpen, onCloseForm, ref }: Pro
         />
       )}
 
-      {/* Item 83: the reader of a review, not just its writer, should know
-          contributors get something. Weak material connection (private, no cash
-          value, never conditioned on opinion), so one quiet line is proportionate. */}
-      {hasReviews && collectablesOn && (
-        <p className="mt-1 text-xs text-(--muted)">
-          Contributors get small participation marks. They are private, have no cash value, and never
-          depend on what a review says.{" "}
-          <a href="/contributor-terms" target="_blank" rel="noopener noreferrer" className="underline">
-            Contributor Terms
-          </a>
-        </p>
-      )}
-
       {hasReviews && (
         <ul className="mt-2 flex flex-col gap-3">
           {reviews!.map((r) => (
@@ -205,6 +192,24 @@ export default function ReviewsSection({ spot, formOpen, onCloseForm, ref }: Pro
             </li>
           ))}
         </ul>
+      )}
+
+      {/* Item 85 (owner-directed): the marks sentence is gone. The re-gate
+          cleared that removal (marks are private, valueless, and never
+          conditioned on what a review says, so the material connection fails
+          the Endorsement Guides materiality test) on ONE condition: THE LINK
+          STAYS. This is a reader's only route to the Contributor Terms; the
+          review form's link is writer-only, behind the form.
+          NOT gated on the collectables switch, because those terms also
+          explain how the score is computed (s6.4): killing marks must not cut
+          the path to the score's explanation. Sits under the list, so a bare
+          link reads as a footnote rather than as a label on the first review. */}
+      {hasReviews && (
+        <p className="mt-2 text-xs text-(--muted)">
+          <a href="/contributor-terms" target="_blank" rel="noopener noreferrer" className="underline">
+            Contributor Terms
+          </a>
+        </p>
       )}
 
       {formOpen && (
