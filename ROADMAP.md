@@ -100,7 +100,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Acceptance:** a period with empty/null/garbage `windSpeed` never contributes to a good window (unit test it: `["", "garbage"]` at calm hours yields null, while `["0 mph","0 mph"]` and `["Calm","Calm"]` still yield a window). No behavior change for well-formed NWS data. Add the cases to `conditions-window.test.ts`. Not a legal surface, but it touches the alert send path, so run the verifier on the diff.
 
-## 108. [ready] California-wide default map view (the brand shipped statewide, the map still opens on the Bay)
+## 108. [blocked(owner-deploy)] California-wide default map view (the brand shipped statewide, the map still opens on the Bay)
+
+**CODE DONE (10ec36f), DEPLOY FROZEN behind item 107.** Map default + pill reorder are committed and 630 tests pass, but item 107's committed PROTECTED change (conditions-window.ts) is an ancestor on main, and a deploy ships the whole tree, so this cannot go live until the owner approves the item-107 deploy. Approving 107 releases both together. This item itself is not a protected surface.
 
 **Problem:** Items 90/94/95/96 added 29 SoCal spots (LA, San Diego, Orange County, Ventura), 16% of 177, and the site now says "across California". But `MapView.tsx` hardcodes `BAY_CENTER = [37.55, -122.25]` at zoom 9 for any cold visitor with no location grant, and `REGIONS` in `lib/types.ts` appends the four new SoCal regions last, so a SoCal visitor scrolls past the whole pill row to find their own coast. First impression contradicts the rebrand for exactly the audience the expansion was for.
 
