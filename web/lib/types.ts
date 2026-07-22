@@ -75,6 +75,7 @@ export const REGIONS = [
   // comparability for no user-visible gain. Add SoCal regions as their spots
   // land, not speculatively.
   "Los Angeles",
+  "San Diego",
 ] as const;
 
 export const DIFFICULTIES: Difficulty[] = ["flatwater", "bay", "river"];

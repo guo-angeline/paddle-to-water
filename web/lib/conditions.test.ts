@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { precomputedForecastUrl } from "./conditions";
+import {
+  precomputedForecastUrl,
+  nearestTideStation,
+  TIDE_STATIONS,
+  TIDE_STATION_IDS,
+  MAX_STATION_MI,
+} from "./conditions";
 import { ALL_SPOTS } from "./spots";
 
 describe("precomputed wind gridpoints (item 53: one-hop wind fetch)", () => {
@@ -40,5 +46,34 @@ describe("conditions fetch adapter (native app config; web must stay same-origin
     // Restore the web default so later tests in this file see web behavior.
     configureConditionsFetch({ apiBase: "", headers: {} });
     expect(conditionsFetchConfig()).toEqual({ apiBase: "", headers: {} });
+  });
+});
+
+describe("tide station coverage", () => {
+  // Added 2026-07-22. The LA and San Diego spots shipped with
+  // tide_sensitive: true while the station list stopped at Port San Luis, so
+  // every one of them resolved "no tide station near this spot" and the
+  // conditions engine, the app's differentiator, ran blind on 22 spots. The
+  // build passed the whole time: no test tied the flag to the coverage it
+  // implies. This is that test. Adding a coastal region without its stations
+  // now fails here instead of in production.
+  it("has a station within range for every tide_sensitive visible spot", () => {
+    // nearestTideStation ALWAYS returns a station, however far away. The real
+    // predicate is the distance cut fetchTides applies, so assert on that.
+    const uncovered = ALL_SPOTS.filter((s) => s.tide_sensitive).filter(
+      (s) => nearestTideStation(s.lat, s.lng).distanceMi > MAX_STATION_MI,
+    );
+    expect(uncovered.map((s) => `${s.id} ${s.water}`)).toEqual([]);
+  });
+
+  it("only ships station ids the tides proxy will forward", () => {
+    // /api/tides validates against TIDE_STATION_IDS. A station in the list but
+    // not in the set (or a typo'd id) 400s at the proxy and silently degrades
+    // to no tides, which is the failure mode above wearing a different hat.
+    for (const s of TIDE_STATIONS) {
+      expect(TIDE_STATION_IDS.has(s.id)).toBe(true);
+      expect(s.id).toMatch(/^[A-Z0-9]{6,8}$/);
+    }
+    expect(TIDE_STATION_IDS.size).toBe(TIDE_STATIONS.length);
   });
 });

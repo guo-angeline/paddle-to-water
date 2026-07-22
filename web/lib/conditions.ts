@@ -137,7 +137,33 @@ export const TIDE_STATIONS: TideStation[] = [
   { id: "9412110", name: "Port San Luis", lat: 35.1689, lng: -120.7542 },
   { id: "9413631", name: "Elkhorn Slough", lat: 36.8183, lng: -121.747 },
   { id: "9416409", name: "Green Cove", lat: 38.7043, lng: -123.4494 },
+  // Southern California, added 2026-07-22 with the LA + San Diego spots. Pulled
+  // from NOAA's own tidepredictions metadata, not typed from memory, and every
+  // id below was confirmed to return hi/lo predictions from the same datagetter
+  // endpoint /api/tides proxies. Without these, 22 SoCal spots carried
+  // tide_sensitive: true and silently showed no tide at all, because the nearest
+  // listed station (Port San Luis) is past MAX_STATION_MI for all of them.
+  { id: "9410840", name: "Santa Monica, Municipal Pier", lat: 34.0083, lng: -118.5 },
+  { id: "9410738", name: "King Harbor, Santa Monica Bay", lat: 33.8467, lng: -118.398 },
+  { id: "9410650", name: "Cabrillo Beach", lat: 33.7067, lng: -118.273 },
+  { id: "9410686", name: "Long Beach, Inner Harbor", lat: 33.7717, lng: -118.21 },
+  { id: "9410230", name: "La Jolla (Scripps Pier)", lat: 32.8669, lng: -117.2571 },
+  { id: "9410196", name: "Mission Bay, Campland", lat: 32.7937, lng: -117.2238 },
+  { id: "9410166", name: "San Diego, Quarantine Station", lat: 32.7033, lng: -117.235 },
+  { id: "9410170", name: "San Diego (Broadway)", lat: 32.7156, lng: -117.1767 },
+  { id: "9410152", name: "National City, San Diego Bay", lat: 32.665, lng: -117.118 },
+  { id: "9410135", name: "South San Diego Bay", lat: 32.6291, lng: -117.1078 },
+  // Subordinate stations. Their ids are NOT numeric, which is why /api/tides
+  // validates against this list rather than a digit regex.
+  { id: "TWC0413", name: "Quivira Basin, Mission Bay", lat: 32.7667, lng: -117.2333 },
+  { id: "TWC0427", name: "Los Patos", lat: 33.7167, lng: -118.05 },
+  { id: "TWC0419", name: "San Clemente", lat: 33.4167, lng: -117.6167 },
 ];
+
+/** Ids the tides proxy will forward upstream. */
+export const TIDE_STATION_IDS: ReadonlySet<string> = new Set(
+  TIDE_STATIONS.map((s) => s.id),
+);
 
 function haversineMi(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const R = 3958.8; // earth radius, miles
@@ -167,7 +193,7 @@ export function nearestTideStation(lat: number, lng: number) {
 
 // If the nearest station is absurdly far, the spot is outside our coverage
 // (e.g. an inland reservoir with no tide). Treat as "no nearby station".
-const MAX_STATION_MI = 60;
+export const MAX_STATION_MI = 60;
 
 function ymd(d: Date): string {
   const y = d.getFullYear();

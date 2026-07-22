@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { TIDE_STATION_IDS } from "@/lib/conditions";
 
 export const runtime = "nodejs";
 
@@ -61,10 +62,13 @@ export async function GET(req: Request) {
   const begin = searchParams.get("begin_date") ?? "";
   const end = searchParams.get("end_date") ?? "";
 
-  // Validate the caller-supplied values before forwarding: station ids are 6-8
-  // digits, dates are YYYYMMDD. Everything else about the NOAA request is fixed
-  // here, so the client cannot steer this into an arbitrary upstream call.
-  if (!/^\d{6,8}$/.test(station) || !/^\d{8}$/.test(begin) || !/^\d{8}$/.test(end)) {
+  // Validate the caller-supplied values before forwarding: the station must be
+  // one we actually ship, dates are YYYYMMDD. Everything else about the NOAA
+  // request is fixed here, so the client cannot steer this into an arbitrary
+  // upstream call. This was a `\d{6,8}` regex until 2026-07-22; an allowlist is
+  // strictly tighter, and the regex silently 400'd the non-numeric subordinate
+  // stations (TWC...) that serve Mission Bay.
+  if (!TIDE_STATION_IDS.has(station) || !/^\d{8}$/.test(begin) || !/^\d{8}$/.test(end)) {
     return NextResponse.json({ error: { message: "invalid station or date" } }, { status: 400 });
   }
 
