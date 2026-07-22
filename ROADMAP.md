@@ -761,7 +761,35 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Conspicuous assent: persistent footer link plus a one-time "By using this site you agree to the Terms and Disclaimer" acceptance at alert enrollment (`InstallPrompt.tsx`); link beside the existing Disclaimer link in `HomeClient.tsx` / `SpotList.tsx`.
 - **Escalate before shipping:** waiver enforceability for a paddling death and the LLC/insurance decision are California-specific and warrant ~1 hr of licensed-attorney review (CA LLC carries ~$800/yr franchise tax). Draft the ToS/waiver text for the attorney to bless rather than originate; open a DECISIONS.md memo for the owner on entity + insurance.
 
-## 45. [blocked(no-source)] Expand coverage to more of Northern California (RESCOPED 2026-07-16: the first task is finding a registry, not running the pipeline)
+## 88. [ready] Lake Tahoe Water Trail: a proven-model registry for one region (one input to item 45's statewide scope)
+
+**Found 2026-07-22, answering the question item 45 actually asks.** Item 45 is `[blocked(no-source)]` because step 1 is "identify an authoritative, field-complete registry for the target region", and none had been found outside the Bay. The search that produced that block had mined exactly ONE registry (SF Bay Water Trail, now spent) and disqualified one (DBW). The Sierra, Delta, Valley and coast had not been searched at all.
+
+**The [Lake Tahoe Water Trail](https://laketahoewatertrail.org/lake-tahoe-water-trail-map-guide/) is the same structural thing as the Bay Water Trail:** a designated route around the 72-mile shoreline publishing **37 public launch and landing sites** and **20 signed trailheads** with restrooms and parking, plus segment maps. That is the field-completeness the Bay registry provided, which is the only reason the item-40/45 rigor was possible.
+
+**The gap is large and in a region already partly covered.** We carry **4 Tahoe records** (11 Sand Harbor, 14 Fallen Leaf, 15 Waterman's Landing, 103 Kings Beach) out of 14 Sierra Nevada records total, against 37 published sites.
+
+**Do this the way the Bay was done, not the way spot 79 was done:**
+- Classify every published site CARRIED / MERGED / GENUINE GAP first, as `reports/item-45-watertrail-gap.md` did. Publish the counts before adding anything. If the yield is mostly MERGED, that is item 40 work again, not new records.
+- **The parking-vs-dock trap applies here too and is the known failure mode.** The Bay Water Trail publishes the parking coordinate, not the dock, which is how spots 127/130/132 got their pins. Assume Tahoe does the same until proven otherwise. Coordinates must be the put-in.
+- Per-field provenance on every record. A guessed boolean is worse than an absent one: `tide_sensitive` is meaningless on Tahoe (set it `false` from the source, not by inference) but `has_fee`, `inspection_required` and `rentals_available` are all real and all commonly wrong. **TRPA requires an aquatic invasive species inspection before launching**, which is already reflected in records 14 and 103 and will apply broadly.
+- Notes say what the source says. Do not upgrade a beach carry-in into a ramp.
+
+**Weigh before building:** this is 37 candidate sites in a region that is a 2-4 hour drive from the Bay Area user base, and the app's traffic is overwhelmingly Bay Area. Coverage there may serve trip planning rather than daily use. Classify first (cheap, high information), then decide whether to ingest.
+
+**Acceptance:** every published Lake Tahoe Water Trail site is classified with counts published in a report under `reports/`; any record added carries per-field provenance and a put-in coordinate verified against a second source (OSM slipway/beach node or the site's own map); `npm test` and the data guards pass; no existing `lat`/`lng` changes.
+
+## 45. [blocked(no-source)] Expand coverage: ALL of California, SoCal first (RESCOPED AGAIN 2026-07-22 by owner directive; was Northern California)
+
+**OWNER DIRECTIVE 2026-07-22: the target is now ALL of California, not Northern California, and Southern California is the priority because that is where many target customers are.** This changes the item's shape twice over. The 2026-07-16 rescope concluded "no registry exists for the rest of NorCal"; that conclusion was reached having searched exactly ONE registry (SF Bay Water Trail) and disqualified one (DBW), with the Sierra, Delta, Valley and coast never searched at all. It was an honest finding about the Bay registry being spent, but it was never a statewide search. Treat it as such.
+
+**Two leads already verified 2026-07-22, and they show why per-site checking is not optional:**
+- **Olde Port Beach, Avila Beach (owner lead): REAL.** Free drive-down beach launch, Port San Luis Harbor District, [DBW f/1082](https://dbw.parks.ca.gov/BoatingFacilities/f/1082). A genuine candidate.
+- **461 Machi Rd, Whitethorn (owner lead): NOT A LAUNCH.** It is a private residence, a 3-bed house sold in 2023. (492 Machi Rd is the Shelter Cove RV Campground.) Ingesting it because it was named would be the spot-79 failure exactly. If the intent was Shelter Cove, that is a different, real place and needs sourcing on its own.
+
+**A statewide source inventory is being built** (regions, registries, per-site fields, licensing, and a REGISTRY / CANDIDATE-GENERATOR / NOT-USABLE verdict per source), covering the owner's leads (visitcadelta.com, DBW, national and state parks, Morro Bay) plus SoCal specifically: LA and Orange County harbours, San Diego and Mission Bay, Ventura and Channel Islands, the Salton Sea, the Colorado River, Big Bear. **Do not start ingesting before that inventory lands.**
+
+**On "just search boat ramp / state park / lake / beach":** that is a candidate generator, not a source, and on its own it IS the geocode-and-trust step that produced spot 79 and the parking-vs-dock pins. It is fine as a way to build a list to verify; it is not fine as a way to fill `spots.json`. Every record still needs per-field provenance and a put-in coordinate, whatever produced the lead.
 
 **RESCOPED 2026-07-16 after a verified Water Trail gap analysis (`reports/item-45-watertrail-gap.md`). This item's premise did not survive it.**
 

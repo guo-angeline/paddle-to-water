@@ -668,7 +668,7 @@ Also recorded, so it is not re-litigated later: **marks staying private is a leg
 
 Answer:
 
-## D31 [OPEN] 2026-07-22 · Form the LLC before contributor prose volume grows (moved out of D30)
+## D31 [RESOLVED] 2026-07-22 · Form the LLC before contributor prose volume grows (moved out of D30)
 
 Split from D30 by the studio loop: D30's own Q1/Q2 were answered on 2026-07-21, so that entry is now `[RESOLVED]`, and this question would have been invisible inside it. Nothing has changed about the question itself.
 
@@ -684,4 +684,11 @@ Why it is a counsel question: anti-SLAPP coverage is state by state, there is a 
 
 Item 84 shipped the floor as **"our take"**, which satisfies the owner's actual request (the rejected wording was "Paddle score", not the concept) and restores the labelled state your D30 Q1 acceptance was given on. **So this does not need re-deciding**: option (a) is now the status quo again. It is recorded here only so the trade is on the record if the label is ever removed a third time.
 
-Answer:
+Answer: (owner, 2026-07-22, in chat) **(a)**. No LLC now. The cost is not justified at 150 WAU with zero revenue, and the owner declined both follow-ups offered alongside it (a review-form copy nudge, and a tripwire restating this decision as conditions). Revisit with D25 Q2/Q3.
+
+**Two factual corrections to this entry's own premise, recorded because they are why (a) was chosen and because the memo above overstates the risk.** Checked against `web/data/spots.json` (143 records) during the chat:
+
+1. **"Private launches" is an empty category on the live site.** The only genuinely private launch is spot 92 (San Rafael Canal, 101 Surf Sports' own dock) and it is already `hidden`. Every visible launch site is public. This matters because a government body cannot bring a defamation claim in the US, so on the large majority of spots there is no possible plaintiff, which the escalation did not account for.
+2. **The real surface is ~28 of 143 records, and it is not about launch access.** Those are public sites with a private business operating on them: spot 23 (launch from the public side of the Half Moon Bay Yacht Club), 26 (free public launch inside a private marina's lot), 135 (Emeryville Marina), 5 (Vasona, no outside watercraft so you must rent from the concessionaire), plus 31 records with `rentals_available: true`. The exposure is a reviewer writing about the *operator* (staff, rental quality, pricing) rather than the water. That is a moderation-and-copy problem, not a corporate-structure one, which is the second reason the entity was judged the wrong first spend.
+
+Also noted and not acted on: forming in Delaware or Wyoming saves nothing, because California taxes on doing business in California, so a non-CA entity run from SF owes the same $800 FTB minimum *plus* foreign-registration and second-state costs. If this is ever revisited, form in CA, and file in the last two weeks of December so the 15-day rule skips a tax year. Insurance (D25 Q3) was flagged as the better first dollar than the entity for this specific risk, since an LLC caps personal assets but does not pay defence costs, and defence cost is the realistic downside here. Not decided, still deferred.
