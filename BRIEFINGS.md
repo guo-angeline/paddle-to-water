@@ -1,3 +1,15 @@
+# 2026-07-22: a live instruction removed from the map, and the deploy guard was not running
+
+**Shipped item 102.** Four spot notes rewritten, deployed and verified.
+
+**What was live.** The Elkhorn Slough note told people to start on a flood tide so they would not be fighting the current on the way back. That is an instruction plus a promise about getting home, and it is word for word the shape your legal review made me strip out of the app a week ago. It sat on a public spot page, directly above the conditions panel, because the safety-copy check has never once read the spot data file. Three other spots had milder versions. All four now state the fact and leave the decision alone: the Highway 1 current runs hard on an ebb, the Alviso sloughs drain toward mud near low water.
+
+**The check itself was the real work.** Adding the file to the sweep was not enough: not one of the existing patterns matched any of the four live notes, so switching it on would have turned the light green over exactly the copy it exists to catch. That is the same way this check failed once before, and the note in the file says so. I built the new patterns by searching all 177 records rather than from memory, confirmed each one hits its target and nothing else, and then put the bad sentence back to confirm the check actually fails. It does.
+
+**Then something worse turned up while deploying it.** The guard that is supposed to stop risky deploys reaching production only runs when the deploy command is written one particular way, and that way no longer works: Vercel now rejects it and tells you to use a different form. So the command in our own notes is the one the guard watches, and the command that actually deploys is the one it ignores. Four deploys today went out unguarded. None of them needed it, I check the risky part by hand each time, but the guard was not what was protecting you. Filed with the related gap I found yesterday, since it is one file and one fix.
+
+**Your move:** nothing blocking. D32 is still open from this morning.
+
 # 2026-07-22: the conditions rethink, and two guards that were not guarding
 
 **Item 91 is done.** It was a thinking item, not a building one, so the output is a decision and ten filed build items rather than a deploy.

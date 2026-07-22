@@ -262,7 +262,13 @@ Design (2026-07-22): keep two sections, re-cut them; rename the eyebrow "Conditi
 
 Do not start. Full cost in item 91's recommendation. A data programme, not a sub-task, and the only feature that needs it is the deferred trip planner.
 
-## 102. [ready] Spot notes are outside the safety-copy sweep, and one is a live outcome promise
+## 102. [done] Spot notes join the safety-copy sweep, and one live promise is gone (deployed 2026-07-22, cf8d792)
+
+Spot 72 (Elkhorn Slough, **visible in production**) read: "Start on a flood tide so you're not fighting the current under the Highway 1 bridge **on the way back**." An imperative plus a return-leg representation: **the exact pair the item-34 gate stripped out of `launchDirectionTip`**. It survived because `data/spots.json` was outside every copy sweep, while `SpotDrawer` renders notes directly above the conditions panel on every public spot page.
+
+Four notes rewritten into descriptive voice, keeping the fact and dropping the instruction (spot 1 now says the sloughs drain toward mud near low water; spot 72 says the current under the bridge runs hard on an ebb). Coordinates untouched, text-level edit, zero removed lat/lng lines.
+
+**The guard needed more than a new filename in the list, and this is the reusable part. NONE of the four existing `OUTCOME_PROMISES` or `DIRECTIVES` patterns matched ANY of the four live notes.** Adding `spots.json` to the sweep as-is would have gone green over the very copy the sweep exists to stop: this suite's own documented failure mode, repeating. Five patterns added, each derived by grepping all 177 records rather than from memory, each verified to hit exactly its target and nothing else BEFORE being committed. Hidden records are swept too, because `hidden` is reversible and un-hiding does not re-run a copy review (spot 79 was hidden and carried one). **Verified the guard bites:** restoring spot 72's sentence fails the suite by spot id.
 
 **Found by item 99's lawyer gate, 2026-07-22. Blocks item 99.**
 
@@ -319,7 +325,16 @@ So the shared library that determines send behaviour and alert copy is outside t
 
 **This also settled a disagreement between two agents on item 91**, both of whom reasoned about whether folding the storm fix into a UI bundle "would trip the gate". Neither checked. It would not.
 
-**Acceptance:** the protected set covers the alert/push *library* surface, not just the route paths; the gate is exercised against a fixture list proving each protected path is caught (assert what must be CAUGHT); a deliberate dry run shows a `conditions-window.ts` edit now gating.
+**SECOND HOLE, FOUND 2026-07-22 WHILE DEPLOYING ITEM 102, AND IT IS WORSE THAN THE PATH ONE: THE GATE DOES NOT RUN AT ALL FOR THE COMMAND WE ACTUALLY USE.** `main()` returns 0 immediately unless the command contains the literal substring `vercel --prod`. Every deploy in this session used `vercel deploy --prod --cwd web`, which does **not** contain it, so `find_block()` was never called:
+
+```
+CHECKED  'vercel --prod --yes --cwd web'      <- what studio.md documents
+SKIPPED  'vercel deploy --prod --cwd web'     <- what actually works, and what we use
+```
+
+**Root cause is drift, not carelessness:** the Vercel CLI now rejects the bare `vercel --prod --yes` form and prints the `vercel deploy --prod` form as the correct invocation, so the documented command stopped working and its working replacement silently bypasses the guard. Four production deploys today (San Diego, Orange County, statewide, item 89) went out ungated. None of them needed the gate (coordinate churn was checked by hand every time), but the guard was not what protected them.
+
+**Acceptance:** the protected set covers the alert/push *library* surface, not just the route paths; the trigger matches any real production deploy invocation, not one literal string; `.claude/studio.md`'s documented deploy command matches what the CLI actually accepts; the gate is exercised against a fixture list of BOTH command forms and BOTH path classes, proving each is caught (assert what must be CAUGHT); a deliberate dry run shows a `conditions-window.ts` edit gating under the real command.
 
 
 ## 93. [ready] Demand test for the AI trip planner: a placeholder button that counts interest
