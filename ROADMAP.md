@@ -883,6 +883,28 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Acceptance:** a spot outside the Bay Area can be added with a valid region; the site title, description, keywords, tagline and `<h1>` no longer claim a coverage area the data contradicts; the region filter still fits at 390px without wrapping; `npm test`, lint and build pass; no existing `lat`/`lng` changes.
 
+## 94. [blocked(owner-lookup)] San Diego ingest from CCC YourCoast: 6 paddle-specific candidates, and CCC's fee field already caught lying
+
+**Owner-directed 2026-07-22, after LA shipped.** Full analysis and lookup list: `reports/sd-ingest-candidates-2026-07-22.md`.
+
+**San Diego is the better county, as the statewide inventory predicted.** 197 CCC records, 65 paddle-plausible, 17 with an explicit launch type, and **6 paddle-specific** (hand / kayak / small-craft) against LA's 2. Most sit in **Mission Bay**, which is protected, purpose-built for watersports, and the densest paddle water in the state. None is within 500 m of an existing spot.
+
+**Tier 1, strongest candidates found in any county so far:** **El Carmel Point** (Mission Bay, "Bay beach, kayak launch"), **Playa Pacifica** (Mission Bay, typed `Kayak Launch`), **Crown Cove** (Coronado, hand launch at the Crown Cove Aquatic Center).
+
+**Tier 2, need a call:** **Agua Hedionda Lagoon** (protected, but see the fee finding) and **La Jolla Shores** (the iconic San Diego kayak launch, and genuinely open ocean; CCC's own description is "Swimming, surfing, diving").
+
+**Tier 3, recommend excluding:** **Cardiff State Beach**, typed `Hand Launch` but described by CCC as "Swimming, **surfing**, surf fishing". The Malibu class from the LA batch.
+
+**THE FINDING THAT CHANGES THE INGEST RULE: CCC's `FEE` field is wrong on the first candidate checked.** CCC records Agua Hedionda as `FEE = No`. A **Carlsbad city permit is required to be on the water** (~$9/day), plus a $10 launch fee from the California Watersports beach; a free public launch on Bayshore Drive avoids the launch fee but not the permit. This is precisely the SoCal failure mode the statewide inventory predicted: **records fail by staleness and access rules, not by drifting from a good source.** CCC's lineage is a 2014 guidebook and a later permit regime is invisible to it. Shipping `has_fee: false` would tell a paddler they can launch free when they would be on the water illegally.
+
+**So `FEE` may NOT be carried from CCC unverified for San Diego.** It was safe in LA only because the owner confirmed each record. Store `null` over a value that cannot be stood behind.
+
+**Coordinates are weaker here than in LA.** Two of three Overpass boxes returned 504, and the Mission Bay box shows no slipway within 400 m of any paddle-specific candidate (El Carmel Point 456 m, Playa Pacifica 1,322 m). Consistent rather than alarming, since a bay-beach kayak launch has no slipway to map, but it means **OSM cannot correct these and they need the owner's eyes.**
+
+**The 11 boat ramps** (6 in Mission Bay, 5 on San Diego Bay, plus Oceanside Harbor) are all protected water, but **the owner's LA precedent was to exclude the Fiji Way ramp** because a trailer ramp is not obviously somewhere a paddler is welcome. That precedent should settle these as a category.
+
+**Acceptance:** only owner-confirmed records ship; `FEE` is verified per record or stored `null`; each coordinate is a put-in, not CCC's locator; `BT_FACIL_TYPE` used verbatim; `precompute_gridpoints.py` re-run in the same change (item 90's lesson); `spots.json` edited text-level, never reserialized (item 90's other lesson); no existing `lat`/`lng` touched.
+
 ## 90. [done] LA County ingest: 6 spots live, first coverage outside the Bay Area (deployed 2026-07-22, 67d150a)
 
 **Owner-directed 2026-07-22: start statewide expansion with LA.** Full analysis and the lookup list: `reports/la-ingest-candidates-2026-07-22.md`.
