@@ -1,7 +1,7 @@
 {
   "generated": "raw-data/select_photos.mjs (automated pick, owner directive 2026-07-18, no manual curation)",
   "source": "Wikimedia Commons, free licenses only, self-hosted sized derivatives",
-  "total_with_photo": 109,
+  "total_with_photo": 131,
   "photos": {
     "1": {
       "file": "/spot-photos/1.jpg",
@@ -128,6 +128,17 @@
       "title": "File:Fallen Leaf Lake and Lake Tahoe, CA - panoramio.jpg",
       "distance_m": 486,
       "score": 20
+    },
+    "15": {
+      "file": "/spot-photos/15.jpg",
+      "author": "Oscar Vasquez / California Department of Parks and Recreation",
+      "license": "Public domain",
+      "license_url": null,
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Ed_Z%27berg_Sugar_Pine_Point_State_Park.jpg",
+      "title": "Ed Z'berg Sugar Pine Point State Park.jpg",
+      "distance_m": 7121,
+      "attribution_required": false
     },
     "16": {
       "file": "/spot-photos/16.jpg",
@@ -366,6 +377,16 @@
       "distance_m": 173,
       "score": 13
     },
+    "52": {
+      "file": "/spot-photos/52.jpg",
+      "author": "Frank Schulenburg",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sausalito_Yacht_Harbor_panorama.jpg",
+      "title": "Sausalito Yacht Harbor panorama.jpg",
+      "distance_m": 713
+    },
     "53": {
       "file": "/spot-photos/53.jpg",
       "author": "Patrick Nouhailler's…",
@@ -557,6 +578,15 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AQuarry%20Lakes%20(5003082542).jpg",
       "title": "File:Quarry Lakes (5003082542).jpg"
     },
+    "84": {
+      "file": "/spot-photos/84.jpg",
+      "author": "daktre",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0/",
+      "source": "Flickr (via Openverse)",
+      "source_page": "https://www.flickr.com/photos/41247690@N00/30501890034",
+      "title": "Arrow-head Marsh - MLK Jr Regional Shoreline"
+    },
     "86": {
       "file": "/spot-photos/86.jpg",
       "author": "Mliu92",
@@ -566,6 +596,15 @@
       "source_page": "https://commons.wikimedia.org/wiki/File%3AAntioch%20Marina%2C%20West%20side%20by%20shore.jpg",
       "title": "File:Antioch Marina, West side by shore.jpg",
       "score": 17
+    },
+    "89": {
+      "file": "/spot-photos/89.jpg",
+      "author": "RoyKabanlit",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Paradise_Island_Beach.jpg",
+      "title": "Paradise Island Beach.jpg"
     },
     "91": {
       "file": "/spot-photos/91.jpg",
@@ -865,6 +904,17 @@
       "file": "/spot-photos/129.jpg",
       "source": "owner"
     },
+    "131": {
+      "file": "/spot-photos/131.jpg",
+      "author": "Cullen328",
+      "license": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:2014_South_Napa_Earthquake_epicenter.jpg",
+      "title": "2014 South Napa Earthquake epicenter.jpg",
+      "distance_m": 842,
+      "attribution_required": false
+    },
     "132": {
       "file": "/spot-photos/132.jpg",
       "author": "Missvain",
@@ -1024,7 +1074,172 @@
       "title": "File:Johnson's Beach guerneville Russian River California.jpg",
       "distance_m": 143,
       "score": 20
+    },
+    "151": {
+      "file": "/spot-photos/151.jpg",
+      "author": "Snake311",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Cumulonimbus_clouds_seen_from_Marina_del_Rey.jpg",
+      "title": "Cumulonimbus clouds seen from Marina del Rey.jpg",
+      "distance_m": 769
+    },
+    "154": {
+      "file": "/spot-photos/154.jpg",
+      "author": "Sergei Gussev",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:-i---i-_(27254599303).jpg",
+      "title": "-i---i- (27254599303).jpg",
+      "distance_m": 313
+    },
+    "155": {
+      "file": "/spot-photos/155.jpg",
+      "author": "Konrad Summers",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:CHL-_1014_LONG_BEACH_MARINE_STADIUM_-_4550415990.jpg",
+      "title": "CHL- 1014 LONG BEACH MARINE STADIUM - 4550415990.jpg",
+      "distance_m": 584
+    },
+    "159": {
+      "file": "/spot-photos/159.jpg",
+      "author": "ustgary",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Mirror_-_panoramio_-_ustgary.jpg",
+      "title": "Mirror - panoramio - ustgary.jpg",
+      "distance_m": 762
+    },
+    "160": {
+      "file": "/spot-photos/160.jpg",
+      "author": "ABM California",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Agua_Hedionda_Lagoon,_Carlsbad_California_northern_shoreline.jpg",
+      "title": "Agua Hedionda Lagoon, Carlsbad California northern shoreline.jpg"
+    },
+    "161": {
+      "file": "/spot-photos/161.jpg",
+      "author": "Leandro Neumann Ciuffo",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:La_Jolla_shores_(6484646863).jpg",
+      "title": "La Jolla shores (6484646863).jpg",
+      "distance_m": 351
+    },
+    "162": {
+      "file": "/spot-photos/162.jpg",
+      "author": "Ccarll",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Oceanside_Harbor_Village.jpg",
+      "title": "Oceanside Harbor Village.jpg"
+    },
+    "168": {
+      "file": "/spot-photos/168.jpg",
+      "author": "Weedwhacker128",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Shelter_Island_Marina_San_Diego.jpg",
+      "title": "Shelter Island Marina San Diego.jpg",
+      "distance_m": 719
+    },
+    "170": {
+      "file": "/spot-photos/170.jpg",
+      "author": "Beyond My Ken",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:2019_Glorietta_Marina,_Coronado.jpg",
+      "title": "2019 Glorietta Marina, Coronado.jpg"
+    },
+    "172": {
+      "file": "/spot-photos/172.jpg",
+      "author": "Roman Eugeniusz",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Chula_Vista,_CA,_USA_-_panoramio_(96).jpg",
+      "title": "Chula Vista, CA, USA - panoramio (96).jpg",
+      "distance_m": 551
+    },
+    "175": {
+      "file": "/spot-photos/175.jpg",
+      "author": "Don Ramey Logan",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Harbor_20_Racing_in_Newport_Beach_by_Don_Ramey_Logan.jpg",
+      "title": "Harbor 20 Racing in Newport Beach by Don Ramey Logan.jpg",
+      "distance_m": 512
+    },
+    "176": {
+      "file": "/spot-photos/176.jpg",
+      "author": "Chris English",
+      "license": "CC BY-SA 3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:2013,_Linda_Island,_Balboa_Marina_-_panoramio.jpg",
+      "title": "2013, Linda Island, Balboa Marina - panoramio.jpg",
+      "distance_m": 933
+    },
+    "177": {
+      "file": "/spot-photos/177.jpg",
+      "author": "Don Ramey Logan",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Newport_Harbor_Yacht_Moorings_by_Don_Ramey_Logan.jpg",
+      "title": "Newport Harbor Yacht Moorings by Don Ramey Logan.jpg",
+      "distance_m": 230
+    },
+    "180": {
+      "file": "/spot-photos/180.jpg",
+      "author": "Krzysztof Ziarnek, Kenraiz",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Stone_Lagoon_kz03.jpg",
+      "title": "Stone Lagoon kz03.jpg"
+    },
+    "182": {
+      "file": "/spot-photos/182.jpg",
+      "author": "btwashburn",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Soquel_Creek,_Capitola_(9657430179)_(cropped).jpg",
+      "title": "Soquel Creek, Capitola (9657430179) (cropped).jpg",
+      "distance_m": 190
+    },
+    "183": {
+      "file": "/spot-photos/183.jpg",
+      "author": "Mike Baird",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Morro_bay_state_park_marina.jpg",
+      "title": "Morro bay state park marina.jpg"
+    },
+    "184": {
+      "file": "/spot-photos/184.jpg",
+      "author": "Ken Lund from Las Vegas, Nevada, USA",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source": "Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Embarking_for_Santa_Cruz_Island,_Channel_Islands_National_Park,_California_(5).jpg",
+      "title": "Embarking for Santa Cruz Island, Channel Islands National Park, California (5).j",
+      "distance_m": 515
     }
   },
-  "curation": "Vision-curated 2026-07-18: from 111 auto-picks, 57 verified as genuine location photos; 54 rejected (wildlife/objects/buildings/signs/maps that title-scoring could not filter). Rejected spot ids left photo-less for a later re-pick/backfill pass. | 2026-07-18 backfill slice A (item 56): +3 re-picked from rejects (19,86,128); top-alternate re-pick low-yield, rest need widened multi-source search. | slice B (item 56): +18 via Wikidata P18 (coord-verified, vision-checked; dropped aerials/satellite/dam/power-plant/sign). | slice C (item 56): +4 via Openverse/Flickr (text-search noisy, vision-kept 4 of 24). Free sources (Commons+Wikidata+Openverse) exhausted at this coverage. | 2026-07-18 owner first-party import: +12 owner-supplied photos (source:\"owner\", no attribution overlay). | 2026-07-21 owner first-party import: +2 owner-supplied photos (spots 101, 120; source:\"owner\", no attribution overlay). | 2026-07-21 wide re-sweep of the 45 photo-less spots (Commons category traversal + Wikipedia lead images + wider geosearch, all coordinate-verified, vision-reviewed): +12 (8,24,37,38,56,104,108,112,117,124,137,142). 33 still have no usable free-licensed photo. | 2026-07-21 keyless Openverse pass over the remaining 33: 14 spots returned hits, only 1 usable (148 Lakeshore Park, Flickr CC BY-SA). Rest were birds, big-wave surf, a Bahamas geology slide, a Ferrari dealership. | 2026-07-21 owner first-party import: +2 owner-supplied photos (spots 41, 129; source:\"owner\", no attribution overlay)."
+  "curation": "Vision-curated 2026-07-18: from 111 auto-picks, 57 verified as genuine location photos; 54 rejected (wildlife/objects/buildings/signs/maps that title-scoring could not filter). Rejected spot ids left photo-less for a later re-pick/backfill pass. | 2026-07-18 backfill slice A (item 56): +3 re-picked from rejects (19,86,128); top-alternate re-pick low-yield, rest need widened multi-source search. | slice B (item 56): +18 via Wikidata P18 (coord-verified, vision-checked; dropped aerials/satellite/dam/power-plant/sign). | slice C (item 56): +4 via Openverse/Flickr (text-search noisy, vision-kept 4 of 24). Free sources (Commons+Wikidata+Openverse) exhausted at this coverage. | 2026-07-18 owner first-party import: +12 owner-supplied photos (source:\"owner\", no attribution overlay). | 2026-07-21 owner first-party import: +2 owner-supplied photos (spots 101, 120; source:\"owner\", no attribution overlay). | 2026-07-21 wide re-sweep of the 45 photo-less spots (Commons category traversal + Wikipedia lead images + wider geosearch, all coordinate-verified, vision-reviewed): +12 (8,24,37,38,56,104,108,112,117,124,137,142). 33 still have no usable free-licensed photo. | 2026-07-21 keyless Openverse pass over the remaining 33: 14 spots returned hits, only 1 usable (148 Lakeshore Park, Flickr CC BY-SA). Rest were birds, big-wave surf, a Bahamas geology slide, a Ferrari dealership. | 2026-07-21 owner first-party import: +2 owner-supplied photos (spots 41, 129; source:\"owner\", no attribution overlay). | 2026-07-21 wide free-source sweep of all 64 photo-less spots (incl. new SoCal region), Commons category+geosearch+Wikipedia+Openverse, coord-verified + vision-reviewed: +22 (mostly SoCal marinas/beaches). Remaining have no free-licensed photo."
 }
