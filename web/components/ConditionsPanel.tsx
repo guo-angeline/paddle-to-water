@@ -15,6 +15,7 @@ import {
   type TideOutcome,
   type Paddleability,
 } from "@/lib/conditions";
+import { launchDirectionTip, COMPASS_WORDS } from "@/lib/launchDirection";
 import { trackSystem, trackIntent } from "@/lib/analytics";
 import { useKillSwitch } from "@/lib/experiments";
 import { useGenuineView } from "@/lib/useGenuineView";
@@ -111,6 +112,9 @@ function WindReading({
   readoutOn: boolean;
 }) {
   const stormy = readoutOn && isStormyForecast(wind.shortForecast);
+  // launchDirectionTip returns null under 5mph and for variable wind, so it
+  // carries its own empty state; the panel just does not render the line.
+  const tip = launchDirectionTip(wind.direction, wind.speedMax);
   return (
     <div>
       {/* A storm badge OWNS the pill slot, for every difficulty (lightning is
@@ -155,9 +159,28 @@ function WindReading({
             </>
           )}
         </span>
-        {wind.direction && <span className="text-sm text-(--muted)">from {wind.direction}</span>}
+        {wind.direction && (
+          <span className="text-sm text-(--muted)">
+            {/* Item 99: expand the raw NWS abbreviation. "from WNW" is data;
+                "from the west-northwest" is legible. Falls back to the raw
+                value for a direction outside the 16-point set. */}
+            from{" "}
+            {readoutOn ? COMPASS_WORDS[wind.direction.toUpperCase()] ?? wind.direction : wind.direction}
+          </span>
+        )}
       </div>
       <p className="text-xs text-(--muted) mt-0.5">{weatherLine(wind, stormy, readoutOn)}</p>
+      {/* Item 99: the launch-direction tip, ported from the alert surfaces. It
+          renders HERE, as an annotation on the wind fact and ABOVE the panel's
+          disclaimer, per the lawyer gate: never below the disclaimer, never in
+          or after NextGoodWindowPanel. It is the same already-gated string
+          (lib/launchDirection.ts), reworded by a second gate for this public
+          context. no-inducement.test.ts sweeps this file and asserts the
+          disclaimer co-renders. Suppressed under a storm badge: a heading tip
+          next to a lightning warning is the wrong emphasis. */}
+      {readoutOn && !stormy && tip && (
+        <p className="text-xs text-(--muted) mt-1">{tip}</p>
+      )}
     </div>
   );
 }
@@ -309,7 +332,7 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
 
       {bothErrored ? (
         <p className="text-sm text-(--muted)">
-          Live conditions are unavailable right now. Check back before you head out.
+          Live conditions are unavailable right now. Check back for a current read.
         </p>
       ) : (
         <div className="space-y-3">

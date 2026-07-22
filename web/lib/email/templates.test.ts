@@ -284,8 +284,8 @@ describe("composeAlertEmail", () => {
 
   it("includes the launch direction tip in both html and text when the wind qualifies", () => {
     const msg = composeAlertEmail({ ...base, windDirection: "WNW", maxWindMph: 12 });
-    expect(msg.html).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back.");
-    expect(msg.text).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back.");
+    expect(msg.html).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back, where the shoreline allows.");
+    expect(msg.text).toContain("Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back, where the shoreline allows.");
   });
 
   it("omits the tip cleanly when direction is missing, with no doubled blank line in text", () => {

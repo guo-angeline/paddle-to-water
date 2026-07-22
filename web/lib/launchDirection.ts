@@ -4,7 +4,7 @@ const VARIABLE_MARKERS = new Set(["variable", "vrb"]);
 // full words so the tip reads friendly for non-sailors ("west-northwest", not
 // "WNW"). Keyed by upper-case abbreviation; falls back to the raw value if a
 // direction ever arrives outside this set.
-const COMPASS_WORDS: Record<string, string> = {
+export const COMPASS_WORDS: Record<string, string> = {
   N: "north",
   NNE: "north-northeast",
   NE: "northeast",
@@ -49,6 +49,17 @@ const COMPASS_WORDS: Record<string, string> = {
  * So it now reports the wind as a fact and states the geometry, leaving the
  * decision to the paddler. No verb aimed at the reader, no promise about the
  * way home. The useful insight (start upwind, finish downwind) survives.
+ *
+ * ITEM 99 (2026-07-22). The trailing "where the shoreline allows" clause was
+ * ADDED by a second lawyer gate when this tip moved from the alert-only
+ * surfaces onto the public ConditionsPanel, seen by first-time visitors on
+ * every spot. The app has one lat/lng per spot and NO shoreline orientation, so
+ * "an upwind start" can point at open water on an exposed shore. The clause
+ * signals the geometry is generic and may not fit the water in front of the
+ * reader. Three properties must hold in ANY future rewording, and this string
+ * is the output of a gate, so changing it re-opens that gate: (1) no verb aimed
+ * at the reader, (2) no representation that they will get back, (3) an explicit
+ * signal that the geometry is generic.
  */
 export function launchDirectionTip(
   windDirection: string | undefined,
@@ -59,5 +70,5 @@ export function launchDirectionTip(
   if (VARIABLE_MARKERS.has(windDirection.toLowerCase())) return null;
 
   const words = COMPASS_WORDS[windDirection.toUpperCase()] ?? windDirection;
-  return `Wind is from the ${words}. An upwind start leaves the downwind leg for the way back.`;
+  return `Wind is from the ${words}. An upwind start leaves the downwind leg for the way back, where the shoreline allows.`;
 }

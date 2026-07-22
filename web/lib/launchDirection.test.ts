@@ -4,7 +4,7 @@ import { launchDirectionTip } from "./launchDirection";
 describe("launchDirectionTip", () => {
   it("names the upwind compass direction in full words when wind qualifies", () => {
     expect(launchDirectionTip("WNW", 12)).toBe(
-      "Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back."
+      "Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back, where the shoreline allows."
     );
   });
 
@@ -17,7 +17,7 @@ describe("launchDirectionTip", () => {
     };
     for (const [abbr, words] of Object.entries(cases)) {
       expect(launchDirectionTip(abbr, 12)).toBe(
-        `Wind is from the ${words}. An upwind start leaves the downwind leg for the way back.`
+        `Wind is from the ${words}. An upwind start leaves the downwind leg for the way back, where the shoreline allows.`
       );
     }
   });
