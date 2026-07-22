@@ -2732,5 +2732,41 @@
     "dog_friendly": null,
     "rentals_available": false,
     "inspection_required": false
+  },
+  {
+    "id": 155,
+    "region": "Los Angeles",
+    "city": "Long Beach",
+    "water": "Marine Stadium",
+    "notes": "Sheltered dredged basin off Appian Way, long used for rowing and flatwater paddling. Paddling is permitted outside sanctioned events. Paid parking and restrooms on site.",
+    "lat": 33.7608338,
+    "lng": -118.1236316,
+    "geocode_display": "Marine Stadium, Long Beach, Los Angeles County, California, United States",
+    "difficulty": "bay",
+    "fee_amount": null,
+    "has_fee": true,
+    "power_boats": null,
+    "tide_sensitive": true,
+    "dog_friendly": null,
+    "rentals_available": false,
+    "inspection_required": false
+  },
+  {
+    "id": 156,
+    "region": "Los Angeles",
+    "city": "Long Beach",
+    "water": "Alamitos Bay - Bayshore Beach",
+    "notes": "Calm bay beach on the Bayshore side of Alamitos Bay. The sand runs a long way, so there is no single put-in and you can launch anywhere along it. Free, with parking and restrooms.",
+    "lat": 33.7518661,
+    "lng": -118.1309381,
+    "geocode_display": "Bayshore Beach, Alamitos Bay, Long Beach, Los Angeles County, California, United States",
+    "difficulty": "bay",
+    "fee_amount": null,
+    "has_fee": false,
+    "power_boats": null,
+    "tide_sensitive": true,
+    "dog_friendly": null,
+    "rentals_available": false,
+    "inspection_required": false
   }
 ]

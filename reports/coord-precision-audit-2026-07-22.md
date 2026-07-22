@@ -77,7 +77,7 @@ The rest, by nearest mapped object:
 | Houses and buildings | 17 |
 | Park furniture (benches, toilets, bins, drinking fountains) | 16 |
 | Marinas, camp sites, cafes, hotels | ~14 |
-| **Nothing at all — only a county boundary returned** | 3 |
+| **Nothing at all, only a county boundary returned** | 3 |
 
 ### Confirmed defects, measured
 
@@ -124,3 +124,76 @@ The stored coordinate is not only a pin. It is:
 5. **Then decide the standard** (put-in vs published parking) and re-pin the Water Trail block to match.
 
 **Caveat on scope.** This audit measured all 143 records with automated screens and hand-verified about a dozen. It is a ranked candidate list plus 7 confirmed defects, not a certification of the other 136. Given three false positives in the first handful checked, assume the candidate lists above contain more.
+
+---
+
+# Appendix: the Overpass pass (completed after the body was written)
+
+6,247 unique OSM features were pulled within 1.2 km of the 143 pins and each pin was measured against the nearest **hard launch** feature (`leisure=slipway`, `waterway=slipway`, `canoe=put_in`, `waterway=access_point`).
+
+## Distance from each pin to the nearest real launch
+
+| Distance to nearest OSM launch | Spots |
+|---|---|
+| ≤ 25 m | 12 |
+| 26-75 m | 7 |
+| 76-150 m | 13 |
+| 151-400 m | 16 |
+| > 400 m | 18 |
+| **no launch mapped within 1.2 km** | **77** |
+
+The 77 are mostly an **OSM coverage gap, not a defect**: this morning's discovery sweep already established that OSM's launch coverage in NorCal is thin and largely unnamed. Of the **66 spots OSM can corroborate at all, 34 (52%) sit more than 150 m from the nearest launch.**
+
+**The parking-vs-put-in pattern is now quantified: on 34 spots, the nearest car park is strictly closer to our pin than the nearest launch is.** That is the 127/130/132 fingerprint appearing across roughly a quarter of the dataset, and it is what Finding 4's standards conflict looks like in the data.
+
+## 16 candidates where two independent screens agree
+
+Each is >150 m from the nearest OSM launch **and** reverse-geocodes to a road, car park, building or landuse polygon.
+
+| Spot | Water | Pin sits on | Nearest launch | Nearest parking |
+|---|---|---|---|---|
+| 27 | Seal Point Park shoreline | service road | 1040 m | 83 m |
+| 146 | Walnut Grove Public Dock | car park | 1004 m | 40 m |
+| 72 | Elkhorn Slough | residential road | 951 m | 878 m |
+| 142 | Brannan Island SRA | unclassified road | 920 m | 758 m |
+| 8 | Calero County Park | McKean Road | 668 m | 588 m |
+| 11 | Sand Harbor | car park | 574 m | 74 m |
+| 102 | Donner Lake | South Shore Drive | 534 m | 384 m |
+| 140 | Riverview Park | River View Park Drive | 506 m (Marina Boat Launch) | 54 m |
+| 9 | Clementine Lake | Lake Clementine Road | 405 m | 306 m |
+| 40 | Napa River, Kennedy Park | Napa River Trail (cycleway) | 384 m | 83 m |
+| 71 | Lodi Lake | service road | 254 m | 138 m |
+| 74 | Coyote Point Rec Area | Promenade Trail (footway) | 243 m | 48 m |
+| 147 | Lower Sherman Island | car park | 238 m (Kitesurf launch) | 49 m |
+| 85 | Contra Loma Reservoir | Contra Loma Boulevard | 222 m | 154 m |
+| 100 | Nimbus Flat | recreation ground | 181 m | 184 m |
+| 19 | Black Miners Bar | cycleway | 174 m | 63 m |
+
+Spot 11 independently reproduces this morning's OSM sweep finding (a slipway ~580 m north of our pin).
+
+## The method's own failure, and it matters more than the table
+
+I required two screens to agree before calling a defect. **That rule graded 4 of the 7 defects I had already confirmed by hand as "OK" or "WATCH":**
+
+| Spot | Hand verdict | Automated verdict | Why the screens missed it |
+|---|---|---|---|
+| **15** | 15.5 km out in Lake Tahoe | **OK** | no OSM launch within 1.2 km, and "county boundary" was not in the bad-category list |
+| **37** | mid-lake | **OK** | same |
+| **107** | mid-lake | **OK** | same |
+| **75** | 423 m, on a Taco Bell | **OK** | no OSM launch nearby; "fast food" was not in the bad-category list |
+| 2 | 0 m from reservoir centroid | WATCH | only one screen fired |
+| 33 | 2.6 km off | WATCH | only one screen fired |
+| 41 | on a motorway | WATCH | only one screen fired |
+
+**A 57% false-negative rate on known defects, and it is not random: the two-screen rule fails hardest on the worst pins.** The further a pin is from any real launch, the less mapped context surrounds it, so the corroborating screen has nothing to fire on and the record scores clean. Spot 15, the worst coordinate in the dataset, came back **OK**.
+
+`CLAUDE.md` records that every screen has false positives we cannot see. This is the dual, and it should be written down next to it: **"nothing is mapped anywhere near this pin" is the strongest defect signal in the set, not a neutral result.** Nominatim falling back to a bare county (spots 15, 37, 107) means there is no mapped object at all near the point, which on a lake means open water.
+
+**Corrected severity ranking, highest first:**
+1. Reverse geocode returns only a county boundary → no feature at all → **open water**. Spots **15, 37, 107**.
+2. Coordinate equals a water-body polygon centroid. Spot **2** (0 m), and check **9, 22, 36, 54** which share the whole-water-body `geocode_display`.
+3. Pin on a motorway or a private house. Spots **41, 33, 75**.
+4. The 16 two-screen candidates above.
+5. The 34 parking-nearer-than-launch spots, which are a standards decision (Finding 4) before they are a defect.
+
+This does not change the recommendation order in the body. It sharpens step 4: fix the three open-water pins first, because they are the ones an alert cron can send somebody toward.
