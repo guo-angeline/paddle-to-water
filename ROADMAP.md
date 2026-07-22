@@ -883,6 +883,23 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 
 **Acceptance:** a spot outside the Bay Area can be added with a valid region; the site title, description, keywords, tagline and `<h1>` no longer claim a coverage area the data contradicts; the region filter still fits at 390px without wrapping; `npm test`, lint and build pass; no existing `lat`/`lng` changes.
 
+## 96. [done] Statewide close-out: the last 5 CCC launches, 4 more refusals (deployed 2026-07-22, 8b4ba2f)
+
+**This closes the CCC sweep. California-wide the source publishes 30 paddle-specific launches, and all 30 are now either shipped or refused with a stated reason. 177 records.** Full analysis: `reports/oc-ingest-2026-07-22.md` and the LA/SD reports.
+
+**Shipped:** Stone Lagoon and Hookton Slough (**new North Coast region**), Hooper Beach at Capitola and Morro Bay State Park Marina (Central Coast), Marina Park in Ventura (**new Ventura region**). Morro Bay State Park Marina is the spot the owner asked for by name on 2026-07-22.
+
+**Refused, and the reasons are the reusable part:**
+- **Stillwater Cove** and **Leffingwell Landing**: imagery shows exposed Pacific with white water breaking across rock, and Stillwater's pin is 400 m inland in forest. The Malibu class.
+- **Harbor Beach, Santa Cruz**: it **is** spot 123, Santa Cruz Harbor, 0.42 mi away and already described as the protected harbour launch. **The 500 m dedupe threshold passed it because the threshold answers "how far", not "is this the same launch".** Second occurrence of the duplicate-name failure after Folsom Lake (item 58).
+- **Humboldt Bay NWR**: imagery shows the refuge headquarters, managed wetland impoundments and trails, no open water. Hookton Slough 2 mi south in the same refuge is the real put-in.
+
+**Two fields a blanket default would have got wrong.** **Stone Lagoon is `tide_sensitive: false`** and `difficulty: flatwater`, because it is a barrier lagoon closed to the ocean. Every other coastal record in these batches is `true`; defaulting this one would have shown it a tide it does not have, sourced from Humboldt Bay 40 mi away. **The conditions engine cannot tell a wrong `true` from a right one, so the per-record judgment is the only control.**
+
+**Tides:** added Ventura, Santa Cruz and Hookton Slough, each confirmed against the datagetter first. Hookton Slough gets its **own** station 0.6 mi out, the closest match in the app. **NOAA publishes no Morro Bay station at all**, so Morro Bay falls back to Port San Luis 13 mi south: the honest best available, now written down in `conditions.ts` rather than rediscovered later. Worst station distance across all 177 records is now 20.9 mi (Buckley Cove, a pre-existing Delta spot).
+
+**Finding for the owner, not fixed here:** the region filter is now **14 chips** in a horizontally scrolled row (`scrollWidth` 1610 vs 359 client on a 375 px viewport). No layout break, the page itself does not scroll sideways. But the SoCal regions sit at the **far end** of that scroller because `REGIONS` is ordered Bay-Area-first, and SoCal is the stated target market. Reordering is a product call, so it is filed rather than done.
+
 ## 95. [done] Orange County ingest: 7 spots live, 4 candidates refused (deployed 2026-07-22, a62f640)
 
 **172 records total.** Full analysis: `reports/oc-ingest-2026-07-22.md`.

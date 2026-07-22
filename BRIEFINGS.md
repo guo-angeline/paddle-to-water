@@ -1,3 +1,15 @@
+# 2026-07-22: California is covered, and the sweep is closed
+
+**177 spots.** The last batch adds Stone Lagoon and Hookton Slough on the Humboldt coast, Hooper Beach at Capitola, Morro Bay State Park Marina (the one you asked for by name), and Marina Park in Ventura. Two new regions, North Coast and Ventura.
+
+**The useful headline is that this is finished, not that it is bigger.** California-wide the Coastal Commission publishes 30 paddle-specific launches. All 30 are now either live or refused with a written reason. There is no remaining backlog from that source, which means the next expansion has to come from a different kind of source, not more of this one.
+
+**I refused four more.** Two are exposed open coast with surf breaking over rock (Stillwater Cove, Leffingwell Landing). One, Humboldt Bay refuge, turned out to be the refuge headquarters with no water access. And one, Harbor Beach in Santa Cruz, **is a spot we already have**: it is Santa Cruz Harbor under a second name, 0.42 miles away. My duplicate check missed it because the check measures distance, and distance does not answer whether two records are the same launch. That is the second time a duplicate has slipped in that way, after Folsom Lake.
+
+**One judgment worth knowing about.** Stone Lagoon is marked as having no tide, unlike every other coastal spot in these batches, because it is a lagoon closed off from the ocean by a barrier beach. Had I defaulted it, the app would have shown it Humboldt Bay's tide from 40 miles away with full confidence. The conditions engine cannot tell a wrong yes from a right one, so that call is only ever made by hand.
+
+**Your move:** one product decision, not urgent. The region filter is now 14 chips in a sideways-scrolling row, and because the list is ordered Bay Area first, your SoCal regions are at the far end where they are hardest to reach. Nothing is broken, but the ordering no longer matches where your customers are. Say the word and I will reorder. D31 (LLC) still open.
+
 # 2026-07-22: Orange County live, and a trap the new test would have missed
 
 **Shipped.** 7 Orange County spots, 172 total. Newport Harbor plus Baby Beach at Dana Point.
