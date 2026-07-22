@@ -1,3 +1,15 @@
+## 2026-07-22 · Studio iteration: item 85 (one item, shipped)
+
+**Your move.** Nothing blocking. **D31** (form the LLC) is the only open decision.
+
+**Shipped.** Item 85, the contributor-marks sentence, is gone from the reviews section and deployed (`7410928`). The `/contributor-terms` link stays, which was the one condition the re-gate attached when it cleared the removal.
+
+**Two calls I made beyond the letter of the item.** The link is no longer behind the `collectables` kill switch, where the sentence was: those terms also explain how the score is computed, so switching marks off must not cut a reader's only path to that explanation. And the link moved below the reviews list, because a bare underlined link sitting under the "Paddler reviews" heading read as a label on the first review rather than as a footnote.
+
+**Worth knowing.** Deleting the sentence broke no test, because nothing had been asserting it. The disclosure shipped in item 83 as a legal-gate action and then sat unguarded. The new guard asserts the state that matters (sentence gone, link present, link ungated), and I proved it bites by re-gating the link and by deleting it outright rather than trusting that it would.
+
+**Queue.** Items 77, 78, 81, 76 remain `[ready]`. Stopping at one item per the loop default; nothing is blocked.
+
 ## 2026-07-22 · Studio iteration: item 84 (one item, shipped)
 
 **Your move.** Nothing blocking. Two decisions sit open when you want them: **D31** (form the LLC) and **item 85** (removing the contributor-marks line, now with a recorded verdict and one condition).
