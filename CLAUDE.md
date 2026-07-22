@@ -128,6 +128,8 @@ Also extend `REGIONS` in `lib/types.ts` (**ADD a value, never rename one**: exis
 
 **The generalizable rule: a boolean that gates a feature is a claim, and something must test that we can honour it.** When coverage expands, ask what silently degrades, not just what fails.
 
+**Dedupe by identity, not by distance.** The 500 m proximity check that screens new candidates answers "how far", which is not the question. It passed "Harbor Beach (Santa Cruz)" at 0.42 mi when that record *is* spot 123, Santa Cruz Harbor, under a second name. Second occurrence after the Folsom Lake pair (item 58). Before adding a record, read the nearest existing spot's `water` and `notes` and ask whether a person standing there would call it the same launch.
+
 ### Read spots through `lib/spots.ts`, never from `data/spots.json`
 
 `lib/spots.ts` is the single chokepoint. Import `ALL_SPOTS` from it; do **not** `import spotsData from "@/data/spots.json"` in a feature file. Nine files consume spot data and **two of them are the alert crons**, so a filter applied only to the UI would leave push and email still sending people to a spot that has been deliberately withheld. `lib/spots.test.ts` fails the build if any feature file imports the JSON directly. `ALL_SPOTS_INCLUDING_HIDDEN` exists for data tooling and audits only, never for a user-facing surface or an alert send.
