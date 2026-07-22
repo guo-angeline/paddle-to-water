@@ -77,7 +77,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
-## Owner items, added 2026-07-22 (first-review prompt + conditions rethink; both [ready], queued top-most on purpose)
+## Owner items, added 2026-07-22 (first-review prompt + conditions rethink + trip-planner demand test; all three [ready], queued top-most on purpose)
 
 ## 89. [ready] Prompt the first review on a spot that has none, with a mark for writing it
 
@@ -137,10 +137,12 @@ Conditions is the stated differentiator and the moat ("per-spot judgment, not a 
 
 **The strategic question to actually answer, not the feature list.** A verdict badge is a *readout*: it tells you a fact and leaves the synthesis to you. The routes describe a *plan*: launch time, first heading, return leg. Moving from one to the other is the difference between "AllTrails for water with a weather widget" and the Paddle-Morning Oracle this roadmap claims to be building. Frame the options honestly and recommend one:
 1. **Complete the readout.** Add the missing inputs (temp, precip) and interpret the two raw ones (wind direction relative to the shoreline, tide as flood/ebb with direction of travel rather than a table of times). Cheapest, lowest risk, still leaves the synthesis to the paddler.
-2. **Add the plan.** A suggested launch window and an out-and-back heading derived from wind + tide, so the return is downwind/with the current. Highest value, highest risk, and see the safety gate below.
+2. **Add the plan.** A suggested launch window and an out-and-back heading derived from wind + tide, so the return is downwind/with the current. Highest value, highest risk, and see the safety gate below. **DEFERRED BY OWNER DIRECTIVE, 2026-07-22. Do not build it. Do not spec it. It is replaced by a demand test, item 93.**
 3. **Something between them:** surface the ingredients of the plan (wind direction relative to the water, when the tide turns) without issuing an instruction.
 
-Say which and why. A recommendation with the risk named beats a survey.
+**Owner directive, 2026-07-22: the plan is not built, it is measured first.** The owner's actual ambition is larger than option 2 and further off: **an AI-led trip planner, native, that answers when, where and how.** It plans a route that rides the wind and tide on the way back, and optionally optimises the route for good views. That is a real product, not a panel feature, and the owner is not committing to build or monetise it on a hunch. **So this item's scope is now options 1 and 3 only, and the plan gets a placeholder button whose only job is to count who wants it (item 93).** Read the two paragraphs below as the cost of the thing being deferred, not as blockers to design around: they are the reason a demand test comes first.
+
+Say which of 1 or 3 you recommend, and why. A recommendation with the risk named beats a survey.
 
 **The blocker that decides how far this can go: a launch plan is safety advice.** "Wind is 8mph WNW" is a fact. "Launch at 9, head west first, ride the flood home" is an instruction that can put someone offshore in a rising wind with no way back. That is a categorically different liability posture, and this app already runs a no-inducement discipline (`web/lib/alerts/no-inducement.test.ts`) precisely because copy that nudges someone onto the water is the thing it must not do. **Run the `lawyer` agent on option 2 (and on option 3 if it names a direction) before any design work is specified, not after.** Ask specifically: does a directional or timing recommendation change the disclaimer's adequacy; is there a line between describing conditions and instructing a route; does per-spot geography being approximate (see below) make a heading recommendation reckless.
 
@@ -150,7 +152,36 @@ Say which and why. A recommendation with the risk named beats a survey.
 
 **Measurement, decided in the brief and not bolted on.** The current instrumentation can tell you conditions *loaded* (~91% of opens, an availability number) and, since the dwell gate, that someone *looked*. Neither can tell you the panel was **useful**, and that is exactly the claim this item is testing. Name the metric that would move if this worked, before choosing an option. Repeat conditions checks per user is the honest candidate (re-checking is the one validated repeated behavior, per item 26); `spot_action{action:"directions"}` is the accidental-inducement guardrail and must not step up. No A/B at this DAU.
 
-**Acceptance:** a written recommendation naming one option and its risk; the lawyer verdict recorded (DECISIONS.md if it escalates); the free-today findings (temperature, precipitation) confirmed against a live NWS response and either scoped or explicitly deferred with a reason; any new per-spot data requirement costed across 140 spots with a named source; the relationship to items 61 and 53 and `nextWindow.ts` stated; a metric that would move; and the build filed as new numbered roadmap items. No em dashes.
+**Acceptance:** a written recommendation between options 1 and 3, with its risk named (option 2 is out of scope, see the owner directive above); the free-today findings (temperature, precipitation) confirmed against a live NWS response and either scoped or explicitly deferred with a reason; the relationship to items 61 and 53 and `nextWindow.ts` stated; a metric that would move; and the build filed as new numbered roadmap items. The lawyer gate and the per-spot geography cost move to item 93's decision point, since nothing that needs them is being built here. No em dashes.
+
+## 93. [ready] Demand test for the AI trip planner: a placeholder button that counts interest
+
+**Owner-directed 2026-07-22.** Do not build the trip planner. Build the button that measures whether anyone wants it, run it, and bring the owner a number they can decide on.
+
+**What the eventual product is, recorded so the button describes the real thing and not a vaguer one.** An **AI-led trip planner, native**, that answers **when, where and how**: it plans a route that rides the wind and tide on the way back, and optionally optimises the route for good views. The owner will decide whether to build it, and whether to charge for it, from this item's result. Item 91 option 2 (a launch window plus a heading, inside the conditions panel) was the small version of this and is deferred in favour of measuring first.
+
+**This is a fake door, so build it like one that stays honest.** A button that appears to work and does nothing is a broken app; a button that quietly does nothing is a lie. The pattern that is neither:
+- The button is honestly labelled before the tap. Something like "Plan my trip" with a small "coming soon" or "not built yet" qualifier visible without interaction. Do not hide the status until after the click.
+- The tap opens a short sheet that says plainly it does not exist yet, describes what it would do in one or two sentences, and offers exactly one action: leave an email to hear when it is ready, or nothing at all if the owner prefers a pure count.
+- No spinner, no fake result, no "generating your plan". Nothing that reads as an attempt that failed.
+- **It never implies a safety judgement it cannot make.** The eventual feature is safety advice (item 91 records why); a placeholder must not let anyone believe a route was checked for them today. This is the one hard constraint.
+
+**The measurement, and be honest about what it can and cannot prove.** A click on a new button measures **curiosity**, not demand, and nowhere near willingness to pay. Novelty inflates the first two weeks. Three reads, in increasing order of trustworthiness:
+1. Click-through rate on impressions. The weakest number, but the one that separates "nobody cares" from "something here".
+2. **Repeat taps by the same person on different days.** The real signal. Someone who taps a known-empty door twice wants the thing.
+3. Email-leave rate, if the sheet asks. The closest thing to a costly signal available without charging money.
+
+Instrument as an impression/click pair or the rate has no denominator: a **dwell-gated** impression event (per the house rule, not on mount, use `lib/useGenuineView`) plus a click event, both carrying `spot_id` and `region`, plus a sheet-dismissed-vs-email-left outcome. Add to `IntentEventName` in `lib/analytics.ts`, with an `analytics/INSTRUMENTATION_CHANGELOG.md` entry. **Do not price-test in v1.** Showing a price for a thing that does not exist is a much stronger claim than showing a button, and it contaminates the interest number. If v1 clears the bar, a price question is a second, separate test.
+
+**Pre-register the decision rule before shipping, or the number will just get rationalised.** The owner should write down, in this item, what result means build, what means kill, and what means run it longer. Set it in absolute counts, not rates: at this DAU the denominator is small enough that a percentage will swing on single-digit noise. **Also set an expiry**, a number of impressions or a date, whichever comes first. A fake door with no end date stops being a test and becomes a permanent piece of dishonesty in the product.
+
+**Placement decides the number, so decide it deliberately.** In the spot sheet near conditions it will be seen by nearly everyone who opens a spot; behind a menu it will be seen by nobody, and a high click rate on 20 impressions means nothing. Recommend one placement and hold it fixed for the whole test window; moving it mid-test destroys comparability. **Web first, not native**, despite the eventual product being native: the native app is still gated on Apple Developer Program enrollment (item 72) and has no users to measure.
+
+**Kill switch, not an A/B** (DAU < 100, per the standing directive). It must be removable in one flip, because this is the kind of surface most likely to need pulling fast.
+
+**Legal is small here but not zero.** The full feature needs a lawyer gate; a placeholder mostly defers that. What survives is the **claim in the button copy**: "AI" claims are an active FTC enforcement area, and a promise about routes and safety is a promise even when the feature is a stub. If the sheet collects an email, that is a new collection purpose and the privacy policy has to cover it. Run the `lawyer` agent on the **copy and the email capture**, not on the unbuilt feature.
+
+**Acceptance:** a placeholder button and sheet that state their own status honestly before and after the tap; no fake progress and no implied safety judgement; impression + click + outcome events wired, dwell-gated, with a changelog entry; a written decision rule and an expiry date recorded in this item before it ships; one fixed placement; behind a kill switch; lawyer verdict on the copy and any email capture recorded; verified at 390px and desktop, signed-in and signed-out. No em dashes.
 
 ---
 
