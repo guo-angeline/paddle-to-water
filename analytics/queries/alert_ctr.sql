@@ -12,6 +12,12 @@ WITH sent AS (
          count(DISTINCT subscription_id) AS subs_sent
   FROM alert_sends
   WHERE sent_at >= '{from}' AND sent_at < '{to}'
+  -- Owner exclusion (EXCLUDED_PERSONS.md): the owner's own push subscription
+  -- is push_subscriptions.anon_id = the excluded push anon. Drop it from both
+  -- sides so the owner's self-tests do not inflate CTR at N=1-3 real subs.
+  AND subscription_id NOT IN (
+    SELECT id FROM push_subscriptions WHERE anon_id = '2f625b9b-4627-483e-b29b-8ab5973e046b'
+  )
   GROUP BY 1
 ),
 opened AS (
@@ -19,6 +25,12 @@ opened AS (
          count(DISTINCT subscription_id) AS subs_opened
   FROM alert_opens
   WHERE opened_at >= '{from}' AND opened_at < '{to}'
+  -- Owner exclusion (EXCLUDED_PERSONS.md): the owner's own push subscription
+  -- is push_subscriptions.anon_id = the excluded push anon. Drop it from both
+  -- sides so the owner's self-tests do not inflate CTR at N=1-3 real subs.
+  AND subscription_id NOT IN (
+    SELECT id FROM push_subscriptions WHERE anon_id = '2f625b9b-4627-483e-b29b-8ab5973e046b'
+  )
   GROUP BY 1
 )
 SELECT s.day,

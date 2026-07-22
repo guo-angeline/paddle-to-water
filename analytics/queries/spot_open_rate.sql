@@ -12,3 +12,4 @@ FROM events
 WHERE event IN ('$pageview', 'spot_viewed')
   AND timestamp >= {filters.dateRange.from}
   AND timestamp <  {filters.dateRange.to}
+  AND person_id NOT IN ('11a83b86-4d73-565f-8b70-2f2847d865be', '0faaad14-aa87-5cda-a76c-a3f59e0fa4d1', '21e77b69-f479-5130-9696-e386ad7f9aa0', 'f38f6a31-bb18-525d-9d49-8e7194442d2b')  -- EXCLUDED_PERSONS.md: owner + test devices

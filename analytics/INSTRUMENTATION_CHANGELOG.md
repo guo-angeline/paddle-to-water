@@ -14,6 +14,25 @@ without touching this file.
 
 ---
 
+## 2026-07-22 (item 105): ten metric queries silently included owner traffic (query-definition-change)
+
+**Not an instrumentation change (no event moved), but a QUERY-DEFINITION change, which moves reported numbers the same way.** Recorded here because this file is read before any analysis and these query definitions changed.
+
+`analytics/EXCLUDED_PERSONS.md` requires every query to exclude the owner + test person_ids (~72% of all saves at ~31 DAU). Ten query files did not. Five had it; these ten did not, and the tenth (`experiment_next_good_window`) was found by grepping the tree, not from the item's remembered list of nine, which is exactly why the fix ships with a guard (`web/lib/analytics-owner-exclusion.test.ts`) instead of a checklist.
+
+Fixed: `alert_driven_returns`, `alert_optin_funnel`, `conditions_availability`, `conditions_engagement`, `directions_conversion`, `retention_w1`, `saved_conditions_engagement`, `spot_open_rate`, `experiment_next_good_window` (owner person_ids), and `alert_ctr` (Supabase-keyed, so it drops the owner's push subscription via the excluded push anon_id instead).
+
+**Figures previously reported from these queries are contaminated and must be RE-READ, owner-excluded, before reuse. Direction of the error is always the same: they OVERSTATE, because owner devices are heavy, engaged users.** The specific ones that have been cited:
+- **conditions_engagement ~86%** (the "conditions is genuinely used" / moat number, e.g. `reports/analytics-2026-07-18.md` and item 91's premise). Re-read before it is cited again.
+- **retention_w1** (the 13-17% W1 baseline the retention epic must beat).
+- **spot_open_rate**, **directions_conversion**.
+
+I cannot compute the deltas here: reading PostHog needs the personal API key (`phx_...`), which this environment does not hold. Flagged for the next analytics report, whose template already requires an owner-exclusion line. The corrected queries are now the source of truth; the guard fails CI if a new query omits the exclusion.
+
+**Exempt, on the record:** `token_leak_check.sql` must see ALL traffic (its own comment: excluding person_id "would filter out the entire leak and always report zero"). The guard allowlists it with that reason.
+
+---
+
 ## 2026-07-22 (item 97): conditions readout completion, no event changes (no-instrumentation-change)
 
 **No events added, renamed, removed, or re-propped.** Recorded here anyway because the changelog is also where "we deliberately did NOT change instrumentation" belongs, so a later analyst does not go looking for a phantom event behind a UI change.
