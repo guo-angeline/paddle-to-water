@@ -77,6 +77,88 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Studio review batch 2, added 2026-07-22 (second hourly pass; conditions-moat safety gaps from the ocean expansion + an accessibility cluster on the core filter/search flow). Same CEO grading. Items 122 to 131. Protected-surface note: anything touching `evaluateGoodWindow` or the push cron is escalation-class (see items 103/106/107) and filed [proposed] on purpose.
+
+## 122. [ready] Fog and low-visibility caveat in the conditions readout
+
+**Problem:** the vision names the moat as "per-spot microclimate/tide/**fog** knowledge," yet fog is nowhere in the code. NWS `shortForecast`/`detailedForecast` routinely carry "Patchy fog" / "Areas of dense fog," and item 97 already parses `periods[0]` off that exact payload, so this is free the same way temp and precip were. Fog is the defining Bay and coast summer-morning hazard (losing the shoreline on the water) and the panel is silent on it.
+
+**Direction:** detect fog/visibility terms in the forecast already in memory and add a caveat line. Never an upgrade to the verdict (same "may only downgrade" rule as precip). Zero new requests, same bundle discipline as item 97.
+
+**Grade:** [ready], high confidence. Free, vision-endorsed, fills the one microclimate factor the item-91 rethink bundle skipped. Panel display only, not the cron.
+
+## 123. [ready] Published reviews show when they were written
+
+**Problem:** `ReviewsSection.tsx`'s `PublishedReview` carries `created_at` and `AccountSheet.tsx`'s `OwnReview` carries `createdAt`, but neither renders it. Every review reads as equally current. This app treats staleness as a first-class defect everywhere else (tide_sensitive drift, coord audits); a review saying "put-in flooded, use the north lot" from 14 months ago is indistinguishable from one written yesterday.
+
+**Direction:** render a relative date ("3 months ago") under each byline in both the public list and the account sheet's own-reviews list.
+
+**Grade:** [ready], high confidence. The field is already in the payload, cheap, closes a real trust gap on the differentiator (current per-spot knowledge).
+
+## 124. [ready] Daylight and sunset annotation on the "when to launch" surfaces
+
+**Problem:** the decision routes (item 91) end at "when do I launch," and items 98/100/111 surface tide turns, today's shape, and the weekend window, but nothing states how much daylight is left. Sunrise/sunset is computable from lat/lng + date with zero API and no new dependency (grep confirms none exists).
+
+**Direction:** annotate the window/outlook surfaces with sunset time and daylight remaining. Ship the display annotation as the [ready] deliverable. The stronger safety move, capping a recommended "good window" at civil dusk, touches `evaluateGoodWindow` and is protected-surface work: split it out and treat it like item 103 rather than folding it into the display ship.
+
+**Grade:** [ready] for the display annotation, high confidence (cheap, free data, serves the stated user question). The window-cap half is flagged escalation-class above.
+
+## 125. [ready] Filter toggles expose their pressed/selected state to assistive tech
+
+**Problem:** `FilterBar.tsx` region pills, difficulty pills, "Free only," and "Near me" are plain `<button>`s that change only color when active, with no `aria-pressed`/`aria-selected`/`role="group"`. A screen-reader user hears "Flatwater, button" whether or not it is applied, with no way to tell filter state. Same gap in `FeedbackModal.tsx`'s Type selector. `ReviewForm.tsx`'s star buttons already do `aria-pressed` correctly, so the fix pattern lives in the same codebase.
+
+**Direction:** add `aria-pressed={isActive}` to every toggle pill and wrap each row in `role="group"` with an `aria-label`.
+
+**Grade:** [ready], high confidence. Filtering is the primary home-screen interaction and it is currently invisible to a screen-reader user end to end.
+
+## 126. [ready] Live-region announcement when search/filter results change
+
+**Problem:** the search inputs re-filter `SpotList` on every keystroke, but the only `aria-live` region in that area is scoped to the geolocation-denied message. A screen-reader user typing a query gets no feedback that the list changed or how many spots matched.
+
+**Direction:** add a visually-hidden `aria-live="polite"` region near the list announcing "{n} spots" after each filter/search update, debounced so it does not spam. The count is already computed.
+
+**Grade:** [ready], medium-high confidence. Real gap on the core discovery flow, small scope. Natural to ship alongside item 125 as one accessibility pass.
+
+## 127. [ready] Search "clear" button meets the minimum touch-target size
+
+**Problem:** the clear-search buttons (desktop + mobile expanded bar) in `HomeClient.tsx` are a bare `✕` glyph with `text-sm leading-none` and zero padding, so the hit box is roughly the glyph size, well under the WCAG 2.2 SC 2.5.8 24x24px minimum, sitting next to the equally small search icon in a 30px input.
+
+**Direction:** wrap in a `min-h-6 min-w-6` (or larger) `flex items-center justify-center` hit area, keeping the glyph visually the same size.
+
+**Grade:** [ready], medium confidence. Concrete WCAG 2.2 conformance fix with a one-line change; low-traffic control, so minor, but trivially correct. Can ride with the 125/126 accessibility pass.
+
+## 128. [proposed] Live NWS active alerts (Small Craft Advisory, Gale, Beach Hazards) in the panel and the alert gate
+
+**Problem:** item 97's storm badge is a keyword match on `shortForecast`, and its own spec calls it "a heuristic, not NWS Alerts." The app never queries `api.weather.gov/alerts/active`, so a spot under a live Small Craft Advisory or Beach Hazards Statement can still read "Calm," and `evaluateGoodWindow` can fire a "good to paddle" push straight into an official advisory.
+
+**Direction:** fetch active NWS zone alerts (free, same weather.gov origin), show a real advisory banner in the panel, and add a hard-exclusion term to the shared window logic.
+
+**Grade:** [proposed], but high importance. This is the single most defensible authority the panel can gain and a real safety hole the ocean expansion widened. Filed [proposed] because the core value is inherently cron-touching, so it is escalation-class like item 103 and wants the owner/lawyer gate, not a banner-only partial ship.
+
+## 129. [proposed] Surf and swell verdict for Coast spots
+
+**Problem:** the statewide expansion added LA, San Diego, Orange County, and Ventura ocean launches, but 101 of 177 spots carry `difficulty: "bay"` and every spot gets the identical `paddleabilityFromWind(speedMax)` verdict. There is no surf, swell, or breaker term in the stack. A beginner SUP launching through 4ft beach break on a glassy-wind morning reads "Calm." A safety hole the ocean expansion opened that the item-91 rethink (scoped to Bay wind + tide) did not touch.
+
+**Direction:** for Coast-type launches, pull the NWS surf-zone / marine forecast (breaker height, swell) and gate or caveat the verdict so an open-coast launch is never called flatwater-calm on wind alone.
+
+**Grade:** [proposed]. Real, recently created gap, but the marine data source and coverage need an honest source hunt first, same pattern as item 104's water-temp work.
+
+## 130. [proposed] Add-to-calendar for a good window (a return mechanic that skips the enrollment wall)
+
+**Problem:** the only return channel is the calm-window push, whose bottleneck is enrollment conversion, not input (~1 enrollment / 8 days, 83% dismiss). Item 117's digest inherits the same enrollment problem. When item 111 shows "Saturday looks good at X," there is no zero-commitment way for a paddler to lock the intent in.
+
+**Direction:** a one-tap "add to calendar" (.ics / Google Calendar link) on a surfaced good window. No account, no push grant, no email. A commitment device that plants a return reminder the user owns.
+
+**Grade:** [proposed]. Cheap and it sidesteps the proven enrollment bottleneck, but its value is contingent on item 111 shipping first, so sequence it as a rider on 111.
+
+## 131. [proposed] "Resend code" path in sign-in
+
+**Problem:** `SignInSheet.tsx`'s code step offers only "Use a different email," which resets to the email step and requires retyping the same address to trigger a fresh send. There is no direct "Resend code" affordance, so if the OTP email is slow, spam-filed, or expired, the recovery path is not self-evident.
+
+**Direction:** add a "Resend code" link on the code step that re-calls `sendEmailCode(email)` without dropping back to the email input, with a short cooldown to avoid spamming Supabase.
+
+**Grade:** [proposed], medium confidence. Real gap but a narrow failure window (email delayed, not missing) and the workaround already exists.
+
 ## Studio review batch, added 2026-07-22 (hourly product + design review vs the north star: "California's best utility AND lifestyle app for SUP paddlers and kayakers"). CEO-graded: [ready] = high confidence, clear problem + direction, aligned, build now; [proposed] = worth doing but needs a decision or sits behind the retention read. Items 108 to 121.
 
 ## 108. [ready] California-wide default map view (the brand shipped statewide, the map still opens on the Bay)
