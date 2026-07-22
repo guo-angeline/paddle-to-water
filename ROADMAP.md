@@ -794,7 +794,7 @@ The owner chose this knowingly over a relabelled "Add push" button, to keep the 
 - Conspicuous assent: persistent footer link plus a one-time "By using this site you agree to the Terms and Disclaimer" acceptance at alert enrollment (`InstallPrompt.tsx`); link beside the existing Disclaimer link in `HomeClient.tsx` / `SpotList.tsx`.
 - **Escalate before shipping:** waiver enforceability for a paddling death and the LLC/insurance decision are California-specific and warrant ~1 hr of licensed-attorney review (CA LLC carries ~$800/yr franchise tax). Draft the ToS/waiver text for the attorney to bless rather than originate; open a DECISIONS.md memo for the owner on entity + insurance.
 
-## 89. [blocked(owner-lookup)] LA County ingest from CCC YourCoast: 11 real candidates, blocked on a put-in coordinate and access rules
+## 90. [blocked(owner-lookup)] LA County ingest from CCC YourCoast: 11 real candidates, blocked on a put-in coordinate and access rules
 
 **Owner-directed 2026-07-22: start statewide expansion with LA.** Full analysis and the lookup list: `reports/la-ingest-candidates-2026-07-22.md`.
 
