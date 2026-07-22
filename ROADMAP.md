@@ -437,7 +437,7 @@ Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
-## 86. [in-progress] 2026-07-22T08:38:13-07:00 The `reviews` kill switch only half-works: the spot LIST keeps blending contributor ratings when it is off
+## 86. [done] The `reviews` kill switch now reaches the spot list (deployed 2026-07-22, e610d05)
 
 **Found by the lawyer re-gate on item 85 (2026-07-22), independently verified in code.** The `reviews` kill switch exists to pull user-generated content in a hurry, `ReviewsSection.tsx:47-50` says so directly ("this is the surface most likely to need pulling in a hurry (UGC)"). It does not cover the list.
 
@@ -452,6 +452,8 @@ Verified:
 - Add `const reviewsOn = useKillSwitch("reviews");` to `SpotList.tsx` and pass `crowd={reviewsOn ? aggregates[spot.id] : undefined}` at all three call sites, matching `SpotDrawer.tsx:234`.
 - Add a guard test asserting **both** consumers gate identically, so the two cannot drift apart again. This is the second time a UGC guard has needed pairing (see `eefa4cf`, "gate-required copy must be guarded when it ships").
 - Verify by flipping the flag: with `reviews` off, no card in the list shows a blended number, and the number falls back to the owner rating alone.
+
+**Shipped 2026-07-22.** All three `SpotList` card sites now gate on `useKillSwitch("reviews")`, matching `SpotDrawer`. **Verified behaviourally, not just structurally**, by forcing the flag off locally (reverted immediately after): Rollins Lake renders **3.9 with no attribution** when off, and **4.2 "our take, combining our own rating with 2 paddler reviews"** when on. Guard asserts both consumers read the same flag and that no ungated survivor remains. The pre-existing "gives EVERY card the review totals" guard asserted the old literal, so its intent was preserved and its string updated rather than deleted, and the per-card count stays owned by that one test rather than duplicated.
 
 ## 87. [ready] Two small follow-ups from the item-85 lawyer re-gate (a11y target size + a rationale that is too broad as written)
 

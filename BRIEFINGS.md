@@ -1,3 +1,17 @@
+## 2026-07-22 · Studio iteration: item 86 (one item, shipped)
+
+**Your move.** Nothing blocking. **D31** (form the LLC) is still the only open decision.
+
+**Shipped.** The `reviews` kill switch now actually works. It covered the spot sheet but not the list (`e610d05`).
+
+**Why this one mattered more than its size.** That switch exists for one scenario: a named marina objects to something, or a defamatory or spam review lands, and you need contributor content off the site now. Flipping it hid the reviews and the terms link, but every card in the list kept showing a number blended from published contributor ratings, labelled "our take". You would have flipped the switch, believed contributor input was pulled, and been wrong, in exactly the moment that belief matters most.
+
+**Verified by flipping it, not by reading the code.** With the switch off, Rollins Lake shows 3.9 with no attribution; with it on, 4.2 blended from two reviews. Both directions checked locally, and the on-state confirmed live.
+
+**Found by the lawyer.** This came out of the item-85 re-gate as a side observation, not from a test or a bug report. Worth noting because it is the second defect this week that only surfaced when something outside the normal review path looked at the code.
+
+**Queue.** Item 87 (two small follow-ups from the same re-gate), then 81 and 76. The 30-minute cron is running.
+
 ## 2026-07-22 · Studio iteration: item 78 (one item, shipped)
 
 **Your move.** Nothing blocking. **D31** (form the LLC) is still the only open decision.
