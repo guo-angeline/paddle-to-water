@@ -14,6 +14,21 @@ import AccountSheet from "@/components/AccountSheet";
 // Signed out: opens the sign-in sheet (email code first, Google secondary).
 // Signed in: the identity is a button that opens the account sheet (item 78:
 // display name, your reviews, sign out, delete account).
+// Item 77: the header is a deliberate set. Item 37 matched the search input
+// and the Feedback button at 30px tall with an 8px radius; the account button
+// shipped later (item 44) as a full pill at text-sm and never joined it, so
+// three mismatches sat side by side: radius, text size, and border colour.
+//
+// Geometry is matched here (rounded-lg, text-xs, px-3 py-1.5, 16px icon =
+// the same 30px box as Feedback). Colour is deliberately NOT matched: Feedback
+// keeps the azure outline that marks it as the call to action, and this stays
+// on the neutral hairline the mobile search button already uses, so the header
+// has one accented control rather than two competing ones.
+const HEADER_BUTTON =
+  "flex shrink-0 items-center gap-1.5 rounded-lg border border-(--border) px-3 py-1.5 " +
+  "text-xs font-medium text-(--dark) transition-colors hover:border-(--accent) " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)";
+
 export default function AccountButton() {
   const enabledSwitch = useKillSwitch("accounts");
   const { enabled, user, loading, displayName } = useAccount();
@@ -31,7 +46,7 @@ export default function AccountButton() {
           type="button"
           onClick={() => setSheetOpen(true)}
           aria-label="Sign in"
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-(--border) px-2.5 py-1.5 text-sm font-medium text-(--dark) hover:bg-(--fill) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) sm:px-3"
+          className={HEADER_BUTTON}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -57,7 +72,7 @@ export default function AccountButton() {
         }}
         title={user.email ?? undefined}
         aria-label={`Your account${user.email ? ` (${user.email})` : ""}`}
-        className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-(--border) px-2.5 py-1.5 text-sm font-medium text-(--dark) hover:bg-(--fill) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) sm:px-3"
+        className={`${HEADER_BUTTON} whitespace-nowrap`}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

@@ -769,7 +769,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             onClick={() => setSearchOpen((o) => !o)}
             aria-label={searchOpen ? "Close search" : "Open search"}
             aria-expanded={searchOpen}
-            className="md:hidden text-base px-2 py-1.5 rounded-lg border border-(--border) text-(--muted) hover:border-(--accent) hover:text-(--dark) transition-colors"
+            className="md:hidden text-base leading-none px-2 py-1.5 rounded-lg border border-(--border) text-(--muted) hover:border-(--accent) hover:text-(--dark) transition-colors"
           >
             🔍
           </button>
@@ -781,6 +781,10 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             Feedback
           </button>
 
+          {/* Item 77: the three header controls are one set, matched at 30px
+              tall with an 8px radius. `leading-none` on the search glyph above
+              is what holds it to 30: at text-base its line box was 24px, so it
+              stood 8px taller than its neighbours at mobile widths. */}
           {/* Item 44: optional Google sign-in. Renders nothing unless the
               `accounts` kill switch is on AND auth env is configured. */}
           <AccountButton />

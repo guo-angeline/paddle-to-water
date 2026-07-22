@@ -243,7 +243,7 @@ Deleting it while the app still awards marks for contributing removes a disclosu
 
 ## Owner items, added 2026-07-21 (header polish + label clarity; both [ready], queued top-most on purpose)
 
-## 77. [ready] Header: make the account/Sign-in button visually consistent with the Feedback button beside it
+## 77. [in-progress] 2026-07-21T22:22:48-07:00 Header: make the account/Sign-in button visually consistent with the Feedback button beside it
 
 **Owner-reported 2026-07-21.** The top-right account button does not match the button next to it. Measured from the code, the two are built on different shapes:
 
