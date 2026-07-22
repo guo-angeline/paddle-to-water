@@ -127,7 +127,44 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Acceptance:** a spot with no published reviews shows one quiet invitation with an honest, non-promissory claim; the reward named is real and matches what the code actually awards; the lawyer verdict is recorded (DECISIONS.md if it escalates); the writer-side disclosure and its guards are intact or deliberately updated; no denominator, no progress meter, no per-spot collectable marker (item 83's guard forbids the last one); if a mark ships beside the display name it is a factual qualifier with no rank or tier, and a guard asserts that; verified at 390px and desktop, signed-in and signed-out. No em dashes.
 
-## 91. [ready] Strategic rethink of the conditions function: from a readout to a launch plan
+## 91. [done] Conditions rethink: complete the readout, do not build the plan (recommendation filed 2026-07-22; build is items 97 to 106)
+
+### RECOMMENDATION: option 1, minus its own two over-reaching clauses. Build items 97 to 106 below.
+
+**Three of this item's own premises were wrong, and checking them changed the answer.** Verified live before any design work:
+
+1. **Temperature and precipitation are free.** Confirmed against a live NWS response: `temperature`, `temperatureUnit`, `probabilityOfPrecipitation`, `isDaytime`, `detailedForecast` all arrive in the payload `fetchWind` already downloads and discards at its type annotation. This item was right about this one.
+2. **WRONG: "the intra-day shape is one endpoint over".** `web/lib/nextWindow.ts` **already fetches `/forecast/hourly` in the browser on every spot open** (156 periods, 84KB, ~400ms) to render the "Next good window" line, and `ConditionsPanel.tsx:330` nests that panel inside itself. `interface HourlyPeriod` declares three fields, so hourly temperature, hourly precipitation and the entire intra-day curve are discarded at the type boundary. **Intra-day shape costs nothing. It is already in memory.**
+3. **WRONG: "interpreting wind direction needs a new per-spot field".** `web/lib/launchDirection.ts` already exports `launchDirectionTip()`, returning "Wind is from the west-northwest. An upwind start leaves the downwind leg for the way back." No per-spot data. It **is** this item's option 3, already built, already through the item-34 lawyer gate, already locked by `no-inducement.test.ts`. It renders **only** in `AlertInterstitial` and the alert emails, so no visitor who has not enrolled in alerts has ever seen it. Enrolled users are single digits.
+
+**The 1-vs-3 choice was not real.** Both options as printed say "wind direction relative to the shoreline / the water", so both needed the same missing per-spot field. And option 1's "tide as flood/ebb **with direction of travel**" is about **current**, not height, which makes option 1 *more* aggressive than option 3, i.e. **this item had its own risk ordering inverted**. Once the shoreline field is subtracted, option 3 collapses into option 1.
+
+**So the honest split is four categories, not two options:**
+
+| | What | Cost | Verdict |
+|---|---|---|---|
+| **(a)** | Air temp, precipitation, storm gating, the whole intra-day curve | Zero new requests | **Ship** |
+| **(b)** | Tide rising/falling and when it turns | Pure arithmetic on data already parsed | **Ship** |
+| **(c1)** | Wind geometry stated generically | Already written, gated and tested. A port | **Ship** |
+| **(c2)** | Wind relative to *this* shoreline | New hand-curated field, 177 records, no published source | **Do not start** |
+
+**Recommendation: ship (a) + (b) + (c1) as one bundle behind one `conditions-readout` kill switch. Do not start (c2).**
+
+**The risk, named:** completing the readout raises the panel's apparent authority faster than its actual knowledge, and the beginner most helped by "76F, no rain, tide turns at 3:40" is the one most harmed by over-trusting it. Three controls, each test-locked: **precipitation may only downgrade a verdict, never upgrade one** (`POP: 0` means no measurable rain forecast, not "no gusts, no thunderstorm"); **say heights, never currents** ("flood"/"ebb"/"current" are current vocabulary and slack water lags the height turn, so the word choice IS the safety control); **label air temperature as air**, since water temp is available from nowhere in the stack and cold shock, not air comfort, is the NorCal safety variable.
+
+**Cost of (c2), so it is not re-litigated:** no registry publishes shoreline orientation (not CCC, Water Trail, DBW or NOAA). Deriving it from OSM coastline bearing fails twice on grounds already documented here: the input is the coordinate, and a known set of coordinates are the Water Trail's *parking* rather than the put-in, so the bearing would be silently wrong for exactly the records already wrong; and OSM is ODbL with share-alike attaching to a derived database. The only trustworthy method is per-record imagery reading, which at the observed pace of items 90 to 96 is 12 to 25 item-sized passes. **It is a data programme, not a sub-task.** Gate it on item 93.
+
+**Metric:** distinct days on which a person fires at least one `conditions_viewed`, over 14 days, owner-excluded. Measurable today with zero new instrumentation (the event already carries `spot_id`, `region`, `difficulty`, `paddleability`, `had_data`). Pull the 14-day baseline **before** the bundle ships or the comparison is worthless, **and see item 105 first: the existing conditions query does not exclude owner traffic.** Read as a raw count at this DAU, never a percentage. Guardrails: `spot_action{action:"directions"}` must not step up, plus a sharper free one, directions clicks per conditions view **on spots reading `windy`**.
+
+**Relationships.** Item 61 is independent and sequenced after, with one binding constraint: the precip rule must live in the shared module, not inline in `ConditionsPanel`, or 61 ships a ranking that contradicts the panel it links into. `nextWindow.ts` keeps the single definition of "good"; no second definition. Item 53: cost is zero new requests, so `conditions_loaded.latency_ms` must not regress.
+
+**Bundling is deliberate and its cost is accepted:** at ~31 DAU a move cannot be attributed to any one of 97/98/99. Shipping serially buys no attribution either, each slice is too small to read. Ship as a bundle, declare it a bundle in the changelog, and refuse any later claim that "temperature did it".
+
+**LIVE DEFECT FOUND BY THE GATE, blocking item 99.** Spot 72 (Elkhorn Slough, visible in production) reads: "Start on a flood tide so you're not fighting the current under the Highway 1 bridge **on the way back**." That is an imperative plus a return-leg representation, **the exact pair the item-34 gate removed from the tip**, live on a public spot page. Spots 1, 77 and 79 carry milder directives. **`data/spots.json` is not swept by `no-inducement.test.ts` at all**, so no guard has ever seen these. Filed as item 102, which blocks 99.
+
+**GUARD HOLE FOUND, and it invalidated both agents' reasoning.** `scripts/predeploy-gate.py` has `PROTECTED_PATTERNS = ("web/app/api/cron/*", "web/app/api/alerts/*")`, matched on path. Exercising its own matcher: `web/lib/alerts/conditions-window.ts`, `web/lib/nextWindow.ts`, `web/lib/launchDirection.ts` and `web/lib/email/templates.ts` are all **NOT GATED**. So a change to `evaluateGoodWindow`, which decides **which push alerts fire**, would deploy with no owner review. Filed as item 106.
+
+
 
 **Owner-directed 2026-07-22. This is a strategy and design item, not an implementation item.** The deliverable is a `product-visionary` brief plus a `design-lead` spec, both filed back into this item, with the build broken out as separate numbered items. Do not let an implementer start from this text.
 
@@ -172,6 +209,118 @@ Say which of 1 or 3 you recommend, and why. A recommendation with the risk named
 **Measurement, decided in the brief and not bolted on.** The current instrumentation can tell you conditions *loaded* (~91% of opens, an availability number) and, since the dwell gate, that someone *looked*. Neither can tell you the panel was **useful**, and that is exactly the claim this item is testing. Name the metric that would move if this worked, before choosing an option. Repeat conditions checks per user is the honest candidate (re-checking is the one validated repeated behavior, per item 26); `spot_action{action:"directions"}` is the accidental-inducement guardrail and must not step up. No A/B at this DAU.
 
 **Acceptance:** a written recommendation between options 1 and 3, with its risk named (option 2 is out of scope, see the owner directive above); the free-today findings (temperature, precipitation) confirmed against a live NWS response and either scoped or explicitly deferred with a reason; the relationship to items 61 and 53 and `nextWindow.ts` stated; a metric that would move; and the build filed as new numbered roadmap items. The lawyer gate and the per-spot geography cost move to item 93's decision point, since nothing that needs them is being built here. No em dashes.
+
+## 97. [ready] Air temperature and precipitation, from the payload already downloaded
+
+Read `temperature`, `temperatureUnit`, `probabilityOfPrecipitation`, `isDaytime` off `periods[0]` in `fetchWind` (`web/lib/conditions.ts`). Zero new requests.
+
+Copy (design-lead, 2026-07-22): weather line becomes `{periodName}: {shortForecast}, {temp}F`, appending ` - {value}% chance of rain` only when precip >= 20% and no storm badge is showing. **Omit the clause below 20%**: "0% chance of rain" is noise restating the default. **No qualitative Mild/Warm/Hot tier**: a raw number is already legible, and inventing a comfort threshold nobody validated is the opposite of this item's point. **Label it "Air"**, never a bare number, because water temp is absent from the stack and cold shock is the real variable.
+
+**Night case, must not be missed:** at 9pm `periods[0]` is "Tonight" and its temperature is an overnight low. Do not render that as today's paddling temperature.
+
+**Precipitation may only DOWNGRADE a verdict, never upgrade one.** Test-locked.
+
+Also split the wind failure state, which today collapses two different things into "Wind forecast unavailable.": `ok:true, wind:null` (outside NWS coverage) becomes "No forecast available for this spot."; `ok:false` becomes "Wind data is unavailable right now.", mirroring the tide side, which already draws this distinction.
+
+**Storm badge** (display only, no cron involved): when `isStormyForecast(shortForecast)` matches (`/thunderstorm|t-storm|tstorm|lightning/i`), replace the calm/breezy/windy pill in the same slot, never stack both. Label "Storm risk", tone "Lightning risk on open water, per the forecast." Shows for **every** difficulty, not just flatwater: lightning is not a flatwater-only fact. Reuse `--wind-alert` / `--wind-alert-fill`, already defined and already the Windy pill's pair. **Record that the keyword match is a heuristic, not NWS Alerts**, so nobody later assumes it is exhaustive.
+
+**Acceptance:** ships in the 97+98+99 bundle behind one `conditions-readout` kill switch; one changelog entry naming it a bundle; `conditions_loaded.latency_ms` does not regress; no em dashes.
+
+## 98. [ready] The tide line says which way it is going
+
+`next[0].type === "H"` means rising now, turning at `next[0].time`. Pure arithmetic on `TideInfo.next`, already parsed. Zero new data.
+
+Copy: "Rising, turns to falling at {time}." / "Falling, turns to rising at {time}." Reuse the existing `isNextDay` handling for a tomorrow event. Demote, do not delete, the raw event list beneath it: a 1ft low versus a 5ft low still changes how far you carry the board.
+
+**HEIGHT VOCABULARY ONLY. A test must fail on "flood", "ebb" and "current" in the panel copy.** We predict tide *height*; slack water lags the height turn, which is why NOAA publishes separate current stations. "The current turns at 3:40 so you can ride it home" is an inference we would be inviting and cannot support. This is the provenance failure in miniature: good source, meaning lost.
+
+**Acceptance:** in the bundle; the vocabulary test bites; existing degraded states (no station in range, NOAA down, no further events) unchanged; no em dashes.
+
+## 99. [blocked(item 102)] Port the existing launch-direction tip into the conditions panel
+
+One import. The highest-value line in this whole item, because it is the closest thing the codebase has to an answer to "which way do I go so I get back safely", and today only alert enrollees (single digits) ever see it.
+
+**LAWYER GATE RETURNED `needs-changes`, 2026-07-22. Required actions, all of them:**
+
+1. **Reword for the public context.** Ship: "Wind is from the {words}. An upwind start leaves the downwind leg for the way back, **where the shoreline allows**." The added clause signals the geometry is generic and may not fit the water in front of the reader. **This is a change to the OUTPUT of a prior gate**: update the comment block in `launchDirection.ts` and `launchDirection.test.ts` (which asserts the exact string) in the same change. Three properties must hold in any rewording: no verb aimed at the reader, no representation that they will get back, an explicit signal the geometry is generic.
+2. **Blocked on item 102.** Do not ship while spot 72's note is live.
+3. **Placement:** render inside `WindReading`, directly after the `{periodName}: {shortForecast}` line, so it reads as an annotation on the wind fact. **Never below the disclaimer, never inside or after `NextGoodWindowPanel`** (which renders *after* the disclaimer at line 330, so content there is already uncovered). Only render in a branch where the disclaimer also renders.
+4. **Do NOT add a second, tip-specific disclaimer.** That is the "papering it" pattern item 34 named, and the suite forbids a competing wording. The qualification goes inside the sentence.
+5. **Guard:** add `components/ConditionsPanel.tsx` to `PROSE_MODULES` in `no-inducement.test.ts`, and assert that when the panel renders the tip it also renders the canonical disclaimer. **Assert what must be PRESENT.**
+
+Also expand the raw compass string unconditionally: the panel prints "from WNW" today, and a 2-to-3 letter abbreviation should never be shown to a user again.
+
+**The boundary, recorded so the next item does not have to guess:** this stays inside the gated envelope because it names the direction the wind comes FROM and states a tradeoff. **The moment the panel names a direction for the paddler to GO, or pairs a launch time with a heading, it is option 2**: it needs the per-spot shoreline field and licensed counsel first.
+
+## 100. [proposed] Today's shape, from the hourly payload already in flight
+
+Consolidate `NextGoodWindowPanel`'s fetch into `ConditionsPanel` (two components, two effects, one gridpoint today), extend `HourlyPeriod` past its three fields, and render the intra-day curve. **The item most likely to move the metric, because "when today" is the actual question.** Also asks whether `fetchWind`'s separate twelve-hourly fetch is needed at all once the hourly payload is fully read.
+
+Design (2026-07-22): keep two sections, re-cut them; rename the eyebrow "Conditions today" to "Right now" so two sections do not both say "today". Trend line scoped to the same 6am-6pm daytime bound `evaluateGoodWindow` already uses, never a second definition of good. Copy: "Calm the rest of today." / "Winds pick up by {h}{am/pm}." / "Winds ease by {h}{am/pm}." / "Storms possible later today." **Omit the line entirely when the shape has more than one transition**, mirroring `evaluateGoodWindow`, which returns null rather than guessing. Second ship, after 97 to 99 land.
+
+## 101. [blocked(item 93)] Per-spot shoreline orientation across 177 records
+
+Do not start. Full cost in item 91's recommendation. A data programme, not a sub-task, and the only feature that needs it is the deferred trip planner.
+
+## 102. [ready] Spot notes are outside the safety-copy sweep, and one is a live outcome promise
+
+**Found by item 99's lawyer gate, 2026-07-22. Blocks item 99.**
+
+`web/data/spots.json` notes render at `SpotDrawer.tsx:549`, immediately above the conditions panel, with no separator, and **`no-inducement.test.ts` does not sweep the file at all.**
+
+- **Spot 72, Elkhorn Slough, VISIBLE IN PRODUCTION:** "Start on a flood tide so you're not fighting the current under the Highway 1 bridge **on the way back**." An imperative plus a return-leg representation, **the exact pair the item-34 gate removed from `launchDirectionTip`**. Fix first.
+- Spots 1, 77 and 79 carry milder directives ("push off about an hour before low", "Time the flood tide", "timing with the flood is critical"). 79 is hidden.
+
+Rewrite all four into descriptive voice: state the fact, not the instruction (e.g. "The current under the Highway 1 bridge runs hard on an ebb."). Then **extend the `no-inducement.test.ts` file sweep to cover `data/spots.json` notes against `OUTCOME_PROMISES` at minimum**, and prove the guard bites.
+
+Note the adjacency risk this closes: notes carrying launch timing, directly above a panel carrying wind heading, reads as when-to-launch plus which-way-to-go, i.e. the launch plan the owner deferred, assembled by adjacency rather than by decision.
+
+**Acceptance:** four notes rewritten with no lat/lng touched (text-level edit, `git diff` shows zero removed coordinate lines); the sweep covers spots.json and fails when a promise is reintroduced; deployed.
+
+## 103. [proposed, PROTECTED] `evaluateGoodWindow` has no precipitation or thunderstorm term
+
+`web/lib/alerts/conditions-window.ts` gates a good window on three things only: inside the horizon, spot-local hour 6 to 18, and wind calm. **No precipitation term, though precipitation sits unread in the same payload.** That function feeds the in-app panel, **the push cron and the alert emails**, so the product can name a window "good" during a thunderstorm.
+
+**Measured before filing, so it is not dramatised:** 285 daytime wind-calm hours sampled live across 6 regions (North Coast, San Diego, Sierra, North Bay, Central Coast, LA). **Zero** hours at precipitation >= 30%; the maximum in any calm hour was 12%. In July in California this bites **zero times**. It is a correctness fix with a natural deadline, the wet season, not a fire.
+
+Two tiers, different severities: a **hard exclusion** for thunderstorm hours (changes which windows exist, shared by push and email) and a **soft caveat** for plain rain (in-app label only: "rain likely" >= 60%, "chance of rain" 30-59%; a wet window is labelled, never suppressed, because rain is a comfort fact the paddler judges).
+
+**Do NOT fold into 97.** Owner escalation required before deploy. Note item 106: the predeploy gate would **not** currently catch this change, which is why the escalation has to be deliberate rather than relied on.
+
+## 104. [proposed] Water temperature: source hunt before any feature
+
+Confirmed absent from the whole stack; NWS does not provide it. NOAA CO-OPS publishes `water_temperature` at sensor stations, but most of `TIDE_STATIONS` are harmonic and subordinate *prediction* stations, so statewide coverage is probably thin. **That is an assumption, not a measurement.** Measure coverage across all 177 spots before scoping anything. Cold shock, not air comfort, is the real safety variable, so this is the one genuinely valuable new dependency.
+
+## 105. [ready] Nine analytics queries silently include the owner's own traffic
+
+`analytics/EXCLUDED_PERSONS.md` states every query MUST exclude the owner's five `person_id`s, which were ~72% of all saves. **Five query files hard-code them; nine do not**, so per-query exclusion is the convention and these simply lack it:
+
+`alert_ctr`, `alert_driven_returns`, `alert_optin_funnel`, `conditions_availability`, `conditions_engagement`, `directions_conversion`, `retention_w1`, `saved_conditions_engagement`, `spot_open_rate`.
+
+**This is not academic.** `conditions_engagement.sql` is the source of the ~86% figure cited as evidence that conditions is genuinely used, i.e. the evidence for the moat claim, and item 91's own metric would have been built on it. `retention_w1` and `spot_open_rate` are core. At ~31 DAU, five owner devices are a large share.
+
+Same shape as the "tests must grep the tree, not your memory" rule: the exclusion was applied to the queries someone remembered. The newer files (backswipe, enrollment) got it right; the older core ones did not.
+
+**Acceptance:** all nine carry the exclusion; a guard or a documented check makes a new query without it visible; any figure previously reported from these queries is re-read and the delta noted in the next report.
+
+## 106. [ready] The predeploy gate cannot see the code that decides which push alerts fire
+
+`scripts/predeploy-gate.py` has `PROTECTED_PATTERNS = ("web/app/api/cron/*", "web/app/api/alerts/*")`, matched on **path**. Exercising the gate's own matcher:
+
+```
+NOT GATED  web/lib/alerts/conditions-window.ts   <- decides WHICH push alerts fire
+NOT GATED  web/lib/nextWindow.ts
+NOT GATED  web/lib/launchDirection.ts            <- copy that ships IN the alert email
+NOT GATED  web/lib/email/templates.ts            <- the alert email itself
+GATED      web/app/api/cron/check-conditions/route.ts
+```
+
+So the shared library that determines send behaviour and alert copy is outside the guard that exists to protect send behaviour. A change to `evaluateGoodWindow` would deploy with no owner review, which is exactly what item 103 proposes to change.
+
+**This also settled a disagreement between two agents on item 91**, both of whom reasoned about whether folding the storm fix into a UI bundle "would trip the gate". Neither checked. It would not.
+
+**Acceptance:** the protected set covers the alert/push *library* surface, not just the route paths; the gate is exercised against a fixture list proving each protected path is caught (assert what must be CAUGHT); a deliberate dry run shows a `conditions-window.ts` edit now gating.
+
 
 ## 93. [ready] Demand test for the AI trip planner: a placeholder button that counts interest
 

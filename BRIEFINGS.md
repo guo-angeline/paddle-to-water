@@ -1,3 +1,21 @@
+# 2026-07-22: the conditions rethink, and two guards that were not guarding
+
+**Item 91 is done.** It was a thinking item, not a building one, so the output is a decision and ten filed build items rather than a deploy.
+
+**The recommendation: finish the readout, do not build the plan.** Add air temperature and rain chance, say which way the tide is going rather than printing a table of times, and put the wind-direction sentence you already own in front of every visitor. Do not start per-spot shoreline mapping. That last one sounds small and is not: no registry publishes it, it cannot be safely derived, and doing it by hand across 177 spots is twelve to twenty-five passes of the kind of work the last two days went into. It is a programme, and the only feature that needs it is the trip planner you deferred.
+
+**Checking the item's own assumptions is what changed the answer.** Three of them were wrong. The hourly forecast I was told would be a new cost is already downloaded on every spot open, so today's shape is free. The wind-direction interpretation I was told needed new data already exists, already passed a legal review, and is currently visible only to the handful of people who enrolled in alerts. And the two options the item asked me to choose between were not actually different once you removed a clause both of them shared.
+
+**Two guards turned out not to guard, and both matter more than the feature.**
+
+The first: a spot note on Elkhorn Slough, live right now, tells people to start on a flood tide so they are not fighting the current on the way back. That is an instruction plus a promise about getting home, which is the exact wording your legal review made me strip out of the app a week ago. It survived because the safety-copy check never looks at the spot data file at all. Three other spots have milder versions.
+
+The second: the deploy guard that is supposed to stop push-notification changes reaching users without your review checks file paths, and the file that actually decides which push alerts fire is not on the list. I tested it rather than assuming. A change to alert behaviour would ship with no review.
+
+**Also worth your attention:** nine of the seventeen analytics queries do not filter your own devices out, and your devices were about seventy percent of some numbers. One of those nine produces the figure everyone quotes as proof that conditions is the thing people come for.
+
+**Your move:** nothing blocking. D32 is still open from earlier today. The storm-in-a-good-window fix touches push, so it will come to you for approval when it is ready, and there is no rush: I sampled 285 calm daylight hours across six regions and not one had meaningful rain. It is July. That fix wants doing before the wet season, not this week.
+
 # 2026-07-22: the first-review invitation is live, and one half went to you
 
 **Shipped item 89.** Spots with no reviews now carry a single line inviting the reader to write about them. That is 176 of the 177 spots, so it is the biggest new surface in the app, which is why it is one sentence of prose and not a button. You already have a "Write a review" button on every sheet; a second ask would have competed with it.
