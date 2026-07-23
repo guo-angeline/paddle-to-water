@@ -1,3 +1,17 @@
+# 2026-07-22: AlertInterstitial light-card reskin shipped
+
+**Your move:** Nothing needed from you.
+
+**TL;DR:** Item 110 is live and verified, completing the light-card conversion and fixing a real mobile tap failure found during rendered testing.
+
+**Item 110:** The last dark alert overlay now matches the light Meltwater card system, with clearer hierarchy, an accent CTA, improved focus and touch behavior, and a higher-contrast safety line. Copy, reminder behavior, API, analytics, and success-state behavior are unchanged.
+
+**Verification finding:** Rendered testing found and fixed a pre-existing mobile hit-test bug that let the drawer intercept visible overlay taps. Live mobile confirms the 44px dismiss target is topmost, clickable, and removes the card.
+
+**Evidence:** TDD red and green across fix rounds, 644 tests, lint, local production build, preview and production Vercel builds, editor pass, lawyer clear, and adversarial verifier pass. Production deployment `dpl_AA1jcbEpqXgbnKLw1NaxTz3PYYps` is READY and verified live.
+
+**Instruction review:** Existing changed-file gates caught raw palette values and em dashes, so no instruction change was needed.
+
 # 2026-07-22: filtered catalog empty state shipped
 
 **Your move:** Nothing needed from you.

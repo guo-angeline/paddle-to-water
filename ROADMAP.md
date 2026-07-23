@@ -36,6 +36,8 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Shipped
 
+- 2026-07-22 [done, DEPLOYED] Item 110: AlertInterstitial now matches the light Meltwater card system with a white tokenized surface, border, dark/muted text hierarchy, accent reminder CTA, announced success state, and 44px focusable controls. Copy, canonical safety line, reminder behavior/API, and analytics are unchanged. Rendered verification also found and fixed a pre-existing mobile hit-test defect caused by nesting the fixed overlay inside an overflow-hidden container. 644 tests, lint, local/preview/production builds, editor pass, lawyer clear, adversarial review, and live mobile interaction verified. Commits `a7389d3`, `27cffdc`, `f63e3c1`, `292fad1`, `c1b98b3`; deployment `dpl_AA1jcbEpqXgbnKLw1NaxTz3PYYps`.
+
 - 2026-07-22 [done, DEPLOYED] Item 109: zero filtered catalog matches now show the existing scoped empty-state message and clear action after Watching and Recently checked, while pinned spots stay visible. The condition keys on incoming filtered matches, not the deduped main list, so a valid result that is already pinned never receives a false zero message. Accessible polite status and 44px clear target included. Commits `50e9bc1` + `dd2ceee`; 637 tests, lint, local/preview/production builds, adversarial review, and live 390px interaction verified. Production deployment `dpl_GbAoyj2fdznWJZupGPFz7yKqG47L`.
 
 - 2026-07-22 [done, DEPLOYED] Item 107: alert evaluation now fails closed when NWS wind is missing or malformed. Empty, null, and garbage wind values are ineligible for a good window; numeric `0 mph` and NWS `Calm` remain valid calm readings. Owner approved the protected alert-path deploy in chat. Commit `31dc221`, deployed in production release `a58ff2d`, 630 tests, lint, local build, Vercel build, and live 200 checks passed.
@@ -126,7 +128,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Grade:** [ready], high confidence. Functional-confusion bug, not polish; the scoped copy already exists.
 
-## 110. [ready] AlertInterstitial reskin to the light card language (settled by item 66, one component got missed)
+## 110. [done] AlertInterstitial reskin to the light card language (settled by item 66, one component got missed)
+
+**SHIPPED 2026-07-22.** The final dark overlay now uses the settled light-card treatment. All alert copy and behavior remain unchanged. The same pass fixed the mobile stacking defect that made the visible dismiss control untappable over the full-screen drawer. Production deployment `dpl_AA1jcbEpqXgbnKLw1NaxTz3PYYps` is READY and verified live.
 
 **Problem:** Item 66 converged the enrollment prompt from a dark navy bubble to a light Meltwater card, and every other overlay (InstallPrompt, FeedbackModal, SignInSheet, AccountSheet) is a light card with dark text. `AlertInterstitial.tsx` is the one survivor still rendering solid `var(--accent)` with white text, and it appears in the same push-alert flow as the now-light InstallPrompt, so the two patterns visibly fight.
 
