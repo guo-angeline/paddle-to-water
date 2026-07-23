@@ -18,9 +18,7 @@ const markSrc =
 // if the spot has none or the file cannot be read (a missing file must fall back
 // to the text card, never break the build). getSpotPhoto is the single source of
 // truth for which spots have a photo and what credit they owe.
-function loadSpotPhoto(
-  id: number
-): { src: string; author?: string; license?: string; creditRequired: boolean } | null {
+function loadSpotPhoto(id: number): { src: string; credit: string | null } | null {
   const photo = getSpotPhoto(id);
   if (!photo) return null;
   try {
@@ -28,16 +26,41 @@ function loadSpotPhoto(
     const bytes = readFileSync(join(process.cwd(), "public", photo.file));
     return {
       src: `data:image/${ext};base64,` + bytes.toString("base64"),
-      author: photo.author,
-      license: photo.license,
-      // Same gate as the SpotDrawer figcaption: a credit renders only when an
-      // author is named AND attribution is not explicitly waived. Owner photos
-      // (no author) and CC0 (attribution_required: false) render no credit.
-      creditRequired: !!photo.author && photo.attribution_required !== false,
+      credit: buildCredit(photo),
     };
   } catch {
     return null;
   }
+}
+
+// Item 112 credit line, hardened per the 2026-07-22 IP gate.
+//
+// Same render gate as the SpotDrawer figcaption: a credit shows only when an
+// author is named AND attribution is not explicitly waived (owner photos have no
+// author, CC0 sets attribution_required: false), so both stay credit-free here.
+//
+// Two obligations the on-page use never triggered, because the OG card FLATTENS
+// the photo (darkened by our gradient) with text and the wordmark into one new
+// PNG, i.e. a modified derivative rather than an unaltered photo beside a caption:
+//   1. Every CC BY / BY-SA licence requires indicating the work was modified, so
+//      the credit carries "(modified)".
+//   2. CC BY-SA is share-alike: the modified image itself is offered under BY-SA.
+//      The displayed licence string ("CC BY-SA 3.0") IS that adapter's licence,
+//      and "(modified)" marks the derivative, which together satisfy the marking.
+//      We accept BY-SA on our gradient/text contribution to that specific PNG;
+//      it reaches nothing else (not the site, code, wordmark, or navy-only cards),
+//      and the wordmark is trademark-reserved regardless.
+// The source platform is appended as the on-image path to the original, since a
+// static PNG cannot link it the way the on-page caption does.
+function buildCredit(photo: { author?: string; license?: string; source?: string; attribution_required?: boolean }): string | null {
+  if (!photo.author || photo.attribution_required === false) return null;
+  const parts = [`Photo: ${photo.author}`];
+  if (photo.license) parts.push(photo.license);
+  let line = parts.join(" / ") + " (modified)";
+  // `source` is the harvest platform for third-party photos (e.g. "Wikimedia
+  // Commons"); it is "owner" only for first-party photos, which never reach here.
+  if (photo.source && photo.source !== "owner") line += ` · ${photo.source}`;
+  return line;
 }
 
 export function generateStaticParams() {
@@ -124,9 +147,12 @@ export default async function OGImage(
             }}
           />
         )}
-        {/* Attribution, when the licence requires it. Same author/licence gate as
-            the on-page figcaption. Top-left, out of the title block's way. */}
-        {photo && photo.creditRequired && (
+        {/* Attribution, when the licence requires it. Built by buildCredit with
+            the modification indicator and share-alike marking the IP gate
+            required. Top-left, out of the title block's way and visually
+            separated from the wordmark so it reads as a factual credit, not
+            co-branding (the no-endorsement point). */}
+        {photo && photo.credit && (
           <div
             style={{
               position: "absolute",
@@ -141,7 +167,7 @@ export default async function OGImage(
               borderRadius: 6,
             }}
           >
-            {`Photo: ${photo.author}${photo.license ? " / " + photo.license : ""}`}
+            {photo.credit}
           </div>
         )}
         <div

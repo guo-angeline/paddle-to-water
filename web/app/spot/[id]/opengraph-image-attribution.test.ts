@@ -2,34 +2,42 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// Item 112: the per-spot OG share card composites the spot photo, and CC-BY /
-// CC-BY-SA photos REQUIRE attribution wherever they show. This asserts the OG
-// card's credit gate stays identical to the on-page figcaption gate, so a photo
-// that owes a credit on the page also owes it on the shared card, and owner /
-// CC0 photos stay credit-free on both.
+// Item 112: the per-spot OG share card composites the spot photo. Compositing
+// makes it a MODIFIED derivative, so CC BY / BY-SA require a modification
+// indicator, and BY-SA share-alike attaches to the composite. The 2026-07-22 IP
+// gate required these; this guards them so the obligation cannot silently
+// regress the way the on-page figcaption is guarded by spot-photos.test.ts.
 const read = (p: string) => fs.readFileSync(path.resolve(__dirname, p), "utf-8");
 const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
 
 const og = strip(read("./opengraph-image.tsx"));
 const drawer = strip(read("../../../components/SpotDrawer.tsx"));
 
-describe("OG card photo attribution (item 112)", () => {
+describe("OG card photo attribution (item 112, IP gate)", () => {
   it("gates the credit on the SAME condition as the on-page figcaption", () => {
-    // The load-bearing condition: author present AND not explicitly waived.
-    const gate = /author && [\w.]*\.attribution_required !== false/;
-    expect(og, "OG card must gate the credit on author + attribution_required").toMatch(gate);
-    expect(drawer, "SpotDrawer figcaption gate changed; keep the OG card in sync").toMatch(gate);
+    // Same semantics, different polarity: the drawer renders the credit on the
+    // positive gate; buildCredit early-returns null on its negation. Both must
+    // still key on author AND attribution_required, so dropping the licence
+    // check from either fails here.
+    expect(drawer, "SpotDrawer figcaption gate changed").toMatch(/author && [\w.]*\.attribution_required !== false/);
+    expect(og, "OG buildCredit must still guard on author").toMatch(/!photo\.author/);
+    expect(og, "OG buildCredit must still guard on attribution_required").toMatch(/attribution_required === false/);
   });
 
-  it("actually renders author and license text when the credit is due", () => {
+  it("marks the composite as modified (CC BY / BY-SA modification indicator)", () => {
+    // Required by the IP gate: the gradient + text overlay is a modification, and
+    // every CC BY/BY-SA licence requires saying so.
+    expect(og).toMatch(/\(modified\)/);
+  });
+
+  it("renders author, license, and source in the credit", () => {
     expect(og).toContain("photo.author");
     expect(og).toContain("photo.license");
+    expect(og).toContain("photo.source");
     expect(og).toMatch(/Photo:/);
   });
 
-  it("falls back to the plain card and never breaks the build on a missing file", () => {
-    // A manifest entry whose file cannot be read must degrade to no-photo, not
-    // throw during static generation of all 177 OG images.
+  it("never breaks static generation on a missing file", () => {
     expect(og).toMatch(/catch\s*\{\s*return null;\s*\}/);
     expect(og).toContain("getSpotPhoto");
   });
