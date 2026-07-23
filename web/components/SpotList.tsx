@@ -28,6 +28,15 @@ interface Props {
   emptyState?: { title: string; clearLabel: string };
 }
 
+export function getSpotListEmptyState(
+  spotCount: number,
+  savedCount: number,
+  recentCount: number,
+): "full" | "inline" | null {
+  if (spotCount > 0) return null;
+  return savedCount > 0 || recentCount > 0 ? "inline" : "full";
+}
+
 export default function SpotList({
   spots, selected, onSelect, onClearFilters, distanceMap,
   savedSpots = [], favorites = new Set(), onToggleFavorite, condBySpot = {},
@@ -105,8 +114,9 @@ export default function SpotList({
   // Remove saved AND recently-checked spots from the main list to avoid showing
   // the same spot twice in the panel (both are pinned sections above the list).
   const mainSpots = spots.filter((s) => !favorites.has(s.id) && !recentIdSet.has(s.id));
+  const emptyStateMode = getSpotListEmptyState(spots.length, savedSpots.length, recentSpots.length);
 
-  if (spots.length === 0 && savedSpots.length === 0 && recentSpots.length === 0) {
+  if (emptyStateMode === "full") {
     return (
       <div
         role="status"
@@ -134,12 +144,12 @@ export default function SpotList({
           {isStandalone ? (
             <>Watch your spots again here to get alerts. The installed app starts fresh, so anything you watched in Safari isn&rsquo;t here yet.</>
           ) : (
-            <>Tap <span style={{ color: "#E23B54" }}>♥</span> to watch a spot&rsquo;s conditions.</>
+            <>Tap <span style={{ color: "var(--saved)" }}>♥</span> to watch a spot&rsquo;s conditions.</>
           )}
         </p>
       )}
 
-      {/* Saved spots section — pinned at top regardless of filters */}
+      {/* Saved spots section, pinned at top regardless of filters */}
       {savedSpots.length > 0 && (
         <div ref={savedSectionRef}>
           <div className="px-4 pt-3 pb-1.5 flex items-center gap-1.5">
@@ -203,7 +213,7 @@ export default function SpotList({
 
       {/* Inline zero-match state follows pinned content so saved and recent spots
           remain useful when the incoming filtered list has no matches. */}
-      {spots.length === 0 && (savedSpots.length > 0 || recentSpots.length > 0) && (
+      {emptyStateMode === "inline" && (
         <div
           role="status"
           aria-live="polite"
