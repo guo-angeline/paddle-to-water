@@ -1,3 +1,17 @@
+# 2026-07-22: alert fail-closed fix and California map are live
+
+**Your move:** Nothing needed from you.
+
+**TL;DR:** Your item-107 deploy approval released the alert safety fix and item 108 together. Missing or malformed NWS wind can no longer create a positive "good to paddle" alert, and first-time visitors now see a California-wide map instead of a Bay-only frame.
+
+**Item 107:** deployed `31dc221` in production release `a58ff2d`. Empty, null, and garbage wind readings are skipped; `0 mph` and NWS `Calm` remain valid. The protected gate was bound to the exact release SHA and its one-use approval file was deleted after deploy.
+
+**Item 108:** deployed `10ec36f` in the same release. The default map frames California and region pills read north to south.
+
+**GitHub:** README now reflects the statewide product, 173 visible spots, current reviews/account features, fail-closed alerts, and the current Vercel deploy command.
+
+**Appendix:** 630 tests passed, lint passed, local and Vercel production builds passed, Vercel reports READY, and `paddletowater.com` plus `/spot/1` returned 200. D32 remains open but blocks neither item.
+
 # 2026-07-22: the map opens on California now, but nothing new can go live until you approve item 107
 
 **Item 108 is coded and tested.** The map no longer opens on the Bay for a first-time visitor: it now frames the whole state, from Humboldt to San Diego, so someone arriving from LA immediately sees their own coast instead of a Bay-only view that contradicts the "across California" headline. The region filter pills are reordered north to south for the same reason. Working out the exact map framing caught a real bug before it shipped: my first center clipped the far-north-coast spots off a phone screen, which the viewport math flagged since another session's dev server was holding the preview port.
