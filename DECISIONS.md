@@ -733,3 +733,29 @@ Item 93 (fake-door button that measures interest in the AI trip planner) is read
 Not up for grabs (item + house rules): no price shown in v1; honest "not built yet" label before the tap; no fake progress and no implied safety judgement; dwell-gated impression + click + outcome events; kill switch, no A/B; a `lawyer` gate on the copy (and on email capture if you pick it).
 
 Answer: (owner, 2026-07-22, in chat) **Accept the defaults EXCEPT the decision rule.** Pure count (no email capture), spot-sheet placement near conditions, web only, and the expiry (400 impressions or 21 days) all stand. **No pre-registered build/kill/run-longer rule**, the owner will judge the numbers manually. The expiry is retained, so the fake door still self-terminates rather than becoming permanent; the owner reads the result and decides by eye.
+
+## D34 [OPEN] 2026-07-23 · Retention is bet on a push loop that cannot work at this scale; re-baseline onto the pull channel?
+
+**This came from the strategy pass, and it is the one finding both the ceo and product-visionary agents reached independently, from different angles, same conclusion. Filing it as your decision, not acting on the big moves without you.**
+
+**The claim.** The roadmap's #1 retention bet is the enrollment loop (save, install, then email/push a calm-window alert), per the vision at ROADMAP line 8 ("own a low-friction reliable channel to re-reach users, email first, PWA push second"). Two things are now clear from the data:
+
+1. **A notification loop is the wrong mechanism for the failure it targets.** The failure is that people do not return even once (~83% one-and-done, W1 ~16%). You cannot notify someone into a *first* return, an opt-in only pays off for users who already come back. And in a flat, capped market (owner-confirmed, `reports/market-research-tam-2026-07-09.md`) acquisition will never scale the denominator a ~2%-conversion channel needs to matter.
+
+2. **The milestone the whole backlog is sequenced behind cannot arrive.** Everything downstream (more retention vs UGC vs monetization) is gated on the "early-August durable retention read." That read is keyed to an enrolled ex-owner cohort that does not exist and is barely growing: `reports/analytics-2026-07-18.md` shows 44 saves, 82 prompts, **1 push grant, 3 email submits, 0 confirms**, at ~1 enrollment / 8 days. With no A/B under DAU 100 (DAU ~31) the funnel cannot be tuned to significance, so a readable non-owner cohort is a year-plus out, not August. The date was set assuming enrollment would grow. It did not.
+
+3. **The retention behavior that IS working and IS measurable is being under-weighted.** The one validated repeated action is the PULL cold-open conditions re-check: no save, no install, no permission grant, ~86% conditions engagement per open (genuine, survives the item-42 re-cut), reaching returning users directly. Item 26 shipped the device-history strip; item 61 (cold-open "good to paddle today" ranked surface) extends it to first-timers.
+
+**What I already did under this pass (reversible):** promoted **item 61 to [ready]**. It is the pull-first retention surface both agents named, is build-ready with no owner decision, and gives the dry build queue a genuinely aligned item to work on regardless of how you rule below.
+
+**What I did NOT do without you (the bigger, harder-to-reverse moves):** reword the vision at ROADMAP line 8, park item 117 (weekend digest, a second enrollment-gated channel), or un-gate the UGC/monetization decisions (e.g. item 133) from the August push read. Those are yours.
+
+**Your call. Options (answer on the line, or edit freely):**
+- **(a) Full re-baseline.** Re-key the retention decision onto the pull metric (distinct days a device fires `conditions_viewed` / `recent_spot_clicked`, already instrumented), promote pull surfaces (61 done, sequence 111/114 next), demote further alert-enrollment iteration, reword line 8 to cast push as an enhancer for the already-habitual few, park item 117, and gate UGC/monetization on pull-return signal instead of the August read.
+- **(b) Partial.** Adopt the pull metric as the retention read and keep 61 promoted, but leave push/email in place as-is and do not park 117 yet. Lowest-regret.
+- **(c) Hold.** Keep the current push-first sequencing and the August read as the gate; revert 61 to [proposed] if you disagree with the promotion.
+- **(d) Something else / discuss.**
+
+My recommendation: **(a)**, or **(b)** if you want to move the measurement without touching the push build yet. The evidence for "the push read can't come" is airtight; the only inference is that enrollment won't self-accelerate, which 8 weeks of flat ~2% supports.
+
+Answer:

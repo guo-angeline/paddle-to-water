@@ -1139,7 +1139,7 @@ WCAG AA needs **4.5:1** for normal-size text; `--muted` clears only the 3:1 larg
 
 **Flags:** no decision, no legal surface. Client-side only, buildable now.
 
-## 61. [proposed] Cold-open "good to paddle today" ranked surface
+## 61. [ready] Cold-open "good to paddle today" ranked surface
 
 **Why:** The strategy names "calm-window alerts + a cold-open reason to check" (line 8) and the vision answers "where's good today?" (line 16). Item 26 shipped a cold-open strip but only for spots this device already viewed, so a first-time or one-and-done visitor (78% one-and-done) gets no answer. This ranks spots by today's conditions on load, the purest expression of the per-spot-judgment moat as discovery. Distinct from item 8 (a redirect *out* of an already-open blown-out spot) and item 26 (device history).
 
@@ -1150,6 +1150,8 @@ WCAG AA needs **4.5:1** for normal-size text; `--muted` clears only the 3:1 larg
 - New dwell-gated INTENT `good_today_shown` + `good_today_clicked` (`spot_id`/`region`) + changelog; kill-switch flag at 100%, no A/B.
 
 **Flags:** no owner decision or legal surface, but it is the largest of the three (M/L) and shares conditions-fan-out plumbing with the still-proposed item 8; the board may prefer to ship 61 + 8 as one epic, sequenced after the early-August retention read.
+
+**Promoted [proposed] -> [ready] 2026-07-23 (strategy pass).** This is the pull-based cold-open retention surface both the ceo and product-visionary agents independently named as the move this week: it needs zero enrollment, zero install, zero permission grant, and rides the one validated repeated behavior (re-checking conditions). Build-ready with clear acceptance criteria and no owner decision. Its own "sequence after the early-August retention read" flag is superseded by decision memo D34, which argues that read is structurally unobtainable and should not gate pull-first work.
 
 ## 51. [proposed] Marker clustering for dense areas (carved out of item 7, 2026-07-17)
 
