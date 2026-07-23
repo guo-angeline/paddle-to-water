@@ -15,6 +15,15 @@ Process: /ship PRD workflow skipped again (same StructuredOutput schema failure 
 Follow-ups: E1 (mobile map-tab banner, since mobile opens on Map and the list is one tap away) is a possible fast-follow, not built.
 Next up: Item 104 (water temperature source hunt), next [ready].
 
+## 2026-07-23 · Item 120: Mobile map cold-open banner (value prop + good-today teaser) · SHIPPED
+What: The mobile map tab (~82% of traffic) opened on unlabeled dots with no copy, and item 61's good-today list sat one tab away under List. A slim strip now pins to the top of the map panel: a value prop that paints instantly, swapping to "Good today: {spot} · {badge} ->" once goodTodaySpots resolves, tappable into that spot. Surfaces the week's conditions-moat work to the exact one-and-done cohort it was built for.
+Evidence: Verifier PASS, 715 tests (+8), protected files untouched, honest-mutation caught. Legal CLEAR with one minor fix applied: the good-today caveat co-renders verbatim and was bumped from 10px gray-400 to the AA --muted token (both gates flagged legibility). Live-verified at 390px: banner showed "Good today: Shaver Lake Calm", tap opened the drawer, X dismissed it session-scoped, desktop showed no banner (md:hidden, no regression).
+Architecture: Reuses item 61's already-computed goodTodaySpots[0] (no new fetch); mobile-only, map-tab + non-empty only; session-scoped dismiss since good-today is a daily answer. Behind the map-cold-open-banner kill switch (default ON).
+Measure: New SYSTEM map_banner_loaded + INTENT map_banner_clicked/_dismissed, new spot_viewed source "map_banner", changelog filed.
+Deployed: paddletowater.com, 2026-07-23 (60542b0), confirmed live in the prod bundle.
+Follow-up filed: the item-61 list caveat and conditions-panel foot disclaimer still use 10px gray-400 (below AA); a chip sweeps both to the AA token to match this fix.
+Next up: item 136 (SSR + AI-citable pages, strategy-agent-promoted, now top of queue) then item 103 (PROTECTED storm/precip fix, owner-promoted).
+
 ## 2026-07-23 · Item 8 "Go here instead": nearby calmer alternative when blown out · SHIPPED
 What: When the opened spot has no calm daytime window left today, the drawer surfaces up to 2 nearest spots that do, each a tap-through. The vision's signature moat promise ("Crissy is blown out, go to Richardson Bay instead"), now live for the ~half of conditions checks that land on a breezy spot and used to dead-end.
 Evidence: Verifier PASS, 707 tests (+9). Legal gate CLEAR, no changes: the block sits above the panel's existing unconditional safety disclaimer, co-render met by placement, and a redirect toward calmer water reduces liability. Live proof: blown-out Calero County Park offered Coyote Lake (14.3mi) + Hooper Beach (18.2mi) both Calm, tap-through swapped the drawer to Coyote Lake, and Aquatic Park Cove (no calm neighbors) correctly showed nothing.
