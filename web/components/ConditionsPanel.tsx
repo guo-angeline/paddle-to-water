@@ -420,10 +420,6 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
               </p>
             );
           })()}
-
-          <p className="text-[10px] text-gray-400 leading-snug">
-            Guidance only, not a safety guarantee. Conditions shift fast on the water.
-          </p>
         </div>
       )}
 
@@ -432,6 +428,15 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
           so this pair adds no requests beyond the single hourly call. */}
       <TodaysShapePanel spot={spot} />
       <NextGoodWindowPanel spot={spot} />
+
+      {/* The safety disclaimer renders UNCONDITIONALLY at the foot of the panel,
+          not inside the current-reading branch, so it always co-renders with the
+          shape and look-ahead blocks. Those two run their own hourly fetch and
+          can paint even when the current-reading fetch errored; a forecast read
+          must never show without this line (item 100 lawyer gate). */}
+      <p className="text-[10px] text-gray-400 leading-snug mt-3">
+        Guidance only, not a safety guarantee. Conditions shift fast on the water.
+      </p>
     </section>
   );
 }

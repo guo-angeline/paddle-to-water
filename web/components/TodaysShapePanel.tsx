@@ -17,9 +17,10 @@ import { useGenuineView } from "@/lib/useGenuineView";
  * clean to draw or when the kill switch is off.
  */
 
-// Bar colours track the panel's PADDLE_COPY text tones (calm teal, breezy amber,
-// windy rust, unknown slate), so the curve reads with the same vocabulary as the
-// live wind pill above it.
+// The three wind tiers reuse the panel's PADDLE_COPY text tones exactly (calm
+// teal, breezy amber, windy rust) so the curve reads with the same vocabulary as
+// the live wind pill above it; "unknown" is a lighter neutral fill (a data gap,
+// not a wind tier, so it should recede rather than match a pill colour).
 const BAR_COLOR: Record<HourSample["paddleability"], string> = {
   calm: "#0E7F78",
   breezy: "#B4671F",
