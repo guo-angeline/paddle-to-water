@@ -765,7 +765,7 @@ Actioned this pass:
 - **Push track (parallel, keep building):** item 117 (weekend digest) stays [proposed] as a push-channel item, not parked; existing alert-loop work continues.
 - Not touched (separate decision): UGC/monetization gating, and native (D35).
 
-## D35 [OPEN] 2026-07-23 · Native iOS is accruing parity debt for zero users; commit to enrollment, or freeze it?
+## D35 [RESOLVED] 2026-07-23 · Native iOS is accruing parity debt for zero users; commit to enrollment, or freeze it?
 
 **Second strategy pass, and again both the ceo and product-visionary agents reached this same finding independently. It is orthogonal to D34 (D34 is which web retention channel; this is whether native should consume build slots at all right now).**
 
@@ -780,4 +780,15 @@ Actioned this pass:
 
 Until you answer, this loop will not promote any native item to `[ready]` (already its guardrail), and I'd recommend the build loop not pick native parity up either. My recommendation: **(b)**, freeze. The parity debt is only owed if native ships, and buying it now pre-pays for optionality you have not committed to. One line, "I'll enroll by X" or "freeze native", collapses the ambiguity and stops the leak.
 
-Answer:
+Answer: (owner, 2026-07-23, in chat) **(a) COMMIT to native.** Native ships; parity is real work to finish. Per this option, the parity ledger is cleared in ONE focused sweep BEFORE TestFlight, not piecemeal now (piecemeal re-drifts, since web keeps moving). So:
+
+**The critical path is now five owner/gated enablement steps, not code.** These are the actual blockers, and all are yours or owner-gated (I can prep/stage, but cannot create accounts, enter payment, hold secrets, or touch the Supabase dashboard):
+1. Apply the Supabase push migration `20260719_native_push.sql` in the SQL editor. Must land BEFORE the M5 deploy, or the crons 500 on the new columns.
+2. Approve + run the M5 backend deploy (`vercel --prod --yes --cwd web`); it is predeploy-gate-blocked as a push surface. I can run it once you approve AND step 1 is done.
+3. `eas init` (needs a free Expo account) for a projectId.
+4. Set `EXPO_PUBLIC_POSTHOG_KEY` in `native/.env`.
+5. Apple Developer Program enrollment (paid, ~1-2 week latency). The long pole; gates real APNs + universal links + any TestFlight tester. Start this first.
+
+**Roadmap encoding:** items 80/132/133/135 moved [proposed] -> [blocked(apple-enrollment)] as the single pre-TestFlight native parity sweep. They un-gate together once enrollment is done and the app is TestFlight-bound; then they are built as one batch (re-syncing to whatever web looks like at that moment), not one-per-pass. Until then the studio keeps prioritizing the web pull track (items 61 in-progress, 8 + 104 ready). This loop continues to hold native items out of [ready] until enrollment lands, now for a scheduling reason (batch before TestFlight) rather than an undecided-strategy one.
+
+Tell me when you have done step 5 (or want me to run step 2 after you do step 1), and I will sweep the parity batch.

@@ -87,7 +87,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Studio review, added 2026-07-22 (high-bar hourly pass; one native-parity gap surfaced, filed [proposed] pending an owner call on native release scope)
 
-## 133. [proposed] Native app has no reviews surface at all, not a display bug, an entire UGC feature is absent
+## 133. [blocked(apple-enrollment)] Native app has no reviews surface at all, not a display bug, an entire UGC feature is absent
 
 **Problem, grounded in code:** web `SpotDrawer.tsx` imports and renders `ReviewsSection` (the published-reviews list, the sign-in-gated write form, and item 89's just-shipped "no one has written about this spot yet" invitation on ~176 of 177 spots). `native/src/components/SpotSheet.tsx` has zero review references (grep confirms none), and no native reviews component exists anywhere under `native/src`. Native renders only the raw `owner_rating` star number. So an iOS user cannot read a single paddler review, cannot write one, and never sees the item-89 invitation the owner directed and shipped. This is broader than item 80 (native shows a different rating *number*, scoped to score attribution) and distinct from item 132 (native safety copy outside the no-inducement sweep). It is the third and largest native-parity gap now on the board.
 
@@ -546,7 +546,7 @@ SKIPPED  'vercel deploy --prod --cwd web'     <- what actually works, and what w
 **Acceptance:** the protected set covers the alert/push *library* surface, not just the route paths; the trigger matches any real production deploy invocation, not one literal string; `.claude/studio.md`'s documented deploy command matches what the CLI actually accepts; the gate is exercised against a fixture list of BOTH command forms and BOTH path classes, proving each is caught (assert what must be CAUGHT); a deliberate dry run shows a `conditions-window.ts` edit gating under the real command.
 
 
-## 135. [proposed] Port "today's shape" to the native conditions panel
+## 135. [blocked(apple-enrollment)] Port "today's shape" to the native conditions panel
 
 **Filed while shipping item 100 (web).** Item 100 added the intra-day "today's shape" read (summary line + hourly sparkline) and renamed the panel eyebrow "Conditions today" -> "Right now" on web. The native twins (`native/src/components/ConditionsPanel.tsx`, `native/src/components/NextGoodWindowPanel.tsx`) did NOT get it: a web UI change does not auto-propagate to its native mirror (item 122's whole lesson). So iOS users see the pre-item-100 panel, including the old "Conditions today" eyebrow.
 
@@ -554,7 +554,7 @@ The logic is already portable by design: `web/lib/todaysShape.ts` is pure and DO
 
 **Grade:** [proposed]. Low-risk parity port, but native ships are gated on the outstanding EAS/Apple enrollment (item 72) and there are no iOS users to measure yet, so it is not urgent. Verify with `cd native && npx tsc --noEmit && npm test`; a full simulator build is the owner's check.
 
-## 132. [proposed] Native safety copy is outside every no-inducement sweep
+## 132. [blocked(apple-enrollment)] Native safety copy is outside every no-inducement sweep
 
 **Found while shipping item 122.** `web/lib/alerts/no-inducement.test.ts` sweeps web surfaces (`PROSE_MODULES`, and since item 102 `data/spots.json`) for directives / urgency / outcome-promises, but it reads NOTHING under `native/`. Proof it matters: the native conditions panel carried "Check back before you head out" (the exact `head out` directive item 34/102 removed from web) live and undetected until item 122's parity port happened to replace it. Native `AlertInterstitial` and `NextGoodWindowPanel` render alert-adjacent copy too, and some is native-authored, not shared.
 
@@ -700,7 +700,9 @@ Second attempt used the **Magic Link** template (`recovery_sent_at`), the first 
 
 ---
 
-## 80. [proposed] Native app shows a different number than the web under the same star
+## 80. [blocked(apple-enrollment)] Native app shows a different number than the web under the same star
+
+**[proposed] -> [blocked(apple-enrollment)] 2026-07-23 (D35=a).** Native is committed, but its parity items (80, 132, 133, 135) are executed as ONE pre-TestFlight sweep, not piecemeal, so they gate together on the owner completing Apple Developer enrollment (the long-pole enablement step). They un-gate as a batch once native is TestFlight-bound. See D35 for the five owner enablement steps.
 
 **Flagged by the 2026-07-21 legal gate (D30, good-practice action 9), filed rather than fixed because the native app is not shipped yet.**
 
