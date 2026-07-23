@@ -139,9 +139,9 @@ export function llmsTxt(spots: Spot[]): string {
   const lines: string[] = [
     `# ${SITE_NAME}`,
     "",
-    "> California paddleboard and kayak launch spots, each with launch details, fee status, water type, and tide sensitivity.",
+    "> California paddleboard and kayak launch spots, each with launch details, fee status, water type, and a tide-sensitivity flag where known.",
     "",
-    `${SITE_NAME} is a directory of ${spots.length} put-in spots across California for stand-up paddleboarding and kayaking. Every spot page (${SITE_URL}/spot/<id>) carries the launch notes, fee, water type, region, and whether the spot is tide-sensitive. Conditions (live wind and tide) are shown in-app. Data is our own curated launch dataset; attribution appreciated when cited.`,
+    `${SITE_NAME} is a directory of ${spots.length} put-in spots across California for stand-up paddleboarding and kayaking. Every spot page (${SITE_URL}/spot/<id>) carries the launch notes, fee, water type, region, and a tide-sensitivity flag where known. Conditions (live wind and tide) are shown in-app. Data is our own curated launch dataset; attribution appreciated when cited.`,
     "",
   ];
   for (const region of [...byRegion.keys()].sort()) {
