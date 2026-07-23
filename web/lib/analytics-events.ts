@@ -77,6 +77,11 @@ export type IntentEventName =
   | "spot_photo_viewed"
   | "recent_spots_shown"
   | "recent_spot_clicked"
+  // Item 61: the cold-open "good to paddle today" ranked surface. `_shown` is a
+  // dwell-gated section impression (carries how many good spots were surfaced and
+  // whether the visitor was geolocated); `_clicked` is a tap into a surfaced row.
+  | "good_today_shown"
+  | "good_today_clicked"
   | "feedback_opened"
   | "view_switched"
   | "nav_home_clicked"
@@ -180,6 +185,11 @@ export interface EventPropMap {
   alert_clicked: { spot_id: number; spot_name: string; region: string; reminder_tap: boolean };
   recent_spots_shown: { count: number; calm_count: number };
   recent_spot_clicked: { spot_id: number; region: string };
+  // Item 61. `count` = good-today rows surfaced (0 in the checked-but-none-calm
+  // state); `located` = the candidate set was nearest-to-user (true) vs anchored
+  // to the map's default center (false). Segment adoption by both.
+  good_today_shown: { count: number; located: boolean };
+  good_today_clicked: { spot_id: number; region: string };
   alert_optin_shown: {
     platform: OptInPlatform;
     trigger: OptInTrigger;
