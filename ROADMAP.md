@@ -108,7 +108,7 @@ Verified at the SERVED-HTML level (the acceptance's own method), live on prod: s
 
 ## Owner item, added 2026-07-23 (first-visit "paddle now?" prompt; owner-directed [ready])
 
-## 137. [ready] First-visit-per-day "Want to paddle now?" modal: 3 nearest spots good in the next 0-60 minutes
+## 137. [in-progress] 2026-07-23T20:33:16Z First-visit-per-day "Want to paddle now?" modal: 3 nearest spots good in the next 0-60 minutes
 
 **What the owner asked for.** A closable dialog, roughly half the screen, that opens on a user's **first home-page visit each day** (once per user per day). Title: **"Want to paddle now?"**. Body lead: **"Spots near you are good to go."** Then a list of **up to 3 spots that have good conditions to get on the water in the next 0-60 minutes, ranked by distance**, each tappable and opening that spot's sheet/drawer. Clean, appealing UI.
 
