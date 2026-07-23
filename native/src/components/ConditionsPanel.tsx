@@ -6,13 +6,17 @@ import {
   formatTideTime,
   getConditionsRun,
   isNextDay,
+  isStormyForecast,
+  tideDirectionLine,
   type Paddleability,
   type TideOutcome,
   type WindInfo,
   type WindOutcome,
 } from "@/lib/conditions";
+import { COMPASS_WORDS, launchDirectionTip } from "@/lib/launchDirection";
 import type { Spot } from "@/lib/types";
 import { trackIntent, trackSystem } from "../lib/analytics";
+import { useKillSwitch } from "../lib/killSwitch";
 import { useGenuineDwell } from "../lib/useGenuineDwell";
 import { emit } from "../state/events";
 import { colors, fonts, radius } from "../theme/tokens";
@@ -49,6 +53,21 @@ interface TideSlot {
   fetchedAt: number;
 }
 
+// Item 122: parity with the web conditions-rethink bundle (items 97/98/99). Same
+// helper as web: forecast text, air temperature, and rain chance. "Air" prefix
+// because water temp is absent from the stack and cold shock is the real safety
+// variable; the rain clause shows only at >= 20% and never under a storm badge.
+function weatherLine(wind: WindInfo, stormy: boolean, readoutOn: boolean): string {
+  const base = `${wind.periodName}: ${wind.shortForecast}`;
+  if (!readoutOn) return base;
+  let line = base;
+  if (wind.tempF !== null) line += `, Air ${wind.tempF}F`;
+  if (!stormy && wind.precipPct !== null && wind.precipPct >= 20) {
+    line += ` · ${wind.precipPct}% chance of rain`;
+  }
+  return line;
+}
+
 function Skeleton() {
   return (
     <View style={{ gap: 8 }}>
@@ -59,15 +78,39 @@ function Skeleton() {
   );
 }
 
-function WindReading({ wind, isFlatwater }: { wind: WindInfo; isFlatwater: boolean }) {
+function WindReading({
+  wind,
+  isFlatwater,
+  readoutOn,
+}: {
+  wind: WindInfo;
+  isFlatwater: boolean;
+  readoutOn: boolean;
+}) {
   const paddle = PADDLE_COPY[wind.paddleability];
+  const stormy = readoutOn && isStormyForecast(wind.shortForecast);
+  // Null under 5mph and for variable wind, so it carries its own empty state.
+  const tip = launchDirectionTip(wind.direction, wind.speedMax);
+  const dir = readoutOn ? COMPASS_WORDS[wind.direction.toUpperCase()] ?? wind.direction : wind.direction;
   return (
     <View>
-      {isFlatwater && wind.paddleability !== "unknown" && (
-        <View style={[styles.paddlePill, { backgroundColor: paddle.bg }]}>
-          <Text style={[styles.paddleLabel, { color: paddle.text }]}>{paddle.label}</Text>
-          <Text style={[styles.paddleTone, { color: paddle.text }]}>{paddle.tone}</Text>
+      {/* Storm badge owns the pill slot for EVERY difficulty (lightning is not a
+          flatwater-only fact) and is mutually exclusive with the paddle pill. */}
+      {stormy ? (
+        <View style={[styles.paddlePill, { backgroundColor: colors.windAlertFill }]}>
+          <Text style={[styles.paddleLabel, { color: colors.windAlert }]}>⚠ Storm risk</Text>
+          <Text style={[styles.paddleTone, { color: colors.windAlert }]}>
+            Lightning risk on open water, per the forecast.
+          </Text>
         </View>
+      ) : (
+        isFlatwater &&
+        wind.paddleability !== "unknown" && (
+          <View style={[styles.paddlePill, { backgroundColor: paddle.bg }]}>
+            <Text style={[styles.paddleLabel, { color: paddle.text }]}>{paddle.label}</Text>
+            <Text style={[styles.paddleTone, { color: paddle.text }]}>{paddle.tone}</Text>
+          </View>
+        )
       )}
       <View style={styles.windRow}>
         <Text style={styles.windSpeed}>
@@ -75,11 +118,12 @@ function WindReading({ wind, isFlatwater }: { wind: WindInfo; isFlatwater: boole
             ? "Wind calm"
             : `Wind ${wind.speedMin === wind.speedMax ? wind.speedMax : `${wind.speedMin}-${wind.speedMax}`} mph`}
         </Text>
-        {!!wind.direction && <Text style={styles.windDir}>from {wind.direction}</Text>}
+        {!!wind.direction && <Text style={styles.windDir}>from {dir}</Text>}
       </View>
-      <Text style={styles.forecastLine}>
-        {wind.periodName}: {wind.shortForecast}
-      </Text>
+      <Text style={styles.forecastLine}>{weatherLine(wind, stormy, readoutOn)}</Text>
+      {/* Launch-direction tip (item 99), the reworded shared-lib string. Above
+          the disclaimer, suppressed under a storm badge. */}
+      {readoutOn && !stormy && !!tip && <Text style={styles.tipLine}>{tip}</Text>}
     </View>
   );
 }
@@ -89,6 +133,9 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
   const [wind, setWind] = useState<WindSlot | null>(null);
   const [tide, setTide] = useState<TideSlot | null>(null);
   const logged = useRef<number | null>(null);
+  // Item 122: one switch for the whole readout-completion set, same key as web
+  // so both platforms flip together.
+  const readoutOn = useKillSwitch("conditions-readout");
 
   useEffect(() => {
     let alive = true;
@@ -156,6 +203,8 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
   });
 
   const tideInfo = tideOutcome?.ok ? tideOutcome.tide : null;
+  // Item 98 parity: direction first, raw events demoted beneath it.
+  const dirLine = readoutOn && tideInfo ? tideDirectionLine(tideInfo.next) : null;
 
   return (
     <View style={styles.panel}>
@@ -170,16 +219,22 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
 
       {bothErrored ? (
         <Text style={styles.unavailable}>
-          Live conditions are unavailable right now. Check back before you head out.
+          Live conditions are unavailable right now. Check back for a current read.
         </Text>
       ) : (
         <View style={{ gap: 12 }}>
           {windLoading ? (
             <Skeleton />
           ) : windInfo ? (
-            <WindReading wind={windInfo} isFlatwater={isFlatwater} />
-          ) : (
+            <WindReading wind={windInfo} isFlatwater={isFlatwater} readoutOn={readoutOn} />
+          ) : !readoutOn ? (
             <Text style={styles.sourceNote}>Wind forecast unavailable.</Text>
+          ) : windOutcome?.ok ? (
+            // Fetch succeeded, no forecast for this coordinate (outside coverage).
+            <Text style={styles.sourceNote}>No forecast available for this spot.</Text>
+          ) : (
+            // Fetch errored: transient. Mirrors the tide side's wording.
+            <Text style={styles.sourceNote}>Wind data is unavailable right now.</Text>
           )}
 
           {spot.tide_sensitive &&
@@ -189,11 +244,14 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
               </View>
             ) : tideInfo ? (
               <View style={styles.tideBlock}>
+                {!!dirLine && <Text style={styles.tideDirection}>{dirLine}</Text>}
                 <View style={styles.tideEvents}>
                   {tideInfo.next.length > 0 ? (
                     tideInfo.next.slice(0, 2).map((t) => (
-                      <Text key={t.time} style={styles.tideEvent}>
-                        <Text style={styles.tideType}>{t.type === "H" ? "High" : "Low"}</Text>{" "}
+                      <Text key={t.time} style={dirLine ? styles.tideEventDemoted : styles.tideEvent}>
+                        <Text style={dirLine ? undefined : styles.tideType}>
+                          {t.type === "H" ? "High" : "Low"}
+                        </Text>{" "}
                         {formatTideTime(t.time)}
                         {isNextDay(t.time) && <Text style={styles.tideMuted}> tomorrow</Text>}
                         <Text style={styles.tideMuted}> · {t.heightFt.toFixed(1)} ft</Text>
@@ -299,10 +357,22 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginTop: 2,
   },
+  tipLine: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 4,
+  },
   tideBlock: {
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
     paddingTop: 10,
+  },
+  tideDirection: {
+    fontFamily: fonts.bodySemibold,
+    fontSize: 14,
+    color: colors.dark,
+    marginBottom: 4,
   },
   tideEvents: {
     flexDirection: "row",
@@ -314,6 +384,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 14,
     color: colors.dark,
+  },
+  tideEventDemoted: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.muted,
   },
   tideType: {
     fontFamily: fonts.bodySemibold,
