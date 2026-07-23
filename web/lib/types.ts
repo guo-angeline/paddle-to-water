@@ -65,7 +65,9 @@ export const REGIONS = [
   // last in the order the regions happened to be added. Strings are only
   // REORDERED here, never renamed: `region` is an analytics prop and a stored
   // field keyed by value, so order is free to change but the strings are not.
-  // (The old add-order is in git history; item 92 added the SoCal five.)
+  // (The old add-order is in git history; item 92 added the SoCal five;
+  // item 138 added "Inland Empire" for the inland Riverside/San Bernardino
+  // reservoirs, placed with the SoCal cluster though it spans a wide latitude.)
   "North Coast",
   "North Bay",
   "Sacramento",
@@ -78,6 +80,7 @@ export const REGIONS = [
   "Central Coast",
   "Ventura",
   "Los Angeles",
+  "Inland Empire",
   "Orange County",
   "San Diego",
 ] as const;
