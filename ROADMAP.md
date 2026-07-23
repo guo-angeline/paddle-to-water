@@ -138,7 +138,7 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Grade:** [ready], high confidence. Applies an already-validated owner decision to a component that was missed; the fix pattern exists in the codebase.
 
-## 111. [ready] Weekend / multi-day outlook in the conditions panel
+## 111. [in-progress] 2026-07-22T20:15:57 Weekend / multi-day outlook in the conditions panel
 
 **Problem:** `nextWindow.ts` already computes a 1-to-3-day good-window for alerts, but in-app a paddler only sees "today". The most natural return trigger, checking Thursday to plan Saturday, has no surface. Retention is the #1 goal and this reuses logic already in flight.
 
