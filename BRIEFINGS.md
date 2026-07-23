@@ -1,3 +1,14 @@
+## 2026-07-23 · Item 100: Today's shape from the in-flight hourly payload · SHIPPED
+What: Spot conditions panel now answers "when today" with a one-line rest-of-day wind read ("Calm the rest of today", "Winds pick up by 11am", "Winds ease by...", "Storms possible later today") plus an hour-by-hour wind sparkline. Live example resolves an ambiguous "Wind 7-15 mph" range into "calm now, winds pick up by 11am", the actual paddle-decision signal. Live-reading eyebrow renamed "Conditions today" to "Right now".
+Evidence: Adversarial verifier PASS, 679 tests (+22, incl. a transition-hour off-by-one mutation the tests caught), protected files untouched, no coordinate changes, no em dashes. Lawyer CLEAR (four strings are forecast facts, not directives); its optional note actioned same ship, the safety disclaimer now co-renders unconditionally and closes a prior gap where the panel could paint with none on a current-reading fetch error.
+Architecture: New shared getHourlyPeriods fetches the NWS hourly payload once per spot; both next-good-window and today's-shape derive from it, so the curve adds zero network requests. Scoped to the same 6am-6pm bound the alert path uses, no second definition of "good". Protected lib/alerts/conditions-window.ts left untouched (a change there freezes the deploy train). Separate 12-hourly fetchWind kept: it feeds "Right now", the saved-spots batch and native with different semantics, dropping it is its own item.
+Measure: New dwell-gated INTENT todays_shape_viewed (spot_id, region, has_summary, hours) + changelog entry. Behind todays-shape kill switch, default ON, no A/B per DAU<100. n/a on pre-post until data lands.
+Deployed: paddletowater.com, verified live desktop + mobile with real NWS data, 2026-07-23.
+Decisions raised: none from this item. D34 [OPEN] from a concurrent strategy pass (re-baseline retention onto the pull channel) awaits owner, independent of this ship. Parked: none.
+Process: /ship PRD agent failed (StructuredOutput retry cap; the PRD schema drops a required field per attempt on large specs). Item 100 was fully specced in the roadmap, so build+verify ran directly, tests first then verifier + lawyer. Flag: make the prd field optional-when-already-specced or split the output. Concurrent strategy commit (item 61 to ready, D34 filed) touched only ROADMAP/DECISIONS, merged clean, nothing clobbered.
+Follow-ups: Item 135 [proposed] port today's-shape to native (portable logic, RN presentation only; not urgent, native gated on Apple enrollment). Background chip: pre-existing lint red on main (item 93 set-state-in-effect; Next 16 skips lint on build so it deployed).
+Next up: Owner call on D34; otherwise next [ready] roadmap item.
+
 # 2026-07-22: the trip-planner interest test is live
 
 **Shipped item 93**, the fake-door test you green-lit. Live and verified.
