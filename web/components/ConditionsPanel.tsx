@@ -21,6 +21,7 @@ import { useKillSwitch } from "@/lib/experiments";
 import { useGenuineView } from "@/lib/useGenuineView";
 import { recordExplored } from "@/lib/exploredSpots";
 import NextGoodWindowPanel from "@/components/NextGoodWindowPanel";
+import TodaysShapePanel from "@/components/TodaysShapePanel";
 
 /**
  * Live tide + wind for the selected spot. Client-only: fetches NOAA tides and
@@ -321,7 +322,7 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
     >
       <div className="flex items-center justify-between mb-2.5">
         <p className="text-xs font-semibold text-(--muted) uppercase tracking-wide">
-          Conditions today
+          Right now
         </p>
         {anyLoaded && !bothErrored && fetchedAt ? (
           <span className="text-[10px] text-gray-400">Live as of {formatFetchedAt(fetchedAt)}</span>
@@ -426,6 +427,10 @@ export default function ConditionsPanel({ spot }: { spot: Spot }) {
         </div>
       )}
 
+      {/* Item 100: today's intra-day shape, then the multi-day look-ahead. Both
+          draw from the one shared hourly fetch (getTodaysShape / getNextWindow),
+          so this pair adds no requests beyond the single hourly call. */}
+      <TodaysShapePanel spot={spot} />
       <NextGoodWindowPanel spot={spot} />
     </section>
   );
