@@ -37,8 +37,8 @@ describe("AlertInterstitial launch-direction tip contract", () => {
     expect(interstitialSrc).toMatch(/launchDirectionTip\(nextWindow\.windDirection,\s*nextWindow\.maxWindMph\)/);
   });
 
-  it("renders the tip as a third subline paragraph using the existing subline classes", () => {
-    expect(interstitialSrc).toMatch(/\{tip\s*&&\s*<p className="text-white\/85 text-sm mt-0\.5">\{tip\}<\/p>\}/);
+  it("renders the tip as a third subline paragraph using the light-card subline classes", () => {
+    expect(interstitialSrc).toMatch(/\{tip\s*&&\s*<p className="text-\(--ink-2\) text-sm mt-0\.5">\{tip\}<\/p>\}/);
   });
 
   it("does not fire alert_interstitial_shown from the bare mount effect", () => {

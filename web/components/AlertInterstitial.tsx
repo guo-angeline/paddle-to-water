@@ -136,38 +136,48 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
       className="fixed inset-x-0 top-0 flex justify-center px-4"
       style={{ zIndex: 1300, paddingTop: "calc(max(0.75rem, env(safe-area-inset-top)) + 0.5rem)" }}
     >
-      <div className="w-full max-w-sm rounded-2xl shadow-2xl px-4 py-3.5" style={{ background: "var(--accent)" }}>
+      <div
+        className="w-full max-w-sm rounded-2xl px-4 py-3.5"
+        style={{
+          background: "var(--white)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 8px 30px rgba(11,42,71,0.14)",
+        }}
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">A spot you watch</p>
-            <p className="font-['Newsreader'] text-white text-base font-bold leading-tight mt-0.5">{title}</p>
-            <p className="text-white/85 text-sm mt-0.5">{subline}</p>
-            {tip && <p className="text-white/85 text-sm mt-0.5">{tip}</p>}
+            <p className="text-(--muted) text-xs font-semibold uppercase tracking-wide">A spot you watch</p>
+            <p className="font-['Newsreader'] text-(--dark) text-base font-bold leading-tight mt-0.5">{title}</p>
+            <p className="text-(--ink-2) text-sm mt-0.5">{subline}</p>
+            {tip && <p className="text-(--ink-2) text-sm mt-0.5">{tip}</p>}
             {/* Item 34: the canonical line, verbatim from ConditionsPanel. One
                 wording across the whole site; never write a second one. */}
-            <p className="text-white/70 text-xs mt-1.5">
+            <p className="text-(--muted) text-xs mt-1.5">
               Guidance only, not a safety guarantee. Conditions shift fast on the water.
             </p>
           </div>
           <button
             onClick={handleDismiss}
             aria-label="Dismiss"
-            className="shrink-0 -mt-1.5 -mr-1.5 flex h-11 w-11 items-center justify-center text-white/70 hover:text-white text-xl leading-none"
+            className="shrink-0 -mt-1.5 -mr-1.5 flex h-11 w-11 items-center justify-center rounded-full text-(--muted) hover:bg-(--fill) hover:text-(--dark) text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent)"
           >
             ×
           </button>
         </div>
         {canRemind &&
           (status === "done" ? (
-            <p className="mt-3 flex items-center justify-center w-full py-2.5 text-sm font-semibold text-white/90">
+            <p
+              role="status"
+              aria-live="polite"
+              className="mt-3 flex min-h-11 items-center justify-center w-full rounded-xl px-3 py-2.5 text-sm font-semibold bg-(--free-fill) text-(--free)"
+            >
               Reminder set. We&apos;ll ping you when the window opens.
             </p>
           ) : (
             <button
               onClick={handleRemind}
               disabled={status === "setting"}
-              className="mt-3 flex items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold bg-white transition-opacity hover:opacity-90 disabled:opacity-70"
-              style={{ color: "var(--accent)" }}
+              className="mt-3 flex min-h-11 items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold bg-(--accent) text-white transition-opacity hover:opacity-90 disabled:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) focus-visible:ring-offset-2"
             >
               {ctaLabel}
             </button>
