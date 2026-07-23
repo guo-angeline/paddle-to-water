@@ -1,16 +1,17 @@
 # PaddleToWater
 
-Find a place to put your board in the water around the SF Bay Area, then get told when it's actually good.
+Find a place to put your board in the water across California, then get told when it's actually good.
 
 **Live:** [paddletowater.com](https://paddletowater.com) (web) + a native iOS app (Expo)
 
 ## What it does
 
-- 139 geocoded SUP launch spots across the Bay Area
+- 173 visible, geocoded SUP and kayak launch spots across California
 - Filter by region, water type (flatwater / bay / river), and free-only access
-- Interactive map with color-coded pins plus a detail sheet for each spot
+- Statewide interactive map with color-coded pins, photos, reviews, and a detail sheet for each spot
 - Live conditions per spot: NWS wind and NOAA tides, with a calm-window read
-- Save spots you're watching, then get an alert (web push, email, or native push) when a saved spot hits a good window
+- Save spots you're watching, then get an alert (web push, email, or native push) when a saved spot hits a good window; missing wind data fails closed and never creates a positive alert
+- Optional Google sign-in syncs saved spots and supports account-managed reviews
 - Feedback form for suggestions and corrections
 
 ## Repo layout
@@ -33,7 +34,7 @@ Root holds studio state (ROADMAP/DECISIONS/BRIEFINGS), analytics, reports, docs,
 
 ## Data
 
-139 visible spots live in `web/data/spots.json` (143 records, 4 withheld behind a `hidden` flag). The source is `raw-data/sup.xlsx`, geocoded via `raw-data/phase0_geocode.py`. Read spots through `web/lib/spots.ts`, never from the JSON directly: it's the one chokepoint that also feeds the alert crons. To refresh, re-run the script, fix any geocoding failures, and commit the updated JSON.
+173 visible spots live in `web/data/spots.json` (177 records, 4 withheld behind a `hidden` flag). The source is `raw-data/sup.xlsx`, geocoded via `raw-data/phase0_geocode.py`. Read spots through `web/lib/spots.ts`, never from the JSON directly: it's the one chokepoint that also feeds the alert crons. To refresh, re-run the script, fix any geocoding failures, and commit the updated JSON.
 
 ## Dev
 
@@ -45,7 +46,7 @@ npm test          # vitest (alert evaluator, selection, subscribe validation)
 npm run ios       # run the Expo iOS app (needs Xcode + CocoaPods)
 npm run test:native
 
-vercel --prod --yes --cwd web   # deploy web to production
+vercel deploy --prod --yes --cwd web   # deploy web to production
 ```
 
 ## Roadmap
