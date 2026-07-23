@@ -532,7 +532,7 @@ Note the adjacency risk this closes: notes carrying launch timing, directly abov
 
 **Acceptance:** four notes rewritten with no lat/lng touched (text-level edit, `git diff` shows zero removed coordinate lines); the sweep covers spots.json and fails when a promise is reintroduced; deployed.
 
-## 103. [ready] PROTECTED: `evaluateGoodWindow` has no precipitation or thunderstorm term
+## 103. [in-progress] 2026-07-23T19:35:56Z PROTECTED: `evaluateGoodWindow` has no precipitation or thunderstorm term
 
 **Promoted [proposed] -> [ready] 2026-07-23 (owner).** The correctness backbone of the just-shipped conditions features (100/61/8 all call `evaluateGoodWindow`), scheduled before the wet season. STILL PROTECTED: it feeds the push cron + alert emails, so the deploy requires owner approval (do NOT auto-deploy; build + escalate the deploy per the PROTECTED rule, and note the deploy-train-freeze implication if it lands unapproved).
 
