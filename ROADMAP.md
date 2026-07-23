@@ -85,6 +85,16 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Studio review, added 2026-07-22 (high-bar hourly pass; one native-parity gap surfaced, filed [proposed] pending an owner call on native release scope)
+
+## 133. [proposed] Native app has no reviews surface at all, not a display bug, an entire UGC feature is absent
+
+**Problem, grounded in code:** web `SpotDrawer.tsx` imports and renders `ReviewsSection` (the published-reviews list, the sign-in-gated write form, and item 89's just-shipped "no one has written about this spot yet" invitation on ~176 of 177 spots). `native/src/components/SpotSheet.tsx` has zero review references (grep confirms none), and no native reviews component exists anywhere under `native/src`. Native renders only the raw `owner_rating` star number. So an iOS user cannot read a single paddler review, cannot write one, and never sees the item-89 invitation the owner directed and shipped. This is broader than item 80 (native shows a different rating *number*, scoped to score attribution) and distinct from item 132 (native safety copy outside the no-inducement sweep). It is the third and largest native-parity gap now on the board.
+
+**Direction:** port `ReviewsSection` + `ReviewForm` to native, reusing the shared validation/fetch logic, gated by the same sign-in flow (item 44) and reviews kill switch. If a full form port is too large for one slot, ship item 89's quiet invitation plus a "read and write reviews on the web" link first (native-authored copy, run through the no-inducement sweep per item 132), so native at least discloses the feature exists.
+
+**Grade:** [proposed], NOT [ready]. Real, grounded, and material (a whole missing feature on the platform being prepped for the next EAS build, kin to native-parity items 80 and 132). Held at [proposed] on purpose: reviews are the lifestyle/UGC half the roadmap deliberately defers behind the early-August retention read, native is not yet in users' hands, and review volume is near zero, so whether to spend a build slot on this now (vs. gate it as a pre-TestFlight parity decision alongside 80/132, vs. wait for the retention read) is an owner call, not a foregone [ready].
+
 ## Studio review, added 2026-07-22 (high-bar hourly pass; one item cleared the bar, a cross-platform regression on the moat)
 
 ## 122. [done] Native iOS conditions panel reaches web parity (889d772; native-only, ships with next EAS build)
