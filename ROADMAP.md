@@ -1369,7 +1369,7 @@ Full analysis: `reports/sd-ingest-candidates-2026-07-22.md`.
 
 **Acceptance:** only the verified set is ingested; every record carries per-field provenance; `BT_FACIL_TYPE` is used verbatim and never upgraded into "ramp"; each coordinate is a put-in verified against a second source; each is cross-checked against DBW's `Open To` for public/private; no existing `lat`/`lng` changes; data guards and `npm test` pass.
 
-## 88. [ready] Lake Tahoe Water Trail: a proven-model registry for one region (one input to item 45's statewide scope)
+## 88. [in-progress] 2026-07-22T21:43:16 Lake Tahoe Water Trail: a proven-model registry for one region (one input to item 45's statewide scope)
 
 **Found 2026-07-22, answering the question item 45 actually asks.** Item 45 is `[blocked(no-source)]` because step 1 is "identify an authoritative, field-complete registry for the target region", and none had been found outside the Bay. The search that produced that block had mined exactly ONE registry (SF Bay Water Trail, now spent) and disqualified one (DBW). The Sierra, Delta, Valley and coast had not been searched at all.
 
