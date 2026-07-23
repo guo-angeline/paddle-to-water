@@ -1,3 +1,17 @@
+# 2026-07-22: filtered catalog empty state shipped
+
+**Your move:** Nothing needed from you.
+
+**TL;DR:** Item 109 is live and verified. Filtered catalog searches now handle zero matches without hiding pinned content.
+
+**Item 109:** Zero filtered matches now show guidance and the correctly scoped clear action even when Watching or Recently checked still contains items. Pinned sections remain visible. The implementation keys the empty state to incoming catalog matches, avoiding a false zero when a valid match is already pinned.
+
+**Evidence:** TDD red then green, 637 tests, lint, local production build, Vercel preview and production builds. Adversarial verification passed after one fix round. Live at 390px, Watching remained, the status message and Clear search rendered with a 44px target, and clearing removed the message but kept Watching.
+
+**Deploy:** Production deployment `dpl_GbAoyj2fdznWJZupGPFz7yKqG47L` is READY and verified live. Commits `50e9bc1` and `dd2ceee` merged to main. No analytics or experiment for this small bugfix. No decisions raised and nothing parked.
+
+**Instruction review:** The verifier caught a pre-existing em dash and hardcoded color in the touched file; both were fixed. Existing gates already cover them, so no instruction change was needed.
+
 # 2026-07-22: alert fail-closed fix and California map are live
 
 **Your move:** Nothing needed from you.

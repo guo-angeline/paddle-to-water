@@ -36,6 +36,8 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ## Shipped
 
+- 2026-07-22 [done, DEPLOYED] Item 109: zero filtered catalog matches now show the existing scoped empty-state message and clear action after Watching and Recently checked, while pinned spots stay visible. The condition keys on incoming filtered matches, not the deduped main list, so a valid result that is already pinned never receives a false zero message. Accessible polite status and 44px clear target included. Commits `50e9bc1` + `dd2ceee`; 637 tests, lint, local/preview/production builds, adversarial review, and live 390px interaction verified. Production deployment `dpl_GbAoyj2fdznWJZupGPFz7yKqG47L`.
+
 - 2026-07-22 [done, DEPLOYED] Item 107: alert evaluation now fails closed when NWS wind is missing or malformed. Empty, null, and garbage wind values are ineligible for a good window; numeric `0 mph` and NWS `Calm` remain valid calm readings. Owner approved the protected alert-path deploy in chat. Commit `31dc221`, deployed in production release `a58ff2d`, 630 tests, lint, local build, Vercel build, and live 200 checks passed.
 
 - 2026-07-22 [done, DEPLOYED] Item 108: the default map now frames California instead of the Bay Area, and region pills read north to south. Commit `10ec36f`, deployed with item 107 in production release `a58ff2d`; live domain and representative spot page return 200.
@@ -114,7 +116,9 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 **Grade:** [ready], high confidence. Grounded, clear fix, undercuts a rebrand that shipped the same day.
 
-## 109. [ready] Zero-match filter can render with no "0 results" message
+## 109. [done] Zero-match filter can render with no "0 results" message
+
+**SHIPPED 2026-07-22 (`50e9bc1`, `dd2ceee`).** Zero incoming filtered matches now render the scoped message and clear action after pinned Watching/Recently checked content. Live mobile verification confirmed Watching remains visible, the clear target is 44px, and clearing the search removes only the zero state. Production deployment `dpl_GbAoyj2fdznWJZupGPFz7yKqG47L` is READY.
 
 **Problem:** `SpotList.tsx`'s empty-state guard only fires when main, saved, and recent lists are all empty. Saved and recent spots are computed unfiltered (`HomeClient.tsx`), so a filter/search matching zero spots leaves the Watching and Recently-checked sections showing (spots that ignore the filter), the main list silently renders nothing, and no "no spots match" text appears anywhere. Reads as the app being broken. Gets more likely as saves/recents grow with retention work.
 
