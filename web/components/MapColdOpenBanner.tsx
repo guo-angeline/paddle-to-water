@@ -118,7 +118,12 @@ export default function MapColdOpenBanner({
               claim (item 61/8 lawyer precedent), verbatim. The value-prop variant
               makes no conditions claim, so it needs none. */}
           {good && (
-            <p className="text-[10px] text-gray-400 leading-snug mt-0.5">
+            // Legible token, not 10px gray-400: this caveat is the load-bearing
+            // disclaimer for the good-today claim on a surface with no other
+            // disclaimer, so it must clear AA (--muted is the AA-darkened token,
+            // item 62). The item-61 list + conditions-panel foot instances still
+            // use the old 10px gray-400; sweeping those to match is a follow-up.
+            <p className="text-[11px] text-(--muted) leading-snug mt-0.5">
               Guidance only, not a safety guarantee. Conditions shift fast on the water.
             </p>
           )}
