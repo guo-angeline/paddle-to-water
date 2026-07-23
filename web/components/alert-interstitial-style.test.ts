@@ -8,7 +8,10 @@ describe("AlertInterstitial light card style contract", () => {
   it("uses the shared light surface, border, and InstallPrompt shadow", () => {
     expect(src).toContain('background: "var(--white)"');
     expect(src).toContain('border: "1px solid var(--border)"');
-    expect(src).toContain('boxShadow: "0 8px 30px rgba(11,42,71,0.14)"');
+    expect(src).toContain(
+      'boxShadow: "0 8px 30px color-mix(in srgb, var(--dark) 14%, transparent)"',
+    );
+    expect(src).not.toMatch(/boxShadow:\s*"[^"]*rgba\(/);
   });
 
   it("uses dark and secondary ink for card copy", () => {

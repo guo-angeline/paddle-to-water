@@ -141,7 +141,7 @@ export default function AlertInterstitial({ spot, windowLabel, onDismiss }: Prop
         style={{
           background: "var(--white)",
           border: "1px solid var(--border)",
-          boxShadow: "0 8px 30px rgba(11,42,71,0.14)",
+          boxShadow: "0 8px 30px color-mix(in srgb, var(--dark) 14%, transparent)",
         }}
       >
         <div className="flex items-start justify-between gap-3">
