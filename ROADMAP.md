@@ -447,7 +447,7 @@ Also expand the raw compass string unconditionally: the panel prints "from WNW" 
 
 **The boundary, recorded so the next item does not have to guess:** this stays inside the gated envelope because it names the direction the wind comes FROM and states a tradeoff. **The moment the panel names a direction for the paddler to GO, or pairs a launch time with a heading, it is option 2**: it needs the per-spot shoreline field and licensed counsel first.
 
-## 100. [ready] Today's shape, from the hourly payload already in flight
+## 100. [in-progress] 2026-07-23T16:18:44Z Today's shape, from the hourly payload already in flight
 
 Consolidate `NextGoodWindowPanel`'s fetch into `ConditionsPanel` (two components, two effects, one gridpoint today), extend `HourlyPeriod` past its three fields, and render the intra-day curve. **The item most likely to move the metric, because "when today" is the actual question.** Also asks whether `fetchWind`'s separate twelve-hourly fetch is needed at all once the hourly payload is fully read.
 
