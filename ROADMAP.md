@@ -85,6 +85,23 @@ From the Jun 7 to 27, 2026 analytics (`reports/analytics-2026-06-27.md`, PostHog
 
 ---
 
+## Owner item, added 2026-07-23 (discoverability review; owner-directed [ready])
+
+## 136. [ready] Server-render real spot content + make pages AI-citable (one-time asset upgrade, not an SEO program)
+
+**Problem (grounded, verified in the build).** The SEO plumbing is excellent (one `SITE_URL` feeding canonical/OG/sitemap/JSON-LD, per-spot metadata, `TouristAttraction`+`GeoCoordinates`+`BreadcrumbList` schema, a crawlable `sr-only` `<h1>` + related-spot nav). But the spot pages are thin content shells: the rich per-spot data (full notes, fee, water type, tide, conditions) lives in a client-only drawer that mounts via an effect, so it is NOT in the served HTML. Confirmed: for spot 134 (767-char notes), text past ~155 chars is absent from the built `spot/134.html`, and `spotDescription` truncates the JSON-LD/meta description to 155 chars. We built 173 indexable pages and publish a caption of each. Crawlers and AI answer engines (which extract visible text) see the caption, not the article, on exactly the differentiated data (launch type, fee tri-state, tide, conditions) that is our only real SEO/AEO advantage.
+
+**Why now, and the guardrails (this is optionality, not a growth bet).** Both the ceo and product-visionary agents independently reached the same conclusion: do NOT open an SEO program. Retention is the binding constraint (~83% one-and-done), and pouring traffic into a leaky bucket is value-destroying. But this ONE fix is worth doing because it is near-free, permanent, and double-counts as SEO (long-tail per-spot queries like "Coyote Point paddleboard fee", where our unique data beats everything) AND as AI-answer-engine citability (be the source AI quotes for California paddling, a durable moat on data we already own). Book it as optionality priced like insurance, never graded on DAU. It sits STRICTLY behind items 61 and 8 (retention priority per D34); it must not displace them. Kill criteria: if it grows into an ongoing content mill, or anyone grades it on DAU, stop.
+
+**Acceptance:**
+- On `/spot/[id]`, server-render the real content as visible, indexable HTML in the static page body: full `notes` (untruncated), fee status, water type, region, and a static conditions/tide summary. Data already exists in `spots.json`, this is a rendering change, not new data work.
+- Remove the 155-char truncation from the JSON-LD `description` and meta description in `lib/structured-data.ts` (`spotDescription`); use the full notes (meta description can stay reasonably bounded, but not a hard 155 cut that drops the differentiating facts).
+- Add `llms.txt` (or equivalent) advertising the per-spot dataset for AI answer engines, near-zero cost.
+- No new user-facing UI on the map app itself; the drawer stays as-is. This is about what the STATIC page serves to crawlers/AI, so verify by diffing served HTML (`curl` the built page), not the rendered app.
+- Keep the coordinate/data-quality guarantees: do not alter `lat`/`lng`; render from `ALL_SPOTS` (chokepoint), never the raw JSON.
+
+**Files:** `web/app/spot/[id]/page.tsx` (thin-shell render), `web/lib/structured-data.ts` (155-char truncation + JSON-LD), `web/components/HomeClient.tsx` (where the full content is trapped client-side).
+
 ## Studio review, added 2026-07-22 (high-bar hourly pass; one native-parity gap surfaced, filed [proposed] pending an owner call on native release scope)
 
 ## 133. [blocked(apple-enrollment)] Native app has no reviews surface at all, not a display bug, an entire UGC feature is absent
