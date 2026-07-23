@@ -25,7 +25,9 @@ describe("SpotList zero-match state", () => {
     expect(inlineState).toBeLessThan(legalFooter);
 
     expect(source.match(/role="status"/g)).toHaveLength(2);
-    expect(source.match(/aria-live="polite"/g)).toHaveLength(2);
+    // Two empty-state status regions, plus the item-61 good-today section's own
+    // sr-only aria-live announcement (which carries no role="status"/aria-atomic).
+    expect(source.match(/aria-live="polite"/g)).toHaveLength(3);
     expect(source.match(/aria-atomic="true"/g)).toHaveLength(2);
     expect(source.match(/min-h-11/g)).toHaveLength(2);
     expect(source.match(/focus-visible:outline /g)).toHaveLength(2);

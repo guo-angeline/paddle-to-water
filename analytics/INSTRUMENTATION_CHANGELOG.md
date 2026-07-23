@@ -14,6 +14,19 @@ without touching this file.
 
 ---
 
+## 2026-07-23 (item 61): good-to-paddle-today surface events added (added)
+
+Two INTENT events for the cold-open "good to paddle today" ranked surface (a third pinned section in the list panel, above Recently checked): the top nearby spots that still have a calm daytime window left today.
+
+- **`good_today_shown`** (INTENT, dwell-gated via `useGenuineView`, not on mount). Props: `count` (good-today rows surfaced, 0 in the checked-but-none-calm state), `located` (true when the candidate set was nearest-to-user, false when anchored to the map's default center because geolocation was not granted). The impression denominator, and it also measures how often a cold open has nothing calm to show (`count: 0`).
+- **`good_today_clicked`** (INTENT). Props: `spot_id`, `region`. A tap into a surfaced row.
+
+**How to read it.** Adoption of a pull-based, zero-enrollment discovery surface. Segment by `located`: an ungeolocated set is anchored to the state's default center and is expected to convert worse than a true nearest-to-user set, so pooling them would blur the read. `count: 0` impressions are the honest "we checked, nothing's calm" days and belong in the denominator, not filtered out. The "good enough to surface" bar is `evaluateGoodWindow` (the same calm-window definition the cron and drawer use), so this never diverges from the drawer's own verdict.
+
+**Comparability:** both NEW from 2026-07-23, no prior series. Gated behind the `good-today` kill switch (default ON), so a PostHog disable stops emission cleanly (a gap, not a semantics change). Distinct from `recent_spots_shown` (device history, item 26): that surface is spots you already viewed; this is spots ranked by today's conditions, so do not sum them.
+
+---
+
 ## 2026-07-23 (item 100): today's-shape view event added (added)
 
 One INTENT event for the new intra-day "today's shape" wind curve in the conditions panel (the summary line + daytime sparkline, from the same hourly payload the next-good-window already fetches).

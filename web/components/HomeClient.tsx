@@ -17,6 +17,7 @@ import { searchSpots } from "@/lib/search";
 import { emptyStateCopy } from "@/lib/emptyStateCopy";
 import { trackIntent, trackSystem, setPersona, type SpotViewedSource } from "@/lib/analytics";
 import { useSpotConditions } from "@/components/useSavedConditions";
+import { useGoodTodaySpots } from "@/components/useGoodToday";
 import { recordRecentSpot, getRecentSpotIds } from "@/lib/recentSpots";
 import { useKillSwitch } from "@/lib/experiments";
 import { syncWatchedSpots, reportAlertOpen } from "@/lib/push";
@@ -28,6 +29,13 @@ import { BACK_SWIPE_CONFIG } from "@/lib/backGesture";
 import { useBackGesture } from "@/lib/useBackGesture";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+
+// Item 61 "Good to paddle today": the candidate set is the K spots nearest an
+// anchor. GOOD_TODAY_ANCHOR is MapView's CA_CENTER (the map's own cold-open
+// view), used only when geolocation has not been granted, so the fallback set is
+// what the map already shows. K bounds the NWS fan-out on cold load.
+const GOOD_TODAY_ANCHOR = { lat: 37.0, lng: -120.5 } as const;
+const GOOD_TODAY_K = 8;
 
 
 // Same breakpoint SpotDrawer uses for its own mobile/desktop split. Item 42's
@@ -606,6 +614,30 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
     );
   }, [userLocation]);
 
+  // Cold-open "Good to paddle today" ranked surface (item 61): a pull-based
+  // discovery answer for a first-time / one-and-done visitor, needing zero
+  // enrollment, install or permission grant. Candidate set is BOUNDED to the K
+  // spots nearest the user, or, without geolocation, nearest the map's default
+  // center (GOOD_TODAY_ANCHOR == MapView's CA_CENTER), so there is never an
+  // unbounded NWS fan-out. Deduped against Watching + Recently checked. Each
+  // candidate rides the shared hourly cache; the surfaced set uses the SAME
+  // evaluateGoodWindow bar as the drawer and the cron. Kill switch, default ON.
+  const goodTodayEnabled = useKillSwitch("good-today");
+  const goodTodayCandidates = useMemo(() => {
+    if (!goodTodayEnabled) return [];
+    const exclude = new Set<number>([...favorites, ...recentSpots.map((s) => s.id)]);
+    const anchor = userLocation ?? GOOD_TODAY_ANCHOR;
+    return [...ALL_SPOTS]
+      .filter((s) => !exclude.has(s.id))
+      .sort((a, b) => distanceMiles(anchor, a) - distanceMiles(anchor, b))
+      .slice(0, GOOD_TODAY_K);
+  }, [goodTodayEnabled, favorites, recentSpots, userLocation]);
+  const {
+    spots: goodTodaySpots,
+    loading: goodTodayLoading,
+    failed: goodTodayFailed,
+  } = useGoodTodaySpots(goodTodayCandidates, distanceMap, goodTodayEnabled);
+
   function handleNearMe() {
     if (userLocation) {
       setUserLocation(null);
@@ -885,6 +917,12 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             condBySpot={condBySpot}
             recentSpots={recentSpots}
             recentCondBySpot={recentCond}
+            goodTodayEnabled={goodTodayEnabled}
+            goodTodaySpots={goodTodaySpots}
+            goodTodayLoading={goodTodayLoading}
+            goodTodayFailed={goodTodayFailed}
+            goodTodayLocated={!!userLocation}
+            goodTodayHasCandidates={goodTodayCandidates.length > 0}
           />
         </div>
 

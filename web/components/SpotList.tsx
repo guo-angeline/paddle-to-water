@@ -10,6 +10,7 @@ import SpotCard from "./SpotCard";
 import { useReviewAggregates } from "@/lib/useReviewAggregates";
 import { useKillSwitch } from "@/lib/experiments";
 import { rankSavedSpotsByConditions, type SavedConditionState } from "@/lib/savedConditions";
+import type { GoodTodayEntry } from "@/lib/goodToday";
 import ConditionsBadge from "./ConditionsBadge";
 
 interface Props {
@@ -25,6 +26,17 @@ interface Props {
   /** Cold-open "Recently checked" spots (item 26), already deduped against saved. */
   recentSpots?: Spot[];
   recentCondBySpot?: Record<number, SavedConditionState>;
+  /** Cold-open "Good to paddle today" ranked surface (item 61). */
+  goodTodayEnabled?: boolean;
+  goodTodaySpots?: GoodTodayEntry[];
+  goodTodayLoading?: boolean;
+  goodTodayFailed?: boolean;
+  /** Candidate set was nearest-to-user vs anchored to the map default. */
+  goodTodayLocated?: boolean;
+  /** Whether there was any candidate to check (all nearest already saved/recent
+   * leaves nothing to check, so the section hides rather than claiming nothing
+   * is calm). */
+  goodTodayHasCandidates?: boolean;
   emptyState?: { title: string; clearLabel: string };
 }
 
@@ -40,7 +52,10 @@ export function getSpotListEmptyState(
 export default function SpotList({
   spots, selected, onSelect, onClearFilters, distanceMap,
   savedSpots = [], favorites = new Set(), onToggleFavorite, condBySpot = {},
-  recentSpots = [], recentCondBySpot = {}, emptyState,
+  recentSpots = [], recentCondBySpot = {},
+  goodTodayEnabled = false, goodTodaySpots = [], goodTodayLoading = false,
+  goodTodayFailed = false, goodTodayLocated = false, goodTodayHasCandidates = false,
+  emptyState,
 }: Props) {
   // Item 43: one aggregate fetch for the whole list, passed down per card.
   const aggregates = useReviewAggregates();
@@ -111,9 +126,25 @@ export default function SpotList({
     },
   });
 
-  // Remove saved AND recently-checked spots from the main list to avoid showing
-  // the same spot twice in the panel (both are pinned sections above the list).
-  const mainSpots = spots.filter((s) => !favorites.has(s.id) && !recentIdSet.has(s.id));
+  // INTENT: the "Good to paddle today" section (item 61) was genuinely scrolled
+  // into view. Fires once resolved (not while loading), in every resolved state
+  // including "none calm" (count 0), so the impression denominator is honest.
+  const goodTodayIds = goodTodaySpots.map((e) => e.spot.id);
+  const goodTodayIdSet = new Set(goodTodayIds);
+  const goodTodayKey = `${goodTodayIds.join(",")}|${goodTodayLocated}`;
+  const goodTodaySectionRef = useGenuineView({
+    key: goodTodayKey,
+    enabled: goodTodayEnabled && !goodTodayLoading,
+    onView: () => {
+      trackIntent("good_today_shown", { count: goodTodaySpots.length, located: goodTodayLocated });
+    },
+  });
+
+  // Remove saved, recently-checked AND good-today spots from the main list to
+  // avoid showing the same spot twice in the panel (all are pinned sections).
+  const mainSpots = spots.filter(
+    (s) => !favorites.has(s.id) && !recentIdSet.has(s.id) && !goodTodayIdSet.has(s.id)
+  );
   const emptyStateMode = getSpotListEmptyState(spots.length, savedSpots.length, recentSpots.length);
 
   if (emptyStateMode === "full") {
@@ -178,6 +209,67 @@ export default function SpotList({
               />
             </div>
           ))}
+          <div className="mx-4 my-1.5 border-t border-gray-200" />
+        </div>
+      )}
+
+      {/* Good to paddle today (item 61): the cold-open ranked surface. A third
+          pinned section, above Recently checked, so a first-time visitor with an
+          empty Watching/Recently gets an immediate answer to "where's good
+          today?". Calm-only, never padded to a row count; honest states when
+          nothing is calm or the check failed. Gated by the good-today switch. */}
+      {goodTodayEnabled && goodTodayHasCandidates && (
+        <div ref={goodTodaySectionRef}>
+          <div className="px-4 pt-3 pb-1.5">
+            <span className="text-[11px] font-semibold text-(--muted) uppercase tracking-wider">Good to paddle today</span>
+          </div>
+          {/* Safety caveat, co-rendered with the affirmative "good to paddle"
+              claim, exactly as every other surface that uses that phrase does
+              (push, email, conditions panel, install prompt; enforced by
+              lib/alerts/no-inducement.test.ts). The canonical wording verbatim,
+              never a competing second phrasing. */}
+          <p className="px-4 pb-1.5 text-[10px] text-gray-400 leading-snug">
+            Guidance only, not a safety guarantee. Conditions shift fast on the water.
+          </p>
+          {/* Announce the resolution once, not every row, to avoid a screen
+              reader re-reading full cards on each mutation. */}
+          <span className="sr-only" aria-live="polite">
+            {goodTodayLoading
+              ? ""
+              : goodTodaySpots.length > 0
+                ? `${goodTodaySpots.length} ${goodTodaySpots.length === 1 ? "spot" : "spots"} good to paddle today`
+                : goodTodayFailed
+                  ? "Couldn't check conditions right now."
+                  : "Nothing's calm nearby right now."}
+          </span>
+          {goodTodayLoading ? (
+            <div className="px-4 pb-2 space-y-2" aria-hidden>
+              <div className="h-11 rounded-lg bg-gray-100 animate-pulse" />
+              <div className="h-11 rounded-lg bg-gray-100 animate-pulse" />
+            </div>
+          ) : goodTodaySpots.length > 0 ? (
+            goodTodaySpots.map(({ spot, signal }) => (
+              <div key={spot.id} ref={selected?.id === spot.id ? selectedRef : null}>
+                <SpotCard
+                  spot={spot}
+                  crowd={reviewsOn ? aggregates[spot.id] : undefined}
+                  selected={selected?.id === spot.id}
+                  onClick={() => {
+                    trackIntent("good_today_clicked", { spot_id: spot.id, region: spot.region });
+                    onSelect(spot, "list");
+                  }}
+                  distance={distanceMap?.[spot.id]}
+                  isFavorite={favorites.has(spot.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  conditionsBadge={<ConditionsBadge state={signal.nowPaddleability} />}
+                />
+              </div>
+            ))
+          ) : goodTodayFailed ? (
+            <p className="px-4 pb-2 text-xs text-(--muted)">Couldn&rsquo;t check conditions right now. Browse spots below.</p>
+          ) : (
+            <p className="px-4 pb-2 text-xs text-(--muted)">Nothing&rsquo;s calm nearby right now. Browse spots below.</p>
+          )}
           <div className="mx-4 my-1.5 border-t border-gray-200" />
         </div>
       )}
