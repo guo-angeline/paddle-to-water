@@ -15,7 +15,16 @@ import manifest from "@/data/spot-photos.json";
  * one; the rest render no photo (a wrong photo is worse than none).
  *
  * Render the credit line only when `author` is present AND attribution is not
- * explicitly waived (see the SpotDrawer figcaption gate). Never set
+ * explicitly waived (see the SpotDrawer figcaption gate).
+ *
+ * NEW SURFACE WARNING (item 112, 2026-07-22): the on-page use shows the photo
+ * UNALTERED beside a separate caption, which is a collection, no adaptation. The
+ * moment a surface FLATTENS the photo with overlays into one image (the OG card
+ * composites gradient + text + wordmark into a PNG), it becomes a MODIFIED
+ * derivative: CC BY/BY-SA then also require a "(modified)" indicator, and BY-SA
+ * share-alike attaches to that composite. So any FUTURE photo surface (e.g. a
+ * shareable conditions card) must re-run the IP gate, not assume item 31's
+ * clearance carries. The `opengraph-image.tsx` buildCredit() is the reference. Never set
  * `attribution_required: false` on a CC-BY / CC-BY-SA photo: those licences
  * require the credit, and `spot-photos.test.ts` fails the build if you do.
  */
