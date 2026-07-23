@@ -129,7 +129,12 @@ export type IntentEventName =
   // first_review_prompt_shown -> review_form_opened -> review_submitted, and
   // inventing a click event for a paragraph would put a step in it that no user
   // can perform.
-  | "first_review_prompt_shown";
+  | "first_review_prompt_shown"
+  // Item 93: fake-door demand test for a future trip planner. Impression is
+  // dwell-gated (not on mount); the click is the interest signal, and repeat
+  // clicks by the same person_id on different days are the real read.
+  | "trip_planner_prompt_shown"
+  | "trip_planner_clicked";
 
 export type EventName = SystemEventName | IntentEventName;
 
@@ -235,6 +240,8 @@ export interface EventPropMap {
   // shown to a reader who can still earn `first-report` (a lifetime mark), so
   // conversion must never be read across both arms as one number.
   first_review_prompt_shown: { spot_id: number; region: string; named_reward: boolean };
+  trip_planner_prompt_shown: { spot_id: number; region: string };
+  trip_planner_clicked: { spot_id: number; region: string };
   email_capture_submitted: {
     platform: OptInPlatform;
     trigger: OptInTrigger | "push_denied";

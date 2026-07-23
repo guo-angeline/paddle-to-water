@@ -8,6 +8,7 @@ import { getSpotPhoto } from "@/lib/spotPhotos";
 import { useKillSwitch } from "@/lib/experiments";
 import { useGenuineView } from "@/lib/useGenuineView";
 import ConditionsPanel from "@/components/ConditionsPanel";
+import TripPlannerFakeDoor from "@/components/TripPlannerFakeDoor";
 import ReviewsSection from "@/components/ReviewsSection";
 import SignInSheet from "@/components/SignInSheet";
 import { useAccount } from "@/lib/useAccount";
@@ -570,6 +571,12 @@ export default function SpotDrawer({ spot, onClose, isFavorite, onToggleFavorite
 
           {/* Live tide + wind — the reason to come back. */}
           <ConditionsPanel spot={spot} />
+
+          {/* Item 93: fake-door demand test for a future trip planner, placed
+              near conditions (its subject) where nearly every spot-opener sees
+              it, so the impression denominator is real. Self-hides via its own
+              kill switch + expiry. */}
+          <TripPlannerFakeDoor spot={spot} />
 
           {/* Item 43: crowd reviews, below conditions so the retention
               differentiator keeps the higher position. The trigger lives in the

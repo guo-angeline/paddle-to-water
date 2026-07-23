@@ -14,6 +14,21 @@ without touching this file.
 
 ---
 
+## 2026-07-22 (item 93): trip-planner fake-door events added (added)
+
+Two INTENT events for the demand test measuring interest in a future trip planner (a placeholder "Plan my trip" button near the conditions panel; D33).
+
+- **`trip_planner_prompt_shown`** (INTENT, dwell-gated via `useGenuineView`, not on mount). Props: `spot_id`, `region`. The impression denominator.
+- **`trip_planner_clicked`** (INTENT). Props: `spot_id`, `region`. The tap, i.e. the interest signal.
+
+**How to read it, and how NOT to.** This measures CURIOSITY, not demand and nowhere near willingness to pay; novelty inflates the first two weeks. The honest reads, in increasing trust: click-through on impressions (weakest), then **repeat taps by the same `person_id` on different days** (the real signal, query `person_id` + `toDate(timestamp)`), then nothing stronger because D33 chose a pure count with NO email capture. Owner-exclude per `EXCLUDED_PERSONS.md`.
+
+**No pre-registered decision rule (D33):** the owner judges the numbers by eye. The surface self-terminates at a 21-day expiry (2026-08-12) or an earlier kill-switch flip, so the series has a hard end; do not expect data past that date.
+
+**Comparability:** both events are NEW from 2026-07-22, no prior series. They are gated behind the `trip-planner-demand` kill switch, so a disable stops emission cleanly (a gap, not a semantics change).
+
+---
+
 ## 2026-07-22 (item 105): ten metric queries silently included owner traffic (query-definition-change)
 
 **Not an instrumentation change (no event moved), but a QUERY-DEFINITION change, which moves reported numbers the same way.** Recorded here because this file is read before any analysis and these query definitions changed.
