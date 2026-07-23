@@ -816,3 +816,25 @@ Tell me when you have done step 5 (or want me to run step 2 after you do step 1)
 My recommendation: **(a)**, or **(b)** if you want the signal without the governance ceremony. The rentals fake door is the highest-value cheap move on the board right now: it is retention-independent, aimed at the majority cohort, near-free (a fake door, not a build), and it is the one revenue thesis with literally zero signal. If you pick (a) or (b), I will file the fake-door as a build-ready item (with the lawyer-gate + no-PII constraints baked in) and decouple item 116's demand test from the retention gate.
 
 Answer:
+
+## D37 [OPEN] 2026-07-23 · We are shipping cold-open retention surfaces faster than we can measure them, and the one retention read is being compromised in real time
+
+**Fourth strategy pass, fourth independent ceo + product-visionary convergence. Orthogonal to D34/D35/D36. This is a measurement-discipline risk, not a new product bet, and it is time-sensitive.**
+
+**The claim.** The pull-first retention thesis (D34, resolved and executing) is being shipped on top of a read that is being spoiled two ways at once:
+
+**Facet A, the baseline was never frozen.** The retention metric is defined at ROADMAP line 410: "distinct days a person fires `conditions_viewed`, over 14 days, owner-excluded," with an explicit precondition: "Pull the 14-day baseline BEFORE the bundle ships or the comparison is worthless." The one blocker (owner exclusion) was cleared by item 105 ([done] 07-22). But between 07-18 and 07-23 the studio shipped the 97/98/99 conditions bundle plus items 61, 120, 8, 137, and no baseline read has been archived to reports/ since 07-18. At ~31 DAU with no A/B, this single pre/post baseline is the ONLY read this channel will ever get, and the "before" window is being overwritten unmeasured. This is the exact ship-on-faith pathology D34 diagnosed in the push loop, now running on the pull channel that replaced it.
+
+**Facet B, three cold-open surfaces confound each other.** "Where's good today?" is now answered three ways, all deployed 2026-07-23, all reusing the same `evaluateGoodWindow` machinery, all at 100% behind kill switches with no A/B: item 61 (passive list section), item 120 (mobile map banner), item 137 (interruptive first-visit modal). A mobile first-timer hits the 137 modal, dismisses it, sees the 120 banner saying the same thing, then finds the 61 section one tab over. Consequences: (1) the early-August read lands with three simultaneous confounded interventions on the identical behavior, so per-surface retention contribution is unreadable (flat, we cannot tell which to cut; up, we cannot tell which earned it); (2) item 137 is the only interruptive one, self-described as the "push variant," and it lands squarely on the one-and-done first-timer, the exact cohort the retention bet exists to keep. An auto-modal repeating what the passive banner underneath already says is a classic way a retention surface produces the opposite of retention.
+
+**The moves.** Facet A is an ACTION, not a decision: freeze the baseline now (an imperfect, week-contaminated frozen baseline still beats none), owner-excluded via the item-105 queries, and adopt a read cadence (re-pull at 2 and 4 weeks) instead of leaning on the single "early-August" checkpoint D34 already showed is keyed to a cohort that will not exist. I can run this immediately; it needs no decision. Facet B IS your decision, because it touches a just-shipped, owner-directed surface (137):
+
+- **(a) De-confound now (recommended).** Name item 61 the single primary cold-open surface (the one D34 actually blessed). Hold item 137's modal at kill-switch-OFF (and optionally item 120's banner too) until item 61's own engagement plus the first clean read are in, then reintroduce the interruptive modal deliberately if the read shows headroom. Costs nothing (the switch exists), de-confounds the read we are paying weeks to get, and pulls the interruptive surface off the retention cohort until we know the passive ones work. Plus freeze the baseline + adopt the cadence.
+- **(b) Keep all three live, but measure honestly.** Accept the confound, freeze the baseline now, adopt the cadence, and prune surfaces by per-surface ENGAGEMENT manually (still readable), accepting that clean per-surface RETENTION attribution is lost.
+- **(c) Hold.** No change; we accept an unbaselined, confounded retention read and lean on manual engagement counts.
+
+My recommendation: **(a)**. It is nearly free and it protects the one measurement the whole retention pivot depends on. If you do not want to touch the owner-directed modal so soon after shipping it, **(b)**, and I still freeze the baseline today either way. Whichever you pick, tell me and I will pull and freeze the baseline read now.
+
+Conviction: high on Facet A (the roadmap's own stated precondition is being violated and the enabling blocker is already cleared), medium-high on Facet B (the confound is factual; the softer edge is that per-surface engagement stays readable, so only clean retention attribution is at stake).
+
+Answer:
