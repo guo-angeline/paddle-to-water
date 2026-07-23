@@ -447,11 +447,15 @@ Also expand the raw compass string unconditionally: the panel prints "from WNW" 
 
 **The boundary, recorded so the next item does not have to guess:** this stays inside the gated envelope because it names the direction the wind comes FROM and states a tradeoff. **The moment the panel names a direction for the paddler to GO, or pairs a launch time with a heading, it is option 2**: it needs the per-spot shoreline field and licensed counsel first.
 
-## 100. [in-progress] 2026-07-23T16:18:44Z Today's shape, from the hourly payload already in flight
+## 100. [done] Today's shape, the intra-day wind curve, from the hourly payload already in flight (deployed 2026-07-23, 1338843)
 
-Consolidate `NextGoodWindowPanel`'s fetch into `ConditionsPanel` (two components, two effects, one gridpoint today), extend `HourlyPeriod` past its three fields, and render the intra-day curve. **The item most likely to move the metric, because "when today" is the actual question.** Also asks whether `fetchWind`'s separate twelve-hourly fetch is needed at all once the hourly payload is fully read.
+Shipped a "today's shape" read to the conditions panel: a one-line summary of the rest of today's daytime wind ("Calm the rest of today." / "Winds pick up by {h}{am/pm}." / "Winds ease by {h}{am/pm}." / "Storms possible later today.", omitted on a multi-transition day, mirroring `evaluateGoodWindow` returning null) plus an hour-by-hour sparkline, scoped to the same 6am-6pm daytime bound the alert path uses. The live-reading eyebrow "Conditions today" is renamed "Right now".
 
-Design (2026-07-22): keep two sections, re-cut them; rename the eyebrow "Conditions today" to "Right now" so two sections do not both say "today". Trend line scoped to the same 6am-6pm daytime bound `evaluateGoodWindow` already uses, never a second definition of good. Copy: "Calm the rest of today." / "Winds pick up by {h}{am/pm}." / "Winds ease by {h}{am/pm}." / "Storms possible later today." **Omit the line entirely when the shape has more than one transition**, mirroring `evaluateGoodWindow`, which returns null rather than guessing. Second ship, after 97 to 99 land.
+**The fetch consolidation is real WITHOUT touching the protected file.** New `getHourlyPeriods` in `lib/nextWindow.ts` fetches the NWS hourly payload ONCE per spot; both `getNextWindow` and the new `getTodaysShape` derive from it, so the curve adds zero network requests. `HourlyPeriod` was deliberately NOT extended in `lib/alerts/conditions-window.ts` (protected: a change there freezes the deploy train and gates on owner approval). The raw hourly periods are a structural superset of `HourlyPeriod` and feed `evaluateGoodWindow` unchanged; the new pure, DOM-free `lib/todaysShape.ts` reads the extra fields off the same payload, so the native port is a clean lift.
+
+**fetchWind finding (the item asked to evaluate it):** the separate twelve-hourly `/forecast` fetch is KEPT. It feeds the shipped "Right now" readout (period name, half-day short forecast, daytime-aware temperature), the saved-spots batch, and native, each with different semantics from per-hour hourly data. Dropping it would change already-shipped copy and needs its own item; not safe to fold in here.
+
+Behind the `todays-shape` kill switch (default ON, no A/B, DAU<100). New dwell-gated INTENT `todays_shape_viewed` (`has_summary`, `hours`) + changelog. Lawyer gate CLEAR (descriptive forecast facts, not directives; the same round moved the safety disclaimer to co-render unconditionally at the panel foot, closing a pre-existing gap where `NextGoodWindowPanel` could paint with no disclaimer if the current-reading fetch errored). Adversarial verifier PASS (679 tests, +22; protected files untouched; it ran an off-by-one mutation on the transition hour that the tests caught). Verified live on prod, desktop + mobile, with real NWS data. Native twin port filed as item 135.
 
 ## 101. [blocked(item 93)] Per-spot shoreline orientation across 177 records
 
@@ -535,6 +539,14 @@ SKIPPED  'vercel deploy --prod --cwd web'     <- what actually works, and what w
 
 **Acceptance:** the protected set covers the alert/push *library* surface, not just the route paths; the trigger matches any real production deploy invocation, not one literal string; `.claude/studio.md`'s documented deploy command matches what the CLI actually accepts; the gate is exercised against a fixture list of BOTH command forms and BOTH path classes, proving each is caught (assert what must be CAUGHT); a deliberate dry run shows a `conditions-window.ts` edit gating under the real command.
 
+
+## 135. [proposed] Port "today's shape" to the native conditions panel
+
+**Filed while shipping item 100 (web).** Item 100 added the intra-day "today's shape" read (summary line + hourly sparkline) and renamed the panel eyebrow "Conditions today" -> "Right now" on web. The native twins (`native/src/components/ConditionsPanel.tsx`, `native/src/components/NextGoodWindowPanel.tsx`) did NOT get it: a web UI change does not auto-propagate to its native mirror (item 122's whole lesson). So iOS users see the pre-item-100 panel, including the old "Conditions today" eyebrow.
+
+The logic is already portable by design: `web/lib/todaysShape.ts` is pure and DOM-free, and the native app imports shared `@/lib/*` through the Metro alias, so `buildTodaysShape` and the shared `getHourlyPeriods` fetch carry over unchanged. The work is the RN presentation: a sparkline (no SVG-div trick, use `react-native-svg` or styled Views), the summary line, the eyebrow rename, and the `todays_shape_viewed` intent (the event name + props already exist in the shared `analytics-events.ts`, so native just emits it). Gate behind the same `todays-shape` kill switch.
+
+**Grade:** [proposed]. Low-risk parity port, but native ships are gated on the outstanding EAS/Apple enrollment (item 72) and there are no iOS users to measure yet, so it is not urgent. Verify with `cd native && npx tsc --noEmit && npm test`; a full simulator build is the owner's check.
 
 ## 132. [proposed] Native safety copy is outside every no-inducement sweep
 
