@@ -713,3 +713,23 @@ Three things follow from it, and the third is the actual decision.
 Gates: web/components/ReviewsSection.tsx (byline render), web/app/contributor-terms/page.tsx, docs/legal/ugc-contributor-terms.md, web/lib/reviews/validation.ts, web/components/ReviewForm.tsx
 
 Answer:
+
+## D33 [OPEN] 2026-07-22 · Item 93: the trip-planner demand test needs your pre-registered rule and two forks
+
+Item 93 (fake-door button that measures interest in the AI trip planner) is ready to build, but its own acceptance requires two things that are yours by design, not mine to invent, so it is blocked until you answer. I built nothing yet; each choice below has a RECOMMENDED default so you can reply "D33: defaults" and I ship to them.
+
+**1. The pre-registered decision rule (required before it can go live).** The item is explicit: the rule must be written down BEFORE the test runs, or the number just gets rationalised afterward, and the whole value is that YOU commit to it. In absolute counts (not rates: at ~31 DAU a percentage swings on single-digit noise), over the test window:
+- **RECOMMENDED:** BUILD/scope it if at least **5 distinct people** tap the button AND at least **3 of them tap on 2+ different days** (the item's "repeat taps by the same person on different days" signal, the only one that means real want). RUN LONGER if there is click interest but no repeat-day tappers. KILL if fewer than ~5 distinct tappers total. Adjust any number.
+
+**2. Expiry (required, so the fake door is a test and not permanent dishonesty).**
+- **RECOMMENDED:** whichever comes first, **400 impressions or 21 days**. Then it auto-hides pending your read.
+
+**3. Email capture, or a pure count?** The item leaves this to you. Email-leave rate is the strongest signal, but collecting emails is a new data-collection purpose (privacy-policy update, a store for them, a wider lawyer gate).
+- **RECOMMENDED: pure count for v1.** It ships now with no new PII collection and a narrow copy-only lawyer gate. If v1 clears your bar, email capture becomes a fast v1.5. (Choose email now only if you want the stronger signal from the first run and accept the privacy/collection work.)
+
+**4. Placement.** Recommend one fixed spot, held for the whole window (moving it mid-test destroys comparability).
+- **RECOMMENDED:** in the spot sheet, near the conditions panel, so nearly every spot-opener sees it and the denominator is real. Web only (native is gated on Apple enrollment, item 72, and has no users to measure).
+
+Not up for grabs (item + house rules): no price shown in v1; honest "not built yet" label before the tap; no fake progress and no implied safety judgement; dwell-gated impression + click + outcome events; kill switch, no A/B; a `lawyer` gate on the copy (and on email capture if you pick it).
+
+Answer:
