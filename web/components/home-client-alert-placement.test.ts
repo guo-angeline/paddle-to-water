@@ -17,4 +17,10 @@ describe("HomeClient alert interstitial placement", () => {
     expect(alertBlock).toBeLessThan(feedbackModal);
     expect(src.slice(mainContentStart, mainContentClose)).not.toContain("<AlertInterstitial");
   });
+
+  it("keeps touched-file comments and toast styling within house hygiene", () => {
+    expect(src).not.toContain("—");
+    expect(src).not.toContain('background: "#0B2A47"');
+    expect(src).toContain('background: "var(--dark)"');
+  });
 });

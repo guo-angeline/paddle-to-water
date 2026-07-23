@@ -266,7 +266,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
 
   // Auto-locate on load for users who already granted permanent geolocation.
   // Uses the Permissions API so getCurrentPosition is only called when the state
-  // is already "granted" — this NEVER triggers a permission prompt on open. The
+  // is already "granted". This NEVER triggers a permission prompt on open. The
   // effect mirrors the Near Me result (map flies to the user at zoom 11, list
   // sorts by distance) but keeps the map tab visible instead of switching to the
   // list, so a returning local lands on their nearest spots every time.
@@ -294,7 +294,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
             setPersona({ uses_geolocation: true });
           },
           // Grant present but position unavailable (GPS off, etc.): stay on the
-          // default Bay view, no error toast — the user didn't ask for anything.
+          // default Bay view, no error toast. The user didn't ask for anything.
           () => {},
           // A cached fix (<=5 min) makes this instant on open; fall back to an
           // 8s live lock otherwise.
@@ -583,7 +583,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
   const { condBySpot: recentCond } = useSpotConditions(recentSpots);
 
   // SYSTEM event: fire once per session after the first saved-conditions batch
-  // resolves. This is availability only (data loaded) — whether the user actually
+  // resolves. This is availability only (data loaded). Whether the user actually
   // looked at the "Your saved spots" section is the dwell-gated INTENT event
   // `saved_conditions_viewed`, logged in SpotList.
   const loggedSavedConditions = useRef(false);
@@ -895,7 +895,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         >
           <MapView spots={sortedFiltered} selected={selected} onSelect={handleSelect} userLocation={userLocation} fitToSpots={isFiltered} />
 
-          {/* Empty state — the List has one, but the map is the default mobile tab,
+          {/* Empty state: the List has one, but the map is the default mobile tab,
               so an over-filtered user would otherwise just see a blank map. */}
           {sortedFiltered.length === 0 && (
             <div className="absolute inset-0 z-[400] flex flex-col items-center justify-center bg-(--bg)/80 backdrop-blur-sm text-center px-4">
@@ -974,7 +974,7 @@ export default function HomeClient({ initialSpotId }: Props = {}) {
         <div
           role="status"
           className="fixed left-1/2 -translate-x-1/2 z-[1600] rounded-xl px-4 py-2.5 text-sm font-medium text-white shadow-lg"
-          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)", background: "#0B2A47", maxWidth: "calc(100% - 32px)" }}
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)", background: "var(--dark)", maxWidth: "calc(100% - 32px)" }}
         >
           Email alerts on. We&rsquo;ll ping you when your spots are good to paddle.
         </div>
