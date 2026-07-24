@@ -108,7 +108,9 @@ Verified at the SERVED-HTML level (the acceptance's own method), live on prod: s
 
 ## Owner item, added 2026-07-23 (first-visit "paddle now?" prompt; owner-directed [ready])
 
-## 137. [done] First-visit-per-day "Want to paddle now?" modal: 3 nearest spots good in the next 0-60 minutes (deployed 2026-07-23, 4edc143)
+## 137. [done] First-visit-per-day "Want to paddle today?" modal: asks for location, then calm spots near you (deployed 2026-07-23, 4edc143; redesigned same day, 546b2f6)
+
+Redesigned the same day on owner feedback. The first cut ranked spots against a fixed central-CA anchor when location was unknown and framed them as "nearest" (a random spot to the user), and "good to go" never said it was about wind/water. Now it is a two-step, location-first modal: it asks ("Want to paddle today? We'll find spots near you where the wind and water are calm." + "Find calm spots near me"), requests geolocation only on that tap, and ranks by REAL distance (no anchor fallback) with condition-explicit copy ("Calm spots near you"). Horizon moved from next-60-min to calm-window-left-today (item 61's evaluateGoodToday). Denied/unsupported closes and marks the day seen. Full canonical caveat kept verbatim (lawyer CLEAR); verifier PASS; privacy page broadened to cover the new location entry point. Analytics: `paddle_now_shown` drops `count`, new `paddle_now_located(outcome)` (changelog has the comparability break).
 
 Push variant of the conditions moat: a once-per-local-day, home-only, closable dialog surfacing up to 3 nearest spots whose calm window overlaps [now, now+60min], each opening its drawer. Reuses `evaluateGoodWindow` via `evaluateGoodToday` + the shared `getHourlyPeriods` cache (no forked calm math, `web/lib/paddleNow.ts` adds only the horizon filter); suppresses entirely unless >=1 good-soon spot resolves, so it never opens empty. Once-per-day flag written on genuine render, so a quiet day doesn't burn the showing. Behind the `paddle-now` kill switch. Lawyer gate: clear (caveat verbatim, bumped to body weight for this more-insistent surface per the note; no PII, `located` is a boolean). Verified live desktop + mobile on real NWS data; the modal's "Calm now" matched the drawer's Right-Now verdict (6 mph) for the same spot. The mobile-vs-map-tab open question resolved to the default (show on both). Analytics: `paddle_now_shown` / `_spot_clicked` / `_dismissed`.
 
@@ -1005,6 +1007,35 @@ Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations
 ## Owner item, added 2026-07-17 (queued top-most on purpose)
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
+
+## 139. [ready] P0: one unguarded `localStorage` read blanks the ENTIRE app when storage throws (Safari Private Browsing, quota, disabled storage)
+
+**Partial fix landed 2026-07-23 (546b2f6, deployed): the app-blanking crasher is closed.** The named line, the unguarded `localStorage.getItem` in the PaddleNow seen-check effect (`HomeClient.tsx`), is now wrapped in try/catch (treats unreadable storage as "seen", so the modal just stays hidden). It was fixed opportunistically because the item-137 redesign rewrote that exact effect. **Remaining for this item:** the `ReviewsSection.tsx` read (`JSON.parse(localStorage.getItem("ptw-favorites")...)`, throws for a signed-out user opening reviews), any other bare storage call in a client render path, and the standing guard (lint rule or test asserting no un-try/catch'd `localStorage.` in client components) so it cannot recur. Keep [ready] until those land + the chaos harness is green.
+
+**Found by the 2026-07-23 verify loop (chaos journey), root-caused in code.** When `localStorage` throws on read, the app renders **nothing at all**, a blank page, with an uncaught `QuotaExceededError`. Reproduced deterministically: with `localStorage.getItem` stubbed to throw, `paddletowater.com/` renders no content and throws once on load. This is a regression, the same chaos check passed before item 100.
+
+**Root cause: a single line.** `components/HomeClient.tsx:661`, inside the PaddleNow effect (item 100, "Today's shape"):
+```
+setPaddleNowSeen(localStorage.getItem(PADDLE_NOW_SEEN_KEY) === localDateString(new Date()));
+```
+This `localStorage.getItem` is **not wrapped in try/catch**, and it runs on **every non-deep-link home load**. It is the ONLY unguarded storage read in the home render path, every sibling is guarded: the favorites read 540 lines up (`HomeClient.tsx:120-124`) has `try { ... } catch { /* private mode */ }`, `PostHogProvider.tsx:33-39` guards its reads, `InstallPrompt.tsx:44-48,64-66` guard theirs. This one shipped without the pattern, and a throw inside the effect is uncaught, so React tears down the tree and the page goes blank.
+
+**Who hits it (not a corner case for a mobile-first, iOS-primary app):**
+- **Safari Private Browsing** historically throws on `localStorage` access (notably older iOS Safari, still a real slice of paddlers on phones).
+- **Storage disabled** by MDM/enterprise policy or the user's Safari "Block All Cookies" setting.
+- **Quota exceeded** (`QuotaExceededError`), the literal error observed.
+For these users the entire site is a white screen, no map, no spots, no conditions. It is the worst failure mode: total, silent, and it defeats every other resilience the app has.
+
+**Fix (trivial, one line):** wrap the read in try/catch exactly like its siblings, defaulting `paddleNowSeen` to a safe value (treat unreadable storage as "seen", so the modal simply does not show rather than crashing):
+```
+try { setPaddleNowSeen(localStorage.getItem(PADDLE_NOW_SEEN_KEY) === localDateString(new Date())); }
+catch { setPaddleNowSeen(true); }
+```
+Also check `PaddleNowModal.tsx:59` (`localStorage.setItem(PADDLE_NOW_SEEN_KEY, ...)`) and `ReviewsSection.tsx:19` (`JSON.parse(localStorage.getItem("ptw-favorites")...)`), both appear unguarded and would throw in the same environments (the review path when a signed-out user opens reviews, the modal-dismiss path).
+
+**Guard so it cannot recur:** the codebase already has the convention (every other read is wrapped). Add a lint rule or a test that asserts no bare `localStorage.` call exists outside a try/catch in client components, this is the second time storage-throw resilience mattered (it is a standing chaos-journey check), and a one-line miss cost the whole app.
+
+**Acceptance:** with `localStorage` throwing on every method, `/` and `/spot/<id>` still render the full app (map, list, conditions) with zero uncaught errors; the PaddleNow modal simply does not appear. Verify with the chaos harness (localStorage-throws case green). Touches no legal surface; run the verifier on the diff.
 
 ## 86. [done] The `reviews` kill switch now reaches the spot list (deployed 2026-07-22, e610d05)
 
