@@ -6,12 +6,12 @@ Reduce the visual prominence of the Paddle Now modal disclaimer while preserving
 
 ## Approved design
 
-The owner selected mockup C, “Whisper.”
+The owner selected mockup C, “Whisper,” then approved the smallest compliant adjustment required by the legal and accessibility gate.
 
 - Keep the copy exactly: “Guidance only, not a safety guarantee. Conditions shift fast on the water.”
-- Change the disclaimer from 14px primary ink to 10px lighter secondary ink.
-- Use `#718399` for the lighter treatment.
-- Keep the existing 6px top gap, line height, modal structure, claim, and call to action.
+- Change the disclaimer from 14px primary ink to 11px muted secondary ink.
+- Use the existing `--muted` token (`#556A7E`, 5.60:1 against white).
+- Keep the existing 6px top gap and 20px line height, plus the modal structure, claim, and call to action.
 - Apply the treatment in both modal states because they share the same disclaimer element.
 
 ## Accessibility and legal guardrails
@@ -22,7 +22,7 @@ The owner selected mockup C, “Whisper.”
 
 ## Verification
 
-- Add or update the focused style test to lock the 10px size and chosen color.
+- Add or update the focused style test to lock the 11px size and muted color token.
 - Preserve the existing verbatim-copy test.
 - Render the modal at 1280px and 390px and confirm the disclaimer remains readable without crowding or clipping.
 - Run the relevant component tests, then the normal project verification required for deployment.

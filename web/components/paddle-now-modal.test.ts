@@ -19,7 +19,13 @@ describe("PaddleNowModal (item 137, location-first redesign)", () => {
 
   it("co-renders the canonical safety caveat verbatim, in full", () => {
     expect(modal).toContain("Guidance only, not a safety guarantee. Conditions shift fast on the water.");
-    expect(modal).not.toContain("—");
+    expect(modal).not.toContain("\u2014");
+  });
+
+  it("renders the safety caveat as 11px muted secondary copy with its original line height", () => {
+    expect(modal).toMatch(
+      /<p className="text-\[11px\] leading-5 text-\(--muted\) mt-1\.5">\{CAVEAT\}<\/p>/,
+    );
   });
 
   it("the ask step has a location button wired to onFindSpots", () => {

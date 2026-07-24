@@ -160,8 +160,8 @@ export default function PaddleNowModal({
               </p>
             )}
             {/* Canonical safety caveat, verbatim, co-rendered with the "calm"
-                claim (item 61/8 lawyer gate). Body weight, not fine print. */}
-            <p className="text-sm text-(--dark) mt-1.5">{CAVEAT}</p>
+                claim (item 61/8 lawyer gate). */}
+            <p className="text-[11px] leading-5 text-(--muted) mt-1.5">{CAVEAT}</p>
           </div>
           <button
             type="button"
