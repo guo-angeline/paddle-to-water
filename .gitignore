@@ -13,6 +13,9 @@ node_modules/
 # testing
 coverage/
 
+# local brainstorming mockups
+.superpowers/
+
 # next.js
 .next/
 out/
