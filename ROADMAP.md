@@ -1008,7 +1008,7 @@ Remaining owner steps (see `native/README.md` runbook): run `supabase/migrations
 
 ## Verify-loop findings, added 2026-07-17 (end-to-end quality pass)
 
-## 139. [ready] P0: one unguarded `localStorage` read blanks the ENTIRE app when storage throws (Safari Private Browsing, quota, disabled storage)
+## 139. [in-progress] 2026-07-24T02:49:45Z P0: one unguarded `localStorage` read blanks the ENTIRE app when storage throws (Safari Private Browsing, quota, disabled storage)
 
 **Partial fix landed 2026-07-23 (546b2f6, deployed): the app-blanking crasher is closed.** The named line, the unguarded `localStorage.getItem` in the PaddleNow seen-check effect (`HomeClient.tsx`), is now wrapped in try/catch (treats unreadable storage as "seen", so the modal just stays hidden). It was fixed opportunistically because the item-137 redesign rewrote that exact effect. **Remaining for this item:** the `ReviewsSection.tsx` read (`JSON.parse(localStorage.getItem("ptw-favorites")...)`, throws for a signed-out user opening reviews), any other bare storage call in a client render path, and the standing guard (lint rule or test asserting no un-try/catch'd `localStorage.` in client components) so it cannot recur. Keep [ready] until those land + the chaos harness is green.
 
