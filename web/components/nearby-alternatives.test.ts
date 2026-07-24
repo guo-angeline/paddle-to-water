@@ -50,13 +50,11 @@ describe("Go-here-instead wiring (item 8)", () => {
 });
 
 describe("Drawer wiring (item 8)", () => {
-  it("renders the block between Today's shape and Looking ahead, above the disclaimer", () => {
-    const shape = panel.indexOf("<TodaysShapePanel");
+  it("renders the block above Looking ahead and the disclaimer", () => {
     const near = panel.indexOf("<NearbyAlternatives");
     const next = panel.indexOf("<NextGoodWindowPanel");
     const disclaimer = panel.indexOf("Guidance only, not a safety guarantee");
-    expect(shape).toBeGreaterThan(-1);
-    expect(near).toBeGreaterThan(shape);
+    expect(near).toBeGreaterThan(-1);
     expect(next).toBeGreaterThan(near);
     expect(disclaimer).toBeGreaterThan(next);
   });

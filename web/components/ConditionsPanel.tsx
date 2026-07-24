@@ -21,7 +21,6 @@ import { useKillSwitch } from "@/lib/experiments";
 import { useGenuineView } from "@/lib/useGenuineView";
 import { recordExplored } from "@/lib/exploredSpots";
 import NextGoodWindowPanel from "@/components/NextGoodWindowPanel";
-import TodaysShapePanel from "@/components/TodaysShapePanel";
 import NearbyAlternatives from "@/components/NearbyAlternatives";
 
 /**
@@ -201,7 +200,7 @@ export default function ConditionsPanel({
   const [wind, setWind] = useState<WindSlot | null>(null);
   const [tide, setTide] = useState<TideSlot | null>(null);
   // SYSTEM event fires at most once per spot, when BOTH sources settle. This is an
-  // availability signal (success rate + latency), NOT engagement — engagement is
+  // availability signal (success rate + latency), NOT engagement. Engagement is
   // the dwell-gated INTENT event below.
   const logged = useRef<number | null>(null);
   // Item 60: re-foregrounding the installed PWA refetches conditions when the
@@ -430,23 +429,18 @@ export default function ConditionsPanel({
         </div>
       )}
 
-      {/* Item 100: today's intra-day shape, then the multi-day look-ahead. Both
-          draw from the one shared hourly fetch (getTodaysShape / getNextWindow),
-          so this pair adds no requests beyond the single hourly call. */}
-      <TodaysShapePanel spot={spot} />
-
       {/* Item 8: when THIS spot is blown out today, the direct answer (a calmer
-          nearby spot) outranks the come-back-later "Looking ahead" below it, so
-          it renders between them. Above the foot disclaimer, which co-renders. */}
+          nearby spot) outranks the come-back-later "Looking ahead" below it.
+          Above the foot disclaimer, which co-renders. */}
       <NearbyAlternatives spot={spot} onSelectSpot={onSelectSpot} />
 
       <NextGoodWindowPanel spot={spot} />
 
       {/* The safety disclaimer renders UNCONDITIONALLY at the foot of the panel,
           not inside the current-reading branch, so it always co-renders with the
-          shape and look-ahead blocks. Those two run their own hourly fetch and
-          can paint even when the current-reading fetch errored; a forecast read
-          must never show without this line (item 100 lawyer gate). */}
+          look-ahead block. It can paint even when the current-reading fetch
+          errored; a forecast read must never show without this line (item 100
+          lawyer gate). */}
       <p className="text-[10px] text-gray-400 leading-snug mt-3">
         Guidance only, not a safety guarantee. Conditions shift fast on the water.
       </p>

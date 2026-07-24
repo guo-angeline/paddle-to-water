@@ -23,7 +23,7 @@ describe("TodaysShapePanel wiring (item 100)", () => {
   });
 
   it("carries no em dash in any copy", () => {
-    expect(panel).not.toContain("—");
+    expect(panel).not.toContain("\u2014");
   });
 });
 
@@ -33,11 +33,8 @@ describe("ConditionsPanel re-cut (item 100)", () => {
     expect(conditions).not.toMatch(/Conditions today/);
   });
 
-  it("renders TodaysShapePanel above the multi-day look-ahead", () => {
-    const shapeIdx = conditions.indexOf("<TodaysShapePanel");
-    const nextIdx = conditions.indexOf("<NextGoodWindowPanel");
-    expect(shapeIdx).toBeGreaterThan(-1);
-    expect(nextIdx).toBeGreaterThan(-1);
-    expect(shapeIdx).toBeLessThan(nextIdx);
+  it("does not mount Today's shape in the conditions panel", () => {
+    expect(conditions).not.toContain('import TodaysShapePanel from "@/components/TodaysShapePanel"');
+    expect(conditions).not.toContain("<TodaysShapePanel");
   });
 });
