@@ -1,3 +1,12 @@
+## 2026-07-23 · Item 139 localStorage blank-app regression · SHIPPED
+What: Added a recursive TypeScript guard and browser chaos checks to prevent localStorage failures from blanking the home or spot experience. No production UI, copy, or analytics changed.
+Evidence: Final verifier PASS after closing deferred callback, computed access, globalThis, destructuring, and function-boundary bypasses. 82 test files, 753 tests, build passed with 381 pages.
+Evidence: Production chaos journeys passed on `/` and `/spot/1`: app, map, list, spot, and conditions rendered, PaddleNow stayed absent, zero page errors.
+Measure: Reliability bugfix, no experiment.
+Deployed: Production deployment `dpl_4ZD84wkUo2hhHh6NfNE2tBbwkHBG`, verified live at paddletowater.com. Preview runtime check was blocked by Vercel deployment protection.
+Decisions raised: none. Parked: none.
+Next up: Continue with the next ready ROADMAP item.
+
 ## 2026-07-23 · Item 137 REDESIGN: location-first "Want to paddle today?" modal + one P0 fix · SHIPPED
 What: The owner tried the shipped "Want to paddle now?" modal and reported it broken: it never asked for location, so it ranked spots against a fixed point in the middle of California and presented them as "nearest", and the "good to go" copy never conveyed it was about wind/water conditions. Both are real design misses. Redesigned into a two-step, location-first modal: it ASKS ("Want to paddle today? We'll find spots near you where the wind and water are calm." with a "Find calm spots near me" button), requests the browser location only on that tap (contextual, not a cold popup), and shows "Calm spots near you" ranked by REAL distance. No statewide-anchor fallback exists anymore, so nothing is ever labelled "near you" without a real position; denial or unsupported closes gracefully and marks the day seen. Copy is now condition-explicit throughout. Horizon moved from the old next-60-min to calm-window-left-today (item 61's evaluateGoodToday), matching the "today" framing.
 Copy discipline: I kept the FULL canonical safety caveat verbatim ("Guidance only, not a safety guarantee. Conditions shift fast on the water.") even though the owner's copy note shortened it, and told them why: it is the one app-wide safety line the legal gate requires on every affirmative "conditions are good" surface. Everything else is the owner's wording.
